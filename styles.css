@@ -22,6 +22,7 @@
 html{
   -webkit-text-size-adjust:100%;
   scroll-behavior:smooth;
+  scroll-padding-bottom:110px;
 }
 
 body{
@@ -29,6 +30,7 @@ body{
   min-height:100vh;
   display:flex;
   flex-direction:column;
+  padding-bottom:calc(82px + env(safe-area-inset-bottom));
   font-family:"DM Sans",system-ui,sans-serif;
   color:var(--ink);
   line-height:1.5;
@@ -576,9 +578,7 @@ button{cursor:pointer}
   font-size:13px;
 }
 
-.referral-balance .balance-title{
-  font-size:11px;
-}
+.referral-balance .balance-title{font-size:11px}
 
 .balance-value-row{
   display:flex;
@@ -832,7 +832,7 @@ button{cursor:pointer}
 .network-chip.glo{color:#16834a}
 .network-chip.nine{color:#087e70}
 
-/* DASHBOARD VIEWS AND ACCOUNT DETAILS */
+/* DASHBOARD VIEWS */
 
 .dashboard-view{
   display:none;
@@ -944,11 +944,7 @@ button{cursor:pointer}
   color:#59491f;
 }
 
-
 /* FIXED BOTTOM NAVIGATION */
-body{
-  padding-bottom:calc(78px + env(safe-area-inset-bottom));
-}
 
 .bottom-navigation{
   position:fixed;
@@ -958,15 +954,16 @@ body{
   z-index:1000;
 
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:2px;
 
   width:100%;
   margin:0;
-  padding:9px 5px calc(9px + env(safe-area-inset-bottom));
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
 
   border-top:1px solid rgba(196,154,67,.3);
   background:rgba(255,255,255,.97);
+  -webkit-backdrop-filter:blur(16px);
   backdrop-filter:blur(16px);
   box-shadow:0 -7px 25px rgba(4,45,37,.12);
 }
@@ -977,19 +974,24 @@ body{
   align-items:center;
   justify-content:center;
   gap:3px;
+
   min-width:0;
   min-height:57px;
   padding:4px 2px;
+
   border:0;
   border-radius:12px;
   background:transparent;
   color:#829087;
-  font-size:10px;
-  font-weight:600;
+
+  font-size:11px;
+  font-weight:700;
+  line-height:1.3;
+  -webkit-tap-highlight-color:transparent;
 }
 
 .nav-icon{
-  font-size:24px;
+  font-size:23px;
   line-height:1.2;
 }
 
@@ -1000,6 +1002,11 @@ body{
 
 .nav-item.active .nav-icon{
   color:var(--gold);
+}
+
+.nav-item:focus-visible{
+  outline:3px solid var(--gold);
+  outline-offset:-2px;
 }
 
 /* FOOTER */
@@ -1035,7 +1042,11 @@ footer span{
   .service-item{font-size:13px}
   .service-icon{width:55px;height:55px}
   .account-balance-card{padding:30px}
-  .welcome-panel{margin-left:0;margin-right:0;border-radius:18px}
+  .welcome-panel{
+    margin-left:0;
+    margin-right:0;
+    border-radius:18px;
+  }
 }
 
 /* DESKTOP */
@@ -1060,39 +1071,72 @@ footer span{
 
   .feature-stack{grid-template-columns:1fr}
   .feature{flex-direction:row;align-items:center}
+
   .auth-card{
     align-self:center;
     padding:40px;
     border-radius:25px;
   }
 
-  .dashboard{max-width:900px;margin:auto}
+  .dashboard{
+    max-width:900px;
+    margin:auto;
+  }
+
   .welcome-panel{padding:24px 28px}
   .account-balance-card{padding:35px}
   .balance-columns{min-height:120px}
   .service-grid{gap:25px}
   .service-item{min-height:120px;font-size:14px}
   .service-icon{width:62px;height:62px;font-size:27px}
+
+  /* Keep navigation fixed on desktop too */
   .bottom-navigation{
-    position:relative;
-    max-width:900px;
-    margin:0 auto 20px;
+    position:fixed;
+    left:50%;
+    right:auto;
+    bottom:16px;
+    transform:translateX(-50%);
+    width:min(520px,calc(100% - 40px));
+    max-width:520px;
+    margin:0;
+    padding:8px 10px;
     border:1px solid var(--line);
     border-radius:17px;
+  }
+
+  body{
+    padding-bottom:110px;
   }
 }
 
 /* SMALL PHONES */
 
 @media(max-width:360px){
-  .page-shell{padding-left:12px;padding-right:12px}
-  .welcome-panel{margin-left:-12px;margin-right:-12px;padding-left:13px;padding-right:13px}
-  .welcome-logo{width:46px;height:46px;flex-basis:46px}
+  .page-shell{
+    padding-left:12px;
+    padding-right:12px;
+  }
+
+  .welcome-panel{
+    margin-left:-12px;
+    margin-right:-12px;
+    padding-left:13px;
+    padding-right:13px;
+  }
+
+  .welcome-logo{
+    width:46px;
+    height:46px;
+    flex-basis:46px;
+  }
+
   .balance-columns{gap:8px}
   .balance-title{font-size:11px}
   .service-grid{gap:15px 3px}
   .service-icon{width:43px;height:43px}
   .service-item{font-size:10px}
+  .nav-item{font-size:10px}
 }
 
 /* ACCESSIBILITY */
