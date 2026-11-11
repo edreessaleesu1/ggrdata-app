@@ -300,6 +300,56 @@
         </div>
       </section>
 
+      <!-- DATA STORE / READ-ONLY CATALOGUE -->
+      <section id="dataStoreView" class="dashboard-view detail-card data-store-view">
+
+        <div class="data-store-heading">
+          <div>
+            <span class="card-kicker">GGR QUICKBUY</span>
+            <h2>Explore data plans</h2>
+            <p>Find available bundles across your favourite networks.</p>
+          </div>
+          <span class="data-store-icon">◉</span>
+        </div>
+
+        <div class="data-network-selector" aria-label="Choose network">
+          <button type="button" class="data-network-button active"
+            data-catalogue-network="mtn" aria-pressed="true">MTN</button>
+
+          <button type="button" class="data-network-button"
+            data-catalogue-network="airtel" aria-pressed="false">Airtel</button>
+
+          <button type="button" class="data-network-button"
+            data-catalogue-network="glo" aria-pressed="false">Glo</button>
+
+          <button type="button" class="data-network-button"
+            data-catalogue-network="9mobile" aria-pressed="false">9mobile</button>
+        </div>
+
+        <div class="data-catalogue-toolbar">
+          <span class="data-catalogue-label">AVAILABLE BUNDLES</span>
+          <button id="refreshDataCatalogue" class="text-button"
+            type="button">↻ Refresh</button>
+        </div>
+
+        <div id="dataCatalogueStatus" class="data-catalogue-status"
+          role="status" aria-live="polite">
+          Select a network to view its available data plans.
+        </div>
+
+        <div id="dataPlans" class="data-plans">
+          <!-- Plans will be loaded from the secure catalogue function. -->
+        </div>
+
+        <p class="data-store-footnote">
+          Catalogue prices and availability may change. Purchases are not
+          enabled yet while payment and delivery safeguards are being tested.
+        </p>
+
+        <button id="backToHomeFromData" class="button-outline"
+          type="button">← Back to dashboard</button>
+      </section>
+
       <!-- ACCOUNT PROFILE -->
       <section id="profileView" class="dashboard-view detail-card">
         <span class="card-kicker">ACCOUNT PROFILE</span>
