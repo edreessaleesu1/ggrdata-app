@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,9 +12,10 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./styles.css">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./username-auth.js"></script>
-<script defer src="./app.js"></script>
+  <script defer src="./app.js"></script>
 </head>
 
 <body>
@@ -29,6 +29,7 @@
         <small>Your connection. Your control.</small>
       </span>
     </a>
+
     <span class="topbar-note">AIRTIME <i></i> DATA</span>
   </header>
 
@@ -36,8 +37,9 @@
 
     <!-- AUTHENTICATION -->
     <section id="authScreen" class="auth-layout">
-      
+
       <div class="auth-card">
+
         <div class="auth-heading">
           <span class="eyebrow dark">WELCOME TO GGRDATA</span>
           <h2 id="authTitle">Good to have you back.</h2>
@@ -45,13 +47,21 @@
         </div>
 
         <div id="authTabs" class="tabs" role="tablist">
+
           <button id="loginTab" class="tab active" type="button"
-            role="tab" aria-selected="true">Sign in</button>
+            role="tab" aria-selected="true">
+            Sign in
+          </button>
+
           <button id="signupTab" class="tab" type="button"
-            role="tab" aria-selected="false">Create account</button>
+            role="tab" aria-selected="false">
+            Create account
+          </button>
+
         </div>
 
         <form id="authForm" novalidate>
+
           <div id="nameField" class="field hidden">
             <label for="fullName">Full name</label>
             <input id="fullName" autocomplete="name" maxlength="120"
@@ -73,30 +83,36 @@
           <div class="field">
             <label for="password">Password</label>
             <input id="password" type="password" required minlength="8"
-              autocomplete="current-password" placeholder="At least 8 characters">
+              autocomplete="current-password"
+              placeholder="At least 8 characters">
           </div>
 
           <button id="submitBtn" class="button-primary" type="submit">
             Sign in <span>→</span>
           </button>
+
         </form>
 
         <form id="resetForm" class="hidden" novalidate>
+
           <div class="field">
             <label for="newPassword">New password</label>
             <input id="newPassword" type="password" minlength="8"
-              autocomplete="new-password" required placeholder="At least 8 characters">
+              autocomplete="new-password" required
+              placeholder="At least 8 characters">
           </div>
 
           <div class="field">
             <label for="confirmPassword">Confirm new password</label>
             <input id="confirmPassword" type="password" minlength="8"
-              autocomplete="new-password" required placeholder="Enter it again">
+              autocomplete="new-password" required
+              placeholder="Enter it again">
           </div>
 
           <button id="resetSubmit" class="button-primary" type="submit">
             Update password <span>→</span>
           </button>
+
         </form>
 
         <div id="forgotRow" class="auth-help">
@@ -105,21 +121,26 @@
           </button>
         </div>
 
-        <div id="message" class="message" role="status" aria-live="polite"></div>
+        <div id="message" class="message"
+          role="status" aria-live="polite"></div>
 
         <p class="secure-note">
           <span>●</span> Your account is protected by secure sign-in.
         </p>
+
       </div>
     </section>
+
 
     <!-- CUSTOMER DASHBOARD -->
     <section id="dashboardScreen" class="dashboard hidden">
 
       <!-- WELCOME HEADER -->
       <section class="welcome-panel">
+
         <div class="welcome-brand">
           <span class="welcome-logo">G</span>
+
           <div>
             <span class="welcome-caption">WELCOME!</span>
             <h1 id="welcome">GGRData Member 👋</h1>
@@ -131,13 +152,16 @@
           <span>♧</span>
           <small id="notificationCount">0</small>
         </button>
+
       </section>
+
 
       <!-- USER PACKAGE -->
       <section class="package-panel">
         <span class="package-label">USER PACKAGE</span>
         <strong id="userPackage">GGR Starter</strong>
       </section>
+
 
       <!-- WALLET AND REFERRAL BALANCE -->
       <section class="account-balance-card">
@@ -146,15 +170,20 @@
 
           <div class="balance-column main-balance">
             <span class="balance-title">Account Balance</span>
+
             <div class="balance-value-row">
               <strong id="balance">₦—</strong>
+
               <button id="toggleBalance" class="visibility-button"
-                type="button" aria-label="Hide balance">◉</button>
+                type="button" aria-label="Hide balance">
+                ◉
+              </button>
             </div>
           </div>
 
           <div class="balance-column referral-balance">
             <span class="balance-title">Referral Bonus</span>
+
             <div class="balance-value-row">
               <strong id="referralBalance">₦0.00</strong>
               <span class="referral-symbol">◇</span>
@@ -163,22 +192,27 @@
 
         </div>
 
-        <button id="fundWalletBtn" class="fund-wallet-button" type="button">
+        <button id="fundWalletBtn" class="fund-wallet-button"
+          type="button">
           <span>＋</span> Fund Wallet
         </button>
 
         <p class="wallet-footnote">
           Your wallet balance is based on your verified account ledger.
         </p>
+
       </section>
+
 
       <!-- BANK TRANSFER / FUNDING INFORMATION -->
       <section class="funding-account-card">
+
         <div class="funding-card-heading">
           <div>
             <span class="card-kicker light">WALLET FUNDING</span>
             <h2>Fund your GGRData wallet</h2>
           </div>
+
           <span class="funding-icon">₦</span>
         </div>
 
@@ -190,7 +224,9 @@
         <span class="funding-security">
           <span>●</span> Secure payment verification required
         </span>
+
       </section>
+
 
       <!-- SERVICES -->
       <section class="services-section">
@@ -200,6 +236,7 @@
             <span class="card-kicker">EXPLORE GGRDATA</span>
             <h2>Our Services</h2>
           </div>
+
           <span class="services-caption">All in one place</span>
         </div>
 
@@ -268,8 +305,10 @@
         </div>
       </section>
 
+
       <!-- SUPPORTED NETWORKS -->
       <section class="network-panel">
+
         <div>
           <span class="card-kicker">SUPPORTED NETWORKS</span>
           <h2>Stay connected</h2>
@@ -281,60 +320,219 @@
           <span class="network-chip glo">Glo</span>
           <span class="network-chip nine">9mobile</span>
         </div>
+
       </section>
 
-      <!-- DATA STORE / READ-ONLY CATALOGUE -->
-      <section id="dataStoreView" class="dashboard-view detail-card data-store-view">
+
+      <!-- GGR QUICKBUY -->
+      <section id="dataStoreView"
+        class="dashboard-view detail-card data-store-view">
 
         <div class="data-store-heading">
           <div>
             <span class="card-kicker">GGR QUICKBUY</span>
-            <h2>Explore data plans</h2>
-            <p>Find available bundles across your favourite networks.</p>
+            <h2>Buy data, simply.</h2>
+            <p>Choose a recipient and explore available bundles.</p>
           </div>
+
           <span class="data-store-icon">◉</span>
         </div>
 
-        <div class="data-network-selector" aria-label="Choose network">
-          <button type="button" class="data-network-button active"
-            data-catalogue-network="mtn" aria-pressed="true">MTN</button>
 
-          <button type="button" class="data-network-button"
-            data-catalogue-network="airtel" aria-pressed="false">Airtel</button>
+        <!-- WALLET BALANCE -->
+        <div class="quickbuy-balance">
 
-          <button type="button" class="data-network-button"
-            data-catalogue-network="glo" aria-pressed="false">Glo</button>
+          <div>
+            <span>AVAILABLE WALLET BALANCE</span>
+            <strong id="quickbuyBalance">Loading...</strong>
+          </div>
 
-          <button type="button" class="data-network-button"
-            data-catalogue-network="9mobile" aria-pressed="false">9mobile</button>
+          <span class="quickbuy-wallet-icon">₦</span>
+
         </div>
 
+
+        <!-- BENEFICIARY PHONE NUMBER -->
+        <div class="quickbuy-field">
+
+          <label for="dataPhone">
+            Beneficiary phone number
+          </label>
+
+          <div class="quickbuy-phone-row">
+
+            <input
+              id="dataPhone"
+              type="tel"
+              inputmode="numeric"
+              autocomplete="tel"
+              placeholder="08012345678"
+              maxlength="14"
+              aria-describedby="phoneNetworkHint">
+
+            <span id="detectedNetwork" class="network-detection">
+              Enter phone number
+            </span>
+
+          </div>
+
+          <div id="phoneNetworkHint" class="quickbuy-hint">
+            Enter a Nigerian mobile number. You can change the network
+            manually if needed.
+          </div>
+
+          <!-- RECENT BENEFICIARY -->
+          <button id="useRecentBeneficiary"
+            class="recent-beneficiary hidden"
+            type="button">
+
+            <span>↺</span>
+
+            <span>
+              <small>RECENT BENEFICIARY</small>
+              <b id="recentBeneficiaryNumber">—</b>
+            </span>
+
+            <span>Use</span>
+
+          </button>
+
+        </div>
+
+
+        <!-- NETWORK SELECTION -->
+        <div class="quickbuy-field">
+
+          <label>Choose network</label>
+
+          <div class="data-network-selector" aria-label="Choose network">
+
+            <button type="button"
+              class="data-network-button active"
+              data-catalogue-network="mtn"
+              aria-pressed="true">
+              MTN
+            </button>
+
+            <button type="button"
+              class="data-network-button"
+              data-catalogue-network="airtel"
+              aria-pressed="false">
+              Airtel
+            </button>
+
+            <button type="button"
+              class="data-network-button"
+              data-catalogue-network="glo"
+              aria-pressed="false">
+              Glo
+            </button>
+
+            <button type="button"
+              class="data-network-button"
+              data-catalogue-network="9mobile"
+              aria-pressed="false">
+              9mobile
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- DATA TYPE SELECTION -->
+        <div class="quickbuy-field">
+
+          <label for="dataTypeSelect">
+            Select data type
+          </label>
+
+          <select id="dataTypeSelect" class="quickbuy-select">
+
+            <option value="standard">
+              Standard / Direct — current VTpass catalogue
+            </option>
+
+            <option value="sme" disabled>
+              SME — availability to be confirmed
+            </option>
+
+            <option value="sme2" disabled>
+              SME2 — availability to be confirmed
+            </option>
+
+            <option value="corporate" disabled>
+              Corporate — availability to be confirmed
+            </option>
+
+            <option value="gifting" disabled>
+              Gifting — availability to be confirmed
+            </option>
+
+            <option value="coupons" disabled>
+              Data Coupons — availability to be confirmed
+            </option>
+
+            <option value="share" disabled>
+              Data Share — availability to be confirmed
+            </option>
+
+          </select>
+
+          <p class="quickbuy-hint">
+            We'll enable each category when the current VTpass service
+            confirms its plans and purchase route.
+          </p>
+
+        </div>
+
+
+        <!-- AVAILABLE DATA PLANS -->
         <div class="data-catalogue-toolbar">
-          <span class="data-catalogue-label">AVAILABLE BUNDLES</span>
-          <button id="refreshDataCatalogue" class="text-button"
-            type="button">↻ Refresh</button>
+
+          <span class="data-catalogue-label">
+            AVAILABLE BUNDLES
+          </span>
+
+          <button id="refreshDataCatalogue"
+            class="text-button"
+            type="button">
+            ↻ Refresh
+          </button>
+
         </div>
 
-        <div id="dataCatalogueStatus" class="data-catalogue-status"
-          role="status" aria-live="polite">
-          Select a network to view its available data plans.
+        <div id="dataCatalogueStatus"
+          class="data-catalogue-status"
+          role="status"
+          aria-live="polite">
+          Choose a network to view available plans.
         </div>
 
         <div id="dataPlans" class="data-plans">
-          <!-- Plans will be loaded from the secure catalogue function. -->
+          <!-- Plans will be loaded from the secure VTpass catalogue. -->
         </div>
 
+
+        <!-- PURCHASE SAFETY NOTICE -->
         <p class="data-store-footnote">
-          Catalogue prices and availability may change. Purchases are not
-          enabled yet while payment and delivery safeguards are being tested.
+          Catalogue browsing is available. Purchases remain disabled until
+          wallet debit, provider delivery, duplicate protection and refund
+          safeguards are fully tested.
         </p>
 
-        <button id="backToHomeFromData" class="button-outline"
-          type="button">← Back to dashboard</button>
+        <button id="backToHomeFromData"
+          class="button-outline"
+          type="button">
+          ← Back to dashboard
+        </button>
+
       </section>
+
 
       <!-- ACCOUNT PROFILE -->
       <section id="profileView" class="dashboard-view detail-card">
+
         <span class="card-kicker">ACCOUNT PROFILE</span>
         <h2>Your details</h2>
 
@@ -353,76 +551,119 @@
           <b id="profilePhone">—</b>
         </div>
 
-        <button id="logoutBtn" class="button-outline logout-button"
-          type="button">Sign out ↗</button>
+        <button id="logoutBtn"
+          class="button-outline logout-button"
+          type="button">
+          Sign out ↗
+        </button>
+
       </section>
 
+
       <!-- RECENT TRANSACTIONS -->
-      <section id="transactionsView" class="dashboard-view detail-card">
+      <section id="transactionsView"
+        class="dashboard-view detail-card">
+
         <span class="card-kicker">YOUR ACTIVITY</span>
         <h2>Recent transactions</h2>
 
         <div id="recentTransactions" class="empty-activity">
+
           <span class="empty-activity-icon">◷</span>
+
           <b>Your activity will appear here</b>
-          <p>Your verified transaction history and receipts will be displayed here.</p>
+
+          <p>
+            Your verified transaction history and receipts will be
+            displayed here.
+          </p>
+
         </div>
+
       </section>
+
 
       <!-- WALLET VIEW -->
       <section id="walletView" class="dashboard-view detail-card">
+
         <span class="card-kicker">YOUR WALLET</span>
         <h2>Wallet overview</h2>
+
         <p class="wallet-view-note">
           View your available balance and manage verified wallet funding
           when the payment service becomes available.
         </p>
-        <button class="button-outline" type="button" id="walletFundLink">
+
+        <button class="button-outline"
+          type="button"
+          id="walletFundLink">
           Fund Wallet
         </button>
+
       </section>
+
 
       <!-- SECURITY NOTICE -->
       <section class="dashboard-notice">
+
         <span class="notice-icon">◆</span>
+
         <p>
           <b>Your security comes first.</b>
           Payments and purchases will only be activated after payment
           verification, provider delivery, wallet protection and refund
           safeguards have been tested.
         </p>
+
       </section>
 
-      <div id="dashMessage" class="message" role="status" aria-live="polite"></div>
+
+      <div id="dashMessage"
+        class="message"
+        role="status"
+        aria-live="polite">
+      </div>
 
     </section>
+
   </main>
 
+
   <!-- MOBILE BOTTOM NAVIGATION -->
-  <nav id="bottomNavigation" class="bottom-navigation hidden"
+  <nav id="bottomNavigation"
+    class="bottom-navigation hidden"
     aria-label="Main navigation">
 
-    <button class="nav-item active" type="button" data-tab="home">
+    <button class="nav-item active"
+      type="button"
+      data-tab="home">
       <span class="nav-icon">⌂</span>
       <span>Home</span>
     </button>
 
-    <button class="nav-item" type="button" data-tab="transactions">
+    <button class="nav-item"
+      type="button"
+      data-tab="transactions">
       <span class="nav-icon">⇄</span>
       <span>Transactions</span>
     </button>
 
-    <button class="nav-item" type="button" data-tab="wallet">
+    <button class="nav-item"
+      type="button"
+      data-tab="wallet">
       <span class="nav-icon">▱</span>
       <span>Wallet</span>
     </button>
 
-    <button class="nav-item" type="button" data-tab="profile">
+    <button class="nav-item"
+      type="button"
+      data-tab="profile">
       <span class="nav-icon">♙</span>
       <span>Profile</span>
     </button>
 
   </nav>
+
 
   <footer>
     © 2026 GGRData <span>·</span> Your connection. Your control.
