@@ -1139,6 +1139,147 @@ footer span{
   .nav-item{font-size:10px}
 }
 
+/* ICONS, TRANSACTIONS AND TOAST (Milestone 2 additions) */
+
+.icon{width:22px;height:22px;flex:0 0 auto}
+.icon.sm{width:16px;height:16px}
+.icon.lg{width:30px;height:30px}
+.service-icon .icon{width:24px;height:24px}
+.nav-icon .icon{width:23px;height:23px}
+.visibility-button .icon{width:20px;height:20px}
+.fund-wallet-button .icon{width:22px;height:22px;color:var(--gold)}
+
+.welcome-panel{margin-top:0}
+.section-title{margin:0 0 14px;color:var(--emerald-dark);font-size:18px}
+
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:0 0 12px;
+}
+.section-head h2{color:var(--emerald-dark);font-size:18px}
+.link-button{
+  display:inline-flex;
+  align-items:center;
+  gap:2px;
+  border:0;
+  background:none;
+  padding:4px 0;
+  color:var(--emerald-light);
+  font-size:13px;
+  font-weight:700;
+}
+
+.tx-list{display:grid;gap:10px}
+.tx-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:13px 14px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:white;
+}
+.tx-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:12px}
+.tx-icon.in{color:var(--emerald-light);background:#e8f5ee}
+.tx-icon.out{color:#9b5a1a;background:#fbefdc}
+.tx-main{flex:1;min-width:0}
+.tx-main b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-main small{display:block;margin-top:2px;color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-amount{font-family:"Manrope",sans-serif;font-size:14px;font-weight:800;white-space:nowrap}
+.tx-amount.in{color:var(--emerald-light)}
+.tx-amount.out{color:#9b5a1a}
+
+.empty-state{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:24px 16px;
+  border:1px dashed #dce4d9;
+  border-radius:16px;
+  background:#fafbf8;
+  text-align:center;
+}
+.empty-state b{color:var(--emerald);font-size:14px}
+.empty-state small{max-width:290px;color:var(--muted);font-size:12.5px;line-height:1.6}
+.empty-icon{display:grid;place-items:center;width:52px;height:52px;margin-bottom:4px;border-radius:16px;color:var(--emerald);background:#edf5ef}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:calc(96px + env(safe-area-inset-bottom));
+  z-index:1100;
+  width:calc(100% - 32px);
+  max-width:440px;
+  margin:0;
+  transform:translateX(-50%);
+  background:white;
+  box-shadow:0 14px 34px rgba(4,45,37,.2);
+}
+
+.dashboard-view{animation:ggrFadeIn .3s ease both}
+
+/* THEME: white background, gold accents, green buttons */
+
+:root{--ivory:#fff}
+
+html,body{background:#fff}
+
+.topbar{background:rgba(255,255,255,.97);border-bottom:1px solid rgba(196,154,67,.22)}
+
+.welcome-panel{
+  background:#fff;
+  border-bottom:1px solid rgba(196,154,67,.3);
+}
+
+.account-balance-card{
+  color:var(--emerald-dark);
+  background:#fff;
+  border:1.5px solid rgba(196,154,67,.6);
+  box-shadow:0 12px 30px rgba(196,154,67,.14);
+}
+.account-balance-card::before{border-color:rgba(196,154,67,.22)}
+.balance-title{color:var(--muted)}
+.main-balance{border-right-color:rgba(196,154,67,.5)}
+.balance-value-row strong{color:var(--emerald)}
+.visibility-button,
+.referral-symbol{color:var(--gold)}
+.wallet-footnote{color:var(--muted)}
+
+.fund-wallet-button,
+.button-outline,
+.logout-button{
+  border:0;
+  color:#fff;
+  background:linear-gradient(110deg,#073d32,#0d7658);
+  box-shadow:0 8px 20px rgba(7,61,50,.2);
+}
+.fund-wallet-button span{background:var(--gold);color:var(--emerald-dark)}
+
+.funding-account-card{
+  color:var(--ink);
+  background:#fff;
+  border:1.5px solid rgba(196,154,67,.55);
+  box-shadow:0 10px 25px rgba(196,154,67,.12);
+}
+.funding-card-heading h2{color:var(--emerald-dark)}
+.card-kicker.light{color:#8a6a1f}
+.funding-icon{color:var(--gold);border-color:rgba(196,154,67,.55);background:#fffaf0}
+.funding-placeholder{
+  color:var(--muted);
+  background:#fafbf8;
+  border-color:var(--line);
+}
+.funding-security{color:#8a6a1f}
+
+.network-panel,
+.detail-card{border-color:rgba(196,154,67,.28)}
+
+.bottom-navigation{background:#fff;border-top-color:rgba(196,154,67,.4)}
+footer{background:#fff}
+
 /* ACCESSIBILITY */
 
 button:focus-visible,
