@@ -1,11 +1,11 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#073d32">
-  <meta name="description" content="GGRData makes airtime and data simpler, clearer and easier to manage.">
+  <meta name="description" content="GGRData — Your connection. Your control.">
   <title>GGRData | Your connection. Your control.</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,6 +18,8 @@
 </head>
 
 <body>
+
+  <!-- BRAND HEADER -->
   <header class="topbar">
     <a class="brand" href="./" aria-label="GGRData home">
       <span class="brand-mark">G</span>
@@ -33,6 +35,7 @@
 
     <!-- AUTHENTICATION -->
     <section id="authScreen" class="auth-layout">
+
       <div class="hero-panel">
         <div class="eyebrow">
           <span class="pulse"></span>
@@ -59,7 +62,7 @@
             <span class="feature-icon">◈</span>
             <span>
               <b>Smart Data Finder</b>
-              <small>Find a bundle that fits your needs.</small>
+              <small>Find bundles that fit your needs.</small>
             </span>
           </div>
 
@@ -67,7 +70,7 @@
             <span class="feature-icon">✓</span>
             <span>
               <b>GGR TrustTrack</b>
-              <small>Clear references and transaction updates.</small>
+              <small>Clear transaction references and updates.</small>
             </span>
           </div>
         </div>
@@ -156,80 +159,163 @@
     <!-- CUSTOMER DASHBOARD -->
     <section id="dashboardScreen" class="dashboard hidden">
 
-      <div class="dashboard-heading">
-        <div>
-          <span class="eyebrow dark">YOUR GGRDATA SPACE</span>
-          <h1 id="welcome">Welcome</h1>
-          <p>Your connections, wallet and account at a glance.</p>
+      <!-- WELCOME HEADER -->
+      <section class="welcome-panel">
+        <div class="welcome-brand">
+          <span class="welcome-logo">G</span>
+          <div>
+            <span class="welcome-caption">WELCOME!</span>
+            <h1 id="welcome">GGRData Member 👋</h1>
+          </div>
         </div>
 
-        <button id="logoutBtn" class="button-outline" type="button">
-          Sign out ↗
+        <button id="notificationBtn" class="notification-button"
+          type="button" aria-label="Notifications">
+          <span>♧</span>
+          <small id="notificationCount">0</small>
         </button>
-      </div>
-
-      <!-- WALLET OVERVIEW -->
-      <section class="balance-card">
-        <div class="wallet-topline">
-          <span class="balance-label">AVAILABLE WALLET BALANCE</span>
-          <span class="wallet-status"><i></i> WALLET</span>
-        </div>
-
-        <div class="balance-amount" id="balance">₦—</div>
-
-        <div class="wallet-bottomline">
-          <span class="balance-caption">Nigerian naira · Protected wallet ledger</span>
-          <span class="balance-symbol">₦</span>
-        </div>
       </section>
 
-      <!-- QUICK SERVICES -->
-      <section class="dashboard-section">
-        <div class="section-heading">
-          <div>
-            <span class="card-kicker">YOUR EVERYDAY SERVICES</span>
-            <h2>What would you like to do?</h2>
+      <!-- USER PACKAGE -->
+      <section class="package-panel">
+        <span class="package-label">USER PACKAGE</span>
+        <strong id="userPackage">GGR Starter</strong>
+      </section>
+
+      <!-- WALLET AND REFERRAL BALANCE -->
+      <section class="account-balance-card">
+
+        <div class="balance-columns">
+
+          <div class="balance-column main-balance">
+            <span class="balance-title">Account Balance</span>
+            <div class="balance-value-row">
+              <strong id="balance">₦—</strong>
+              <button id="toggleBalance" class="visibility-button"
+                type="button" aria-label="Hide balance">◉</button>
+            </div>
           </div>
-          <span class="section-note">Launching soon</span>
+
+          <div class="balance-column referral-balance">
+            <span class="balance-title">Referral Bonus</span>
+            <div class="balance-value-row">
+              <strong id="referralBalance">₦0.00</strong>
+              <span class="referral-symbol">◇</span>
+            </div>
+          </div>
+
+        </div>
+
+        <button id="fundWalletBtn" class="fund-wallet-button" type="button">
+          <span>＋</span> Fund Wallet
+        </button>
+
+        <p class="wallet-footnote">
+          Your wallet balance is based on your verified account ledger.
+        </p>
+      </section>
+
+      <!-- BANK TRANSFER / FUNDING INFORMATION -->
+      <section class="funding-account-card">
+        <div class="funding-card-heading">
+          <div>
+            <span class="card-kicker light">WALLET FUNDING</span>
+            <h2>Fund your GGRData wallet</h2>
+          </div>
+          <span class="funding-icon">₦</span>
+        </div>
+
+        <p class="funding-placeholder">
+          Your verified payment and bank transfer options will appear here
+          when wallet funding is activated.
+        </p>
+
+        <span class="funding-security">
+          <span>●</span> Secure payment verification required
+        </span>
+      </section>
+
+      <!-- SERVICES -->
+      <section class="services-section">
+
+        <div class="services-heading">
+          <div>
+            <span class="card-kicker">EXPLORE GGRDATA</span>
+            <h2>Our Services</h2>
+          </div>
+          <span class="services-caption">All in one place</span>
         </div>
 
         <div class="service-grid">
-          <article class="service-card service-airtime">
+
+          <button class="service-item" type="button" data-service="data">
+            <span class="service-icon">◉</span>
+            <span>Data</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="airtime">
+            <span class="service-icon">▣</span>
+            <span>Airtime</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="cable">
+            <span class="service-icon">▤</span>
+            <span>Cable TV</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="electricity">
+            <span class="service-icon">ϟ</span>
+            <span>Electricity</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="data-card">
+            <span class="service-icon">▣</span>
+            <span>Data Card</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="bonus">
+            <span class="service-icon">♧</span>
+            <span>Bonus to Wallet</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="airtime-cash">
+            <span class="service-icon">↻</span>
+            <span>Airtime to Cash</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="recharge-pin">
+            <span class="service-icon">▣</span>
+            <span>Recharge PIN</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="edu-pin">
+            <span class="service-icon">▧</span>
+            <span>Edu PIN</span>
+          </button>
+
+          <button class="service-item" type="button" data-service="affiliate">
             <span class="service-icon">↗</span>
-            <span class="service-status">COMING SOON</span>
-            <h3>Buy Airtime</h3>
-            <p>Top up your mobile line across supported networks.</p>
-          </article>
+            <span>Affiliate Website</span>
+          </button>
 
-          <article class="service-card service-data">
-            <span class="service-icon">◈</span>
-            <span class="service-status">COMING SOON</span>
-            <h3>Buy Data</h3>
-            <p>Explore data bundles and find the right plan.</p>
-          </article>
+          <button class="service-item" type="button" data-service="referrals">
+            <span class="service-icon">♙</span>
+            <span>My Referrals</span>
+          </button>
 
-          <article class="service-card service-wallet">
-            <span class="service-icon">₦</span>
-            <span class="service-status">COMING SOON</span>
-            <h3>Fund Wallet</h3>
-            <p>Add funds through a securely verified payment.</p>
-          </article>
+          <button class="service-item" type="button" data-service="other">
+            <span class="service-icon">•••</span>
+            <span>Other Services</span>
+          </button>
 
-          <article class="service-card service-track">
-            <span class="service-icon">✓</span>
-            <span class="service-status">COMING SOON</span>
-            <h3>TrustTrack</h3>
-            <p>Follow transaction references and view receipts.</p>
-          </article>
         </div>
       </section>
 
-      <!-- NETWORK PREVIEW -->
+      <!-- SUPPORTED NETWORKS -->
       <section class="network-panel">
         <div>
           <span class="card-kicker">SUPPORTED NETWORKS</span>
-          <h2>One place. Your networks.</h2>
-          <p>Network services will become available after secure provider integration.</p>
+          <h2>Stay connected</h2>
         </div>
 
         <div class="network-list">
@@ -240,58 +326,100 @@
         </div>
       </section>
 
-      <!-- ACCOUNT AND ACTIVITY -->
-      <div class="dashboard-grid">
+      <!-- ACCOUNT PROFILE -->
+      <section id="profileView" class="dashboard-view detail-card">
+        <span class="card-kicker">ACCOUNT PROFILE</span>
+        <h2>Your details</h2>
 
-        <article class="detail-card">
-          <span class="card-kicker">ACCOUNT PROFILE</span>
-          <h2>Your details</h2>
+        <div class="detail-row">
+          <span>Full name</span>
+          <b id="profileName">—</b>
+        </div>
 
-          <div class="detail-row">
-            <span>Full name</span>
-            <b id="profileName">—</b>
-          </div>
+        <div class="detail-row">
+          <span>Email address</span>
+          <b id="profileEmail">—</b>
+        </div>
 
-          <div class="detail-row">
-            <span>Email address</span>
-            <b id="profileEmail">—</b>
-          </div>
+        <div class="detail-row">
+          <span>Phone number</span>
+          <b id="profilePhone">—</b>
+        </div>
 
-          <div class="detail-row">
-            <span>Phone number</span>
-            <b id="profilePhone">—</b>
-          </div>
-        </article>
+        <button id="logoutBtn" class="button-outline logout-button"
+          type="button">Sign out ↗</button>
+      </section>
 
-        <article class="detail-card activity-card">
-          <span class="card-kicker">GGR TRUSTTRACK</span>
-          <h2>Recent activity</h2>
+      <!-- RECENT TRANSACTIONS -->
+      <section id="transactionsView" class="dashboard-view detail-card">
+        <span class="card-kicker">GGR TRUSTTRACK</span>
+        <h2>Recent transactions</h2>
 
-          <div class="empty-activity">
-            <span class="empty-activity-icon">◷</span>
-            <b>Your activity will appear here</b>
-            <p>Your transaction history and receipts will be available when services launch.</p>
-          </div>
-        </article>
+        <div id="recentTransactions" class="empty-activity">
+          <span class="empty-activity-icon">◷</span>
+          <b>Your activity will appear here</b>
+          <p>Your verified transaction history and receipts will be displayed here.</p>
+        </div>
+      </section>
 
-      </div>
+      <!-- WALLET VIEW -->
+      <section id="walletView" class="dashboard-view detail-card">
+        <span class="card-kicker">YOUR WALLET</span>
+        <h2>Wallet overview</h2>
+        <p class="wallet-view-note">
+          View your available balance and manage verified wallet funding
+          when the payment service becomes available.
+        </p>
+        <button class="button-outline" type="button" id="walletFundLink">
+          Fund Wallet
+        </button>
+      </section>
 
-      <div class="dashboard-notice">
+      <!-- SECURITY NOTICE -->
+      <section class="dashboard-notice">
         <span class="notice-icon">◆</span>
         <p>
-          <b>Built around your security.</b>
-          Wallet funding and purchases remain disabled until payment
-          verification, provider delivery and refund safeguards are tested.
+          <b>Your security comes first.</b>
+          Payments and purchases will only be activated after payment
+          verification, provider delivery, wallet protection and refund
+          safeguards have been tested.
         </p>
-      </div>
+      </section>
 
       <div id="dashMessage" class="message" role="status" aria-live="polite"></div>
 
     </section>
   </main>
 
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <nav id="bottomNavigation" class="bottom-navigation hidden"
+    aria-label="Main navigation">
+
+    <button class="nav-item active" type="button" data-tab="home">
+      <span class="nav-icon">⌂</span>
+      <span>Home</span>
+    </button>
+
+    <button class="nav-item" type="button" data-tab="transactions">
+      <span class="nav-icon">⇄</span>
+      <span>Transactions</span>
+    </button>
+
+    <button class="nav-item" type="button" data-tab="wallet">
+      <span class="nav-icon">▱</span>
+      <span>Wallet</span>
+    </button>
+
+    <button class="nav-item" type="button" data-tab="profile">
+      <span class="nav-icon">♙</span>
+      <span>Profile</span>
+    </button>
+
+  </nav>
+
   <footer>
     © 2026 GGRData <span>·</span> Your connection. Your control.
   </footer>
+
 </body>
 </html>
