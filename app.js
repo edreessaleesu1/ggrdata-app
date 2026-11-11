@@ -1,7 +1,6 @@
-
 /* =========================================================
-   GGRData — Main Application (Milestone 3)
-   Authentication, Customer Dashboard & Data Catalogue
+   GGRData — Main Application
+   Authentication, Dashboard, Wallet, Transactions & QuickBuy
    ========================================================= */
 
 "use strict";
@@ -39,6 +38,25 @@ const SUPPORTED_DATA_NETWORKS = {
   glo: "Glo",
   "9mobile": "9mobile"
 };
+
+const RECENT_BENEFICIARY_KEY = "ggrdata_recent_beneficiary_v1";
+
+const DATA_CATEGORIES = {
+  standard: "Standard Data",
+  sme: "SME",
+  sme2: "SME2",
+  corporate: "Corporate",
+  gifting: "Gifting",
+  coupons: "Data Coupons",
+  share: "Data Share"
+};
+
+/*
+ * The current VTpass catalogue integration provides standard
+ * data plans. Other categories remain unavailable until their
+ * provider service IDs and purchase rules are verified.
+ */
+const AVAILABLE_DATA_CATEGORIES = ["standard"];
 
 /* ---------------------------------------------------------
    3. DOM ELEMENTS
@@ -92,6 +110,14 @@ const elements = {
   refreshDataCatalogue: document.getElementById("refreshDataCatalogue"),
   backToHomeFromData: document.getElementById("backToHomeFromData"),
 
+  /* GGR QuickBuy elements */
+  quickbuyBalance: document.getElementById("quickbuyBalance"),
+  dataPhone: document.getElementById("dataPhone"),
+  detectedNetwork: document.getElementById("detectedNetwork"),
+  useRecentBeneficiary: document.getElementById("useRecentBeneficiary"),
+  recentBeneficiaryNumber: document.getElementById("recentBeneficiaryNumber"),
+  dataTypeSelect: document.getElementById("dataTypeSelect"),
+
   dashMessage: document.getElementById("dashMessage")
 };
 
@@ -102,6 +128,7 @@ const elements = {
 let currentMode = "login";
 let isPasswordRecovery = false;
 let isCompletingPasswordReset = false;
+
 let loadingUserId = null;
 let loadedUserId = null;
 let dashMessageTimer = null;
@@ -110,7 +137,10 @@ let balanceHidden = false;
 let lastBalanceText = "";
 
 let selectedDataNetwork = "mtn";
+let selectedDataCategory = "standard";
+
 let catalogueRequestNumber = 0;
+let currentWalletBalance = null;
 
 /* ---------------------------------------------------------
    5. GENERAL HELPERS
@@ -240,7 +270,7 @@ function showScreen(screen) {
 }
 
 /* ---------------------------------------------------------
-   6. NIGERIAN PHONE NUMBER NORMALISATION
+   6. NIGERIAN PHONE NUMBER HELPERS
    --------------------------------------------------------- */
 
 function normaliseNigerianPhone(input) {
@@ -257,6 +287,61 @@ function normaliseNigerianPhone(input) {
   }
 
   return "+234" + digits;
+}
+
+function getLocalPhoneDigits(input) {
+  const normalised = normaliseNigerianPhone(input);
+
+  if (!normalised) return null;
+
+  return normalised.replace("+234", "0");
+}
+
+/*
+ * Prefix-based network detection is an estimate.
+ * Number portability means the user must be able to override it.
+ */
+
+function detectNigerianNetwork(input) {
+  const localNumber = getLocalPhoneDigits(input);
+
+  if (!localNumber) return null;
+
+  const prefix = localNumber.substring(0, 4);
+  const prefix3 = localNumber.substring(0, 3);
+
+  const prefixes = {
+    mtn: [
+      "0803", "0806", "0810", "0813",
+      "0814", "0816", "0903", "0906",
+      "0913", "0916", "0703", "0706",
+      "0704", "07025", "07026"
+    ],
+
+    airtel: [
+      "0802", "0808", "0812", "0701",
+      "0708", "0901", "0902", "0907",
+      "0912", "0904"
+    ],
+
+    glo: [
+      "0805", "0807", "0811", "0815",
+      "0905", "0915", "0705"
+    ],
+
+    "9mobile": [
+      "0809", "0817", "0818", "0908",
+      "0909", "0918"
+    ]
+  };
+
+  for (const [network, list] of Object.entries(prefixes)) {
+    if (list.includes(prefix) || list.includes(prefix3)) {
+      return network;
+    }
+  }
+
+  return null;
 }
 
 /* ---------------------------------------------------------
@@ -299,12 +384,18 @@ function setMode(mode, options = {}) {
 
   if (elements.loginTab) {
     elements.loginTab.classList.toggle("active", mode === "login");
-    elements.loginTab.setAttribute("aria-selected", String(mode === "login"));
+    elements.loginTab.setAttribute(
+      "aria-selected",
+      String(mode === "login")
+    );
   }
 
   if (elements.signupTab) {
     elements.signupTab.classList.toggle("active", isSignup);
-    elements.signupTab.setAttribute("aria-selected", String(isSignup));
+    elements.signupTab.setAttribute(
+      "aria-selected",
+      String(isSignup)
+    );
   }
 
   if (elements.authTitle) {
@@ -643,6 +734,8 @@ const TAB_VIEW_IDS = {
 function showTab(tabName) {
   const isHome = tabName === "home";
 
+  if (!elements.dashboardScreen) return;
+
   Array.from(elements.dashboardScreen.children).forEach((section) => {
     if (section.id === "dashMessage") return;
 
@@ -662,6 +755,11 @@ function showTab(tabName) {
 
   clearDashboardMessage();
   window.scrollTo(0, 0);
+
+  if (tabName === "data-store") {
+    updateQuickBuyBalance();
+    updateRecentBeneficiaryDisplay();
+  }
 }
 
 /* ---------------------------------------------------------
@@ -681,16 +779,189 @@ function applyBalanceVisibility() {
       balanceHidden ? "Show balance" : "Hide balance"
     );
   }
+
+  updateQuickBuyBalance();
+}
+
+function updateQuickBuyBalance() {
+  if (!elements.quickbuyBalance) return;
+
+  if (balanceHidden) {
+    elements.quickbuyBalance.textContent = "₦ ••••••";
+    return;
+  }
+
+  elements.quickbuyBalance.textContent =
+    lastBalanceText || "Not available";
 }
 
 /* ---------------------------------------------------------
-   15. DATA CATALOGUE
+   15. GGR QUICKBUY — BENEFICIARY AND NETWORK
+   --------------------------------------------------------- */
+
+function updateDetectedNetworkDisplay(network) {
+  if (!elements.detectedNetwork) return;
+
+  if (!network) {
+    elements.detectedNetwork.textContent =
+      "Enter a valid number to detect network";
+
+    return;
+  }
+
+  elements.detectedNetwork.textContent =
+    `${SUPPORTED_DATA_NETWORKS[network]} detected — you can change this manually.`;
+}
+
+function handleBeneficiaryInput() {
+  if (!elements.dataPhone) return;
+
+  const value = elements.dataPhone.value.trim();
+  const normalised = normaliseNigerianPhone(value);
+
+  if (!normalised) {
+    updateDetectedNetworkDisplay(null);
+    return;
+  }
+
+  const detected = detectNigerianNetwork(value);
+
+  if (!detected) {
+    updateDetectedNetworkDisplay(null);
+    return;
+  }
+
+  updateDetectedNetworkDisplay(detected);
+
+  /*
+   * Only automatically select a detected network when the user
+   * has not manually selected a different network.
+   */
+  setSelectedDataNetwork(detected);
+}
+
+function saveRecentBeneficiary(phone) {
+  const normalised = normaliseNigerianPhone(phone);
+
+  if (!normalised) return;
+
+  try {
+    localStorage.setItem(
+      RECENT_BENEFICIARY_KEY,
+      JSON.stringify({
+        phone: normalised,
+        savedAt: new Date().toISOString()
+      })
+    );
+  } catch (error) {
+    console.warn("Could not save recent beneficiary:", error);
+  }
+
+  updateRecentBeneficiaryDisplay();
+}
+
+function getRecentBeneficiary() {
+  try {
+    const saved = localStorage.getItem(RECENT_BENEFICIARY_KEY);
+
+    if (!saved) return null;
+
+    const parsed = JSON.parse(saved);
+
+    return normaliseNigerianPhone(parsed.phone)
+      ? parsed.phone
+      : null;
+  } catch (error) {
+    console.warn("Could not read recent beneficiary:", error);
+    return null;
+  }
+}
+
+function updateRecentBeneficiaryDisplay() {
+  const recent = getRecentBeneficiary();
+
+  if (elements.recentBeneficiaryNumber) {
+    elements.recentBeneficiaryNumber.textContent =
+      recent || "No recent beneficiary";
+  }
+
+  if (elements.useRecentBeneficiary) {
+    elements.useRecentBeneficiary.disabled = !recent;
+    elements.useRecentBeneficiary.classList.toggle(
+      "disabled",
+      !recent
+    );
+  }
+}
+
+if (elements.dataPhone) {
+  elements.dataPhone.addEventListener("input", handleBeneficiaryInput);
+
+  elements.dataPhone.addEventListener("blur", () => {
+    const normalised = normaliseNigerianPhone(
+      elements.dataPhone.value
+    );
+
+    if (normalised) {
+      elements.dataPhone.value = normalised;
+    }
+  });
+}
+
+if (elements.useRecentBeneficiary) {
+  elements.useRecentBeneficiary.addEventListener("click", () => {
+    const recent = getRecentBeneficiary();
+
+    if (!recent || !elements.dataPhone) return;
+
+    elements.dataPhone.value = recent;
+    handleBeneficiaryInput();
+  });
+}
+
+/* ---------------------------------------------------------
+   16. DATA CATEGORY SELECTOR
+   --------------------------------------------------------- */
+
+function handleDataCategoryChange() {
+  if (!elements.dataTypeSelect) return;
+
+  const category = elements.dataTypeSelect.value;
+
+  if (!DATA_CATEGORIES[category]) return;
+
+  selectedDataCategory = category;
+
+  if (!AVAILABLE_DATA_CATEGORIES.includes(category)) {
+    clearDataPlans();
+
+    setCatalogueStatus(
+      `${DATA_CATEGORIES[category]} is not yet available through our current VTpass integration. Standard data plans are available now.`,
+      "empty"
+    );
+
+    return;
+  }
+
+  loadDataCatalogue(selectedDataNetwork);
+}
+
+if (elements.dataTypeSelect) {
+  elements.dataTypeSelect.addEventListener(
+    "change",
+    handleDataCategoryChange
+  );
+}
+
+/* ---------------------------------------------------------
+   17. DATA CATALOGUE
    --------------------------------------------------------- */
 
 function setCatalogueStatus(message, type = "info") {
   if (!elements.dataCatalogueStatus) return;
 
   elements.dataCatalogueStatus.textContent = message;
+
   elements.dataCatalogueStatus.className =
     `data-catalogue-status ${type}`;
 }
@@ -704,7 +975,11 @@ function setSelectedDataNetwork(network) {
     const isSelected = button.dataset.catalogueNetwork === network;
 
     button.classList.toggle("active", isSelected);
-    button.setAttribute("aria-pressed", String(isSelected));
+
+    button.setAttribute(
+      "aria-pressed",
+      String(isSelected)
+    );
   });
 }
 
@@ -730,10 +1005,11 @@ function renderDataPlans(plans, networkName) {
   const fragment = document.createDocumentFragment();
 
   plans.forEach((plan) => {
+    if (!plan) return;
+
     const amount = Number(plan.amount);
 
     if (
-      !plan ||
       !plan.name ||
       !Number.isFinite(amount) ||
       amount < 0
@@ -786,19 +1062,24 @@ function renderDataPlans(plans, networkName) {
   elements.dataPlans.append(fragment);
 
   setCatalogueStatus(
-    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Prices are from the provider catalogue.`,
+    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Select a plan for purchase once checkout is enabled.`,
     "success"
   );
 }
 
 async function loadDataCatalogue(network = selectedDataNetwork) {
   if (!SUPPORTED_DATA_NETWORKS[network]) {
-    setCatalogueStatus("Please select a supported network.", "error");
+    setCatalogueStatus(
+      "Please select a supported network.",
+      "error"
+    );
     return;
   }
 
   if (!elements.dataCatalogueStatus || !elements.dataPlans) {
-    console.error("Data catalogue elements are missing from index.html.");
+    console.error(
+      "Data catalogue elements are missing from index.html."
+    );
     return;
   }
 
@@ -847,7 +1128,9 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
     }
 
     if (result.network !== network) {
-      throw new Error("The provider returned an unexpected network.");
+      throw new Error(
+        "The provider returned an unexpected network."
+      );
     }
 
     renderDataPlans(
@@ -891,13 +1174,29 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
 
 function openDataStore() {
   showTab("data-store");
-  loadDataCatalogue(selectedDataNetwork);
+
+  updateQuickBuyBalance();
+  updateRecentBeneficiaryDisplay();
+
+  if (
+    !elements.dataPlans ||
+    !elements.dataPlans.children.length
+  ) {
+    loadDataCatalogue(selectedDataNetwork);
+  }
 }
 
 /* Network selection */
 document.querySelectorAll("[data-catalogue-network]").forEach((button) => {
   button.addEventListener("click", () => {
     const network = button.dataset.catalogueNetwork;
+
+    if (elements.dataTypeSelect) {
+      elements.dataTypeSelect.value = "standard";
+    }
+
+    selectedDataCategory = "standard";
+
     loadDataCatalogue(network);
   });
 });
@@ -905,6 +1204,14 @@ document.querySelectorAll("[data-catalogue-network]").forEach((button) => {
 /* Catalogue refresh */
 if (elements.refreshDataCatalogue) {
   elements.refreshDataCatalogue.addEventListener("click", () => {
+    if (selectedDataCategory !== "standard") {
+      setCatalogueStatus(
+        "Please select Standard Data to refresh the current catalogue.",
+        "empty"
+      );
+      return;
+    }
+
     loadDataCatalogue(selectedDataNetwork);
   });
 }
@@ -917,7 +1224,7 @@ if (elements.backToHomeFromData) {
 }
 
 /* ---------------------------------------------------------
-   16. SERVICE MESSAGES AND DASHBOARD ACTIONS
+   18. SERVICE MESSAGES AND DASHBOARD ACTIONS
    --------------------------------------------------------- */
 
 function showComingSoon(label) {
@@ -966,12 +1273,16 @@ document.addEventListener("click", (event) => {
   }
 
   if (event.target.closest("#notificationBtn")) {
-    showDashboardMessage("You have no new notifications.", "success", true);
+    showDashboardMessage(
+      "You have no new notifications.",
+      "success",
+      true
+    );
   }
 });
 
 /* ---------------------------------------------------------
-   17. TRANSACTION LIST RENDERING
+   19. TRANSACTION LIST RENDERING
    --------------------------------------------------------- */
 
 function buildTransactionItem(transaction) {
@@ -996,6 +1307,7 @@ function buildTransactionItem(transaction) {
 
   const meta = document.createElement("small");
   const when = formatDateTime(transaction.created_at);
+
   meta.textContent = [when, transaction.reference]
     .filter(Boolean)
     .join(" · ");
@@ -1004,6 +1316,7 @@ function buildTransactionItem(transaction) {
 
   const amount = document.createElement("span");
   amount.className = `tx-amount ${kind}`;
+
   amount.textContent =
     (isCredit ? "+" : "−") + formatNaira(transaction.amount);
 
@@ -1062,7 +1375,7 @@ function renderTransactionError(container) {
 }
 
 /* ---------------------------------------------------------
-   18. LOAD USER PROFILE, WALLET AND TRANSACTIONS
+   20. LOAD USER PROFILE, WALLET AND TRANSACTIONS
    --------------------------------------------------------- */
 
 async function loadDashboard(user) {
@@ -1156,7 +1469,8 @@ async function loadDashboard(user) {
     }
 
     if (elements.profileName) {
-      elements.profileName.textContent = profileError ? "Not available" : name;
+      elements.profileName.textContent =
+        profileError ? "Not available" : name;
     }
 
     if (elements.profileEmail) {
@@ -1180,8 +1494,10 @@ async function loadDashboard(user) {
         Number.isFinite(Number(wallet.balance))
       ) {
         elements.balance.textContent = formatNaira(wallet.balance);
+        currentWalletBalance = Number(wallet.balance);
       } else {
         elements.balance.textContent = "Not available";
+        currentWalletBalance = null;
       }
     }
 
@@ -1202,8 +1518,12 @@ async function loadDashboard(user) {
       );
     }
 
-    lastBalanceText = elements.balance ? elements.balance.textContent : "";
+    lastBalanceText = elements.balance
+      ? elements.balance.textContent
+      : "";
+
     applyBalanceVisibility();
+    updateRecentBeneficiaryDisplay();
 
     loadedUserId = user.id;
 
@@ -1213,6 +1533,12 @@ async function loadDashboard(user) {
     if (elements.balance) {
       elements.balance.textContent = "Not available";
     }
+
+    currentWalletBalance = null;
+
+    lastBalanceText = "Not available";
+
+    updateQuickBuyBalance();
 
     renderTransactionError(elements.recentTransactions);
 
@@ -1227,7 +1553,7 @@ async function loadDashboard(user) {
 }
 
 /* ---------------------------------------------------------
-   19. SIGN OUT
+   21. SIGN OUT
    --------------------------------------------------------- */
 
 if (elements.logoutBtn) {
@@ -1241,6 +1567,8 @@ if (elements.logoutBtn) {
 
       loadedUserId = null;
       loadingUserId = null;
+      currentWalletBalance = null;
+      lastBalanceText = "";
 
       showAuth();
 
@@ -1258,7 +1586,7 @@ if (elements.logoutBtn) {
 }
 
 /* ---------------------------------------------------------
-   20. SUPABASE AUTH STATE LISTENER
+   22. SUPABASE AUTH STATE LISTENER
    --------------------------------------------------------- */
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -1279,6 +1607,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT") {
     loadedUserId = null;
     loadingUserId = null;
+    currentWalletBalance = null;
+    lastBalanceText = "";
 
     if (!isCompletingPasswordReset) {
       showAuth();
@@ -1309,10 +1639,12 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 });
 
 /* ---------------------------------------------------------
-   21. INITIAL APPLICATION STATE
+   23. INITIAL APPLICATION STATE
    --------------------------------------------------------- */
 
 async function initialiseApplication() {
+  updateRecentBeneficiaryDisplay();
+
   try {
     const { data, error } = await supabaseClient.auth.getSession();
 
