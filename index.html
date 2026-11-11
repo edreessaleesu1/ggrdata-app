@@ -1,306 +1,358 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#073d32">
+  <meta name="description" content="GGRData makes airtime and data simpler, clearer and easier to manage.">
   <title>GGRData | Your connection. Your control.</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./styles.css">
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --green:#073d32; --green2:#0b5948; --gold:#c9a45c;
-      --cream:#f7f6f0; --white:#fff; --muted:#718078;
-      --border:#e6e9e3; --danger:#b42318;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--cream);color:#172b25;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
-    header{background:var(--green);color:white;padding:20px 6%;
-      display:flex;align-items:center;justify-content:space-between}
-    .brand{font-size:24px;font-weight:850;letter-spacing:-1px}
-    .brand span{color:var(--gold)}
-    .tagline{font-size:12px;color:#d9e7df;margin-top:3px}
-    main{max-width:1000px;margin:45px auto;padding:0 18px}
-    .layout{display:grid;grid-template-columns:1fr 1fr;gap:25px}
-    .intro{background:var(--green);color:white;border-radius:22px;padding:36px;
-      display:flex;flex-direction:column;justify-content:center;min-height:430px}
-    .intro h1{font-size:38px;line-height:1.12;margin:15px 0}
-    .intro p{color:#d9e7df;line-height:1.7}
-    .gold-line{width:55px;height:4px;background:var(--gold);border-radius:8px}
-    .panel{background:white;border:1px solid var(--border);border-radius:22px;
-      padding:30px;box-shadow:0 12px 35px #163e2b0b}
-    h2{margin:0 0 8px;font-size:25px}
-    .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
-    label{display:block;font-size:13px;font-weight:650;margin:15px 0 7px}
-    input{width:100%;padding:13px 14px;border:1px solid var(--border);
-      border-radius:10px;font-size:15px;outline:none;background:#fff}
-    input:focus{border-color:var(--green2);box-shadow:0 0 0 3px #0b594815}
-    button{border:0;border-radius:10px;padding:14px 17px;font-weight:750;
-      cursor:pointer;font-size:14px}
-    .primary{background:var(--green);color:white;width:100%;margin-top:20px}
-    .primary:hover{background:var(--green2)}
-    .secondary{background:#edf3ef;color:var(--green)}
-    .tabs{display:flex;gap:8px;margin-bottom:20px}
-    .tabs button{flex:1;background:#f0f3ef;color:#53635b}
-    .tabs button.active{background:var(--green);color:white}
-    .switch{font-size:13px;color:var(--muted);text-align:center;margin-top:18px}
-    .link{color:var(--green2);font-weight:700;cursor:pointer}
-    .message{display:none;padding:12px;border-radius:9px;font-size:13px;
-      margin-top:15px;line-height:1.5}
-    .message.show{display:block}
-    .message.error{background:#fff0ef;color:var(--danger)}
-    .message.success{background:#eaf6ef;color:#17613d}
-    .hidden{display:none!important}
-    .dashboard{max-width:700px;margin:0 auto}
-    .welcome{font-size:28px;margin:0 0 5px}
-    .balance{background:var(--green);color:white;padding:28px;border-radius:18px;
-      margin:22px 0}
-    .balance small{color:#d8e5df}
-    .amount{font-size:36px;font-weight:800;margin-top:10px}
-    .info{background:white;padding:20px;border-radius:15px;border:1px solid var(--border);
-      margin-bottom:14px}
-    .info p{color:var(--muted);font-size:13px;margin-bottom:5px}
-    footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
-    @media(max-width:720px){
-      main{margin:22px auto}.layout{grid-template-columns:1fr}
-      .intro{min-height:220px;padding:25px}.intro h1{font-size:30px}
-      .panel{padding:23px}
-    }
-  </style>
+  <script defer src="./app.js"></script>
 </head>
+
 <body>
-<header>
-  <div>
-    <div class="brand">GGR<span>Data</span></div>
-    <div class="tagline">Your connection. Your control.</div>
-  </div>
-  <span style="font-size:12px;color:#d9e7df">AIRTIME · DATA</span>
-</header>
 
-<main>
-  <section id="authScreen" class="layout">
-    <div class="intro">
-      <div class="gold-line"></div>
-      <h1>Stay connected.<br>Stay in control.</h1>
-      <p>One simple place for airtime, data and smarter everyday connectivity.</p>
-      <p><strong style="color:var(--gold)">GGR QuickBuy</strong><br>
-      Your favourite numbers and repeat purchases, made easier.</p>
-    </div>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="GGRData home">
+      <span class="brand-mark">G</span>
+      <span>
+        GGR<span class="gold">Data</span>
+        <small>Your connection. Your control.</small>
+      </span>
+    </a>
 
-    <div class="panel">
-      <div class="tabs">
-        <button id="loginTab" class="active" type="button">Sign in</button>
-        <button id="signupTab" type="button">Create account</button>
+    <span class="topbar-note">AIRTIME <i></i> DATA</span>
+  </header>
+
+  <main class="page-shell">
+
+    <!-- AUTHENTICATION -->
+    <section id="authScreen" class="auth-layout">
+
+      <div class="hero-panel">
+
+        <div class="eyebrow">
+          <span class="pulse"></span>
+          YOUR DIGITAL CONNECTION HUB
+        </div>
+
+        <h1>
+          Everyday connection.<br>
+          <em>Made smarter.</em>
+        </h1>
+
+        <p class="hero-copy">
+          A clearer, more convenient way to manage airtime and data
+          for the networks you use every day.
+        </p>
+
+        <div class="feature-stack">
+
+          <div class="feature">
+            <span class="feature-icon">↗</span>
+            <span>
+              <b>GGR QuickBuy</b>
+              <small>Make repeat purchases easier.</small>
+            </span>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">◈</span>
+            <span>
+              <b>Smart Data Finder</b>
+              <small>Find a bundle that fits your needs.</small>
+            </span>
+          </div>
+
+          <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>
+              <b>GGR TrustTrack</b>
+              <small>Clear references and transaction updates.</small>
+            </span>
+          </div>
+
+        </div>
+
+        <div class="hero-foot">
+          BUILT FOR THE WAY NIGERIA STAYS CONNECTED
+        </div>
+
       </div>
 
-      <form id="authForm">
-        <div id="nameField" class="hidden">
-          <label for="fullName">Full name</label>
-          <input id="fullName" autocomplete="name" maxlength="120">
-        </div>
-        <div id="phoneField" class="hidden">
-          <label for="phone">Phone number</label>
-          <input id="phone" type="tel" placeholder="08012345678"
-            autocomplete="tel">
-        </div>
-        <label for="email">Email address</label>
-        <input id="email" type="email" required autocomplete="email"
-          placeholder="you@example.com">
-        <label for="password">Password</label>
-        <input id="password" type="password" required minlength="8"
-          autocomplete="current-password" placeholder="At least 8 characters">
-        <button id="submitBtn" class="primary" type="submit">Sign in</button>
-      </form>
+      <div class="auth-card">
 
-      <div id="forgotRow" class="switch">
-        <span class="link" id="forgotBtn">Forgot your password?</span>
+        <div class="auth-heading">
+          <span class="eyebrow dark">WELCOME TO GGRDATA</span>
+
+          <h2 id="authTitle">Good to have you back.</h2>
+
+          <p id="authSubtitle">
+            Sign in to continue to your account.
+          </p>
+        </div>
+
+        <div id="authTabs" class="tabs" role="tablist">
+
+          <button
+            id="loginTab"
+            class="tab active"
+            type="button"
+            role="tab"
+            aria-selected="true">
+            Sign in
+          </button>
+
+          <button
+            id="signupTab"
+            class="tab"
+            type="button"
+            role="tab"
+            aria-selected="false">
+            Create account
+          </button>
+
+        </div>
+
+        <!-- SIGN IN / REGISTRATION FORM -->
+        <form id="authForm" novalidate>
+
+          <div id="nameField" class="field hidden">
+            <label for="fullName">Full name</label>
+
+            <input
+              id="fullName"
+              autocomplete="name"
+              maxlength="120"
+              placeholder="Your full name">
+          </div>
+
+          <div id="phoneField" class="field hidden">
+            <label for="phone">Nigerian phone number</label>
+
+            <input
+              id="phone"
+              type="tel"
+              autocomplete="tel"
+              inputmode="tel"
+              placeholder="08012345678">
+          </div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+
+            <input
+              id="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="you@example.com">
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+
+            <input
+              id="password"
+              type="password"
+              required
+              minlength="8"
+              autocomplete="current-password"
+              placeholder="At least 8 characters">
+          </div>
+
+          <button id="submitBtn" class="button-primary" type="submit">
+            Sign in <span>→</span>
+          </button>
+
+        </form>
+
+        <!-- PASSWORD RECOVERY FORM -->
+        <form id="resetForm" class="hidden" novalidate>
+
+          <div class="field">
+            <label for="newPassword">New password</label>
+
+            <input
+              id="newPassword"
+              type="password"
+              minlength="8"
+              autocomplete="new-password"
+              required
+              placeholder="At least 8 characters">
+          </div>
+
+          <div class="field">
+            <label for="confirmPassword">Confirm new password</label>
+
+            <input
+              id="confirmPassword"
+              type="password"
+              minlength="8"
+              autocomplete="new-password"
+              required
+              placeholder="Enter it again">
+          </div>
+
+          <button id="resetSubmit" class="button-primary" type="submit">
+            Update password <span>→</span>
+          </button>
+
+        </form>
+
+        <div id="forgotRow" class="auth-help">
+          <button id="forgotBtn" class="text-button" type="button">
+            Forgot your password?
+          </button>
+        </div>
+
+        <div
+          id="message"
+          class="message"
+          role="status"
+          aria-live="polite">
+        </div>
+
+        <p class="secure-note">
+          <span>●</span>
+          Your account is protected by secure sign-in.
+        </p>
+
       </div>
-      <div id="message" class="message" role="status" aria-live="polite"></div>
-    </div>
-  </section>
 
-  <section id="dashboardScreen" class="dashboard hidden">
-    <h1 class="welcome" id="welcome">Welcome</h1>
-    <p class="sub">Your GGRData account overview</p>
-    <div class="balance">
-      <small>Wallet balance</small>
-      <div class="amount" id="balance">₦0.00</div>
-      <small>NGN · Your wallet is protected</small>
-    </div>
-    <div class="info">
-      <strong>Account details</strong>
-      <p>Full name</p><strong id="profileName">—</strong>
-      <p>Email address</p><strong id="profileEmail">—</strong>
-      <p>Phone number</p><strong id="profilePhone">—</strong>
-    </div>
-    <div class="info">
-      <strong>Coming next</strong>
-      <p>Airtime · Data bundles · GGR QuickBuy · TrustTrack receipts</p>
-      <small style="color:var(--muted)">Purchases and wallet funding remain disabled during testing.</small>
-    </div>
-    <button id="logoutBtn" class="secondary" type="button">Sign out</button>
-    <div id="dashMessage" class="message" role="status"></div>
-  </section>
-</main>
-<footer>© 2026 GGRData. Your connection. Your control.</footer>
+    </section>
 
-<script>
-const SUPABASE_URL = "https://jftmbpeopmvtohwvopxo.supabase.co";
-const SUPABASE_KEY = "sb_publishable_TzO5sjc_KHr1aZBXWpz3eA_fCIxduMx";
+    <!-- CUSTOMER DASHBOARD -->
+    <section id="dashboardScreen" class="dashboard hidden">
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      <div class="dashboard-heading">
 
-const $ = id => document.getElementById(id);
-let mode = "login";
+        <div>
+          <span class="eyebrow dark">YOUR GGRDATA SPACE</span>
 
-function message(text, type="success") {
-  const el = $("message");
-  el.textContent = text;
-  el.className = `message show ${type}`;
-}
-function setMode(next) {
-  mode = next;
-  $("loginTab").classList.toggle("active", mode === "login");
-  $("signupTab").classList.toggle("active", mode === "signup");
-  $("nameField").classList.toggle("hidden", mode !== "signup");
-  $("phoneField").classList.toggle("hidden", mode !== "signup");
-  $("forgotRow").classList.toggle("hidden", mode !== "login");
-  $("submitBtn").textContent = mode === "login" ? "Sign in" : "Create account";
-  $("password").autocomplete = mode === "login" ? "current-password" : "new-password";
-  $("message").className = "message";
-}
-function normaliseNigerianPhone(value) {
-  const digits = value.replace(/\D/g, "");
-  if (/^0[789][01]\d{8}$/.test(digits)) return "+234" + digits.slice(1);
-  if (/^234[789][01]\d{8}$/.test(digits)) return "+" + digits;
-  if (/^[789][01]\d{8}$/.test(digits)) return "+234" + digits;
-  return null;
-}
-function showAuth() {
-  $("authScreen").classList.remove("hidden");
-  $("dashboardScreen").classList.add("hidden");
-}
-function showDashboard() {
-  $("authScreen").classList.add("hidden");
-  $("dashboardScreen").classList.remove("hidden");
-}
-async function loadDashboard(user) {
-  const [{data: profile, error: profileError},
-         {data: wallet, error: walletError}] = await Promise.all([
-    db.from("profiles").select("full_name, phone_e164, email")
-      .eq("user_id", user.id).maybeSingle(),
-    db.from("wallets").select("balance, currency")
-      .eq("user_id", user.id).maybeSingle()
-  ]);
+          <h1 id="welcome">Welcome</h1>
 
-  if (profileError) console.error("Profile load:", profileError.message);
-  if (walletError) console.error("Wallet load:", walletError.message);
+          <p>
+            Everything starts with a clear view of your account.
+          </p>
+        </div>
 
-  $("welcome").textContent = `Welcome, ${profile?.full_name || "to GGRData"}`;
-  $("profileName").textContent = profile?.full_name || "Not available";
-  $("profileEmail").textContent = user.email || "Not available";
-  $("profilePhone").textContent = profile?.phone_e164 || "Not added";
-  $("balance").textContent = wallet
-    ? new Intl.NumberFormat("en-NG", {
-        style:"currency", currency:wallet.currency || "NGN"
-      }).format(Number(wallet.balance))
-    : "₦0.00";
+        <button id="logoutBtn" class="button-outline" type="button">
+          Sign out ↗
+        </button>
 
-  if (!profile || !wallet) {
-    $("dashMessage").textContent =
-      "Your account is active, but your profile or wallet is still being provisioned. Refresh shortly or contact support if this continues.";
-    $("dashMessage").className = "message show error";
-  } else {
-    $("dashMessage").className = "message";
-  }
-  showDashboard();
-}
+      </div>
 
-$("loginTab").addEventListener("click", () => setMode("login"));
-$("signupTab").addEventListener("click", () => setMode("signup"));
+      <!-- WALLET -->
+      <div class="balance-card">
 
-$("authForm").addEventListener("submit", async event => {
-  event.preventDefault();
-  $("submitBtn").disabled = true;
-  $("submitBtn").textContent = "Please wait…";
-  $("message").className = "message";
+        <div>
+          <span class="balance-label">
+            AVAILABLE WALLET BALANCE
+          </span>
 
-  try {
-    const email = $("email").value.trim().toLowerCase();
-    const password = $("password").value;
+          <div class="balance-amount" id="balance">
+            ₦—
+          </div>
 
-    if (mode === "signup") {
-      const fullName = $("fullName").value.trim();
-      const phone = normaliseNigerianPhone($("phone").value);
+          <span class="balance-caption">
+            Nigerian naira · Wallet ledger protected
+          </span>
+        </div>
 
-      if (fullName.length < 2) throw new Error("Enter your full name.");
-      if (!phone) throw new Error("Enter a valid Nigerian mobile number.");
+        <div class="balance-symbol">₦</div>
 
-      const {data, error} = await db.auth.signUp({
-        email, password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { full_name: fullName, phone_e164: phone }
-        }
-      });
-      if (error) throw error;
+      </div>
 
-      if (data.session && data.user) {
-        await loadDashboard(data.user);
-      } else {
-        message("Account created. Check your email and confirm your address before signing in.");
-      }
-    } else {
-      const {data, error} = await db.auth.signInWithPassword({email, password});
-      if (error) throw error;
-      await loadDashboard(data.user);
-    }
-  } catch (err) {
-    message(err.message || "Something went wrong. Please try again.", "error");
-  } finally {
-    $("submitBtn").disabled = false;
-    $("submitBtn").textContent = mode === "login" ? "Sign in" : "Create account";
-  }
-});
+      <div class="dashboard-grid">
 
-$("forgotBtn").addEventListener("click", async () => {
-  const email = $("email").value.trim().toLowerCase();
-  if (!email) return message("Enter your email address first.", "error");
+        <!-- PROFILE -->
+        <article class="detail-card">
 
-  const {error} = await db.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin
-  });
-  if (error) return message(error.message, "error");
-  message("If an account exists for that email, a password-reset link will be sent.");
-});
+          <span class="card-kicker">ACCOUNT PROFILE</span>
 
-$("logoutBtn").addEventListener("click", async () => {
-  const {error} = await db.auth.signOut();
-  if (error) {
-    $("dashMessage").textContent = error.message;
-    $("dashMessage").className = "message show error";
-    return;
-  }
-  showAuth();
-  $("authForm").reset();
-  setMode("login");
-});
+          <h2>Your details</h2>
 
-db.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_OUT") showAuth();
-  if (event === "PASSWORD_RECOVERY") {
-    message("Password recovery link verified. Password update screen is the next auth step.", "success");
-  }
-});
+          <div class="detail-row">
+            <span>Full name</span>
+            <b id="profileName">—</b>
+          </div>
 
-(async () => {
-  const {data, error} = await db.auth.getSession();
-  if (error) console.error(error.message);
-  if (data.session?.user) await loadDashboard(data.session.user);
-})();
+          <div class="detail-row">
+            <span>Email address</span>
+            <b id="profileEmail">—</b>
+          </div>
 
-setMode("login");
-</script>
+          <div class="detail-row">
+            <span>Phone number</span>
+            <b id="profilePhone">—</b>
+          </div>
+
+        </article>
+
+        <!-- UPCOMING FEATURES -->
+        <article class="detail-card next-card">
+
+          <span class="card-kicker">COMING INTO VIEW</span>
+
+          <h2>Your connection tools</h2>
+
+          <div class="coming-item">
+            <span>01</span>
+            <div>
+              <b>Airtime & data</b>
+              <small>Top-ups across supported networks.</small>
+            </div>
+          </div>
+
+          <div class="coming-item">
+            <span>02</span>
+            <div>
+              <b>QuickBuy & Data Finder</b>
+              <small>Useful shortcuts for everyday purchases.</small>
+            </div>
+          </div>
+
+          <div class="coming-item">
+            <span>03</span>
+            <div>
+              <b>TrustTrack</b>
+              <small>Receipts and clear transaction status.</small>
+            </div>
+          </div>
+
+          <p class="notice">
+            Purchases and wallet funding are not enabled yet.
+            We will activate them only after payment and delivery
+            safeguards are tested.
+          </p>
+
+        </article>
+
+      </div>
+
+      <div
+        id="dashMessage"
+        class="message"
+        role="status"
+        aria-live="polite">
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    © 2026 GGRData <span>·</span> Your connection. Your control.
+  </footer>
+
 </body>
 </html>
