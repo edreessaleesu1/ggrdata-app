@@ -1472,6 +1472,28 @@ footer{background:#fff}
 footer{background:#fff;border-top:1px solid var(--gold-light)}
 footer span{color:var(--gold)}
 
+/* WELCOME HEADER: deep emerald with gold accents */
+
+.welcome-panel{
+  background:
+    radial-gradient(circle at 92% 0%,rgba(232,207,140,.28),transparent 34%),
+    linear-gradient(125deg,#04261f,#0d6b52);
+  border-bottom:2px solid var(--gold);
+  box-shadow:0 10px 26px rgba(4,38,31,.22);
+}
+.welcome-logo{
+  border-color:var(--gold-light);
+  color:var(--emerald-dark);
+  background:linear-gradient(145deg,#f4e3b0,#b08a34);
+}
+.welcome-caption{color:var(--gold-light)}
+.welcome-brand h1{color:#fff}
+.notification-button{
+  background:rgba(255,255,255,.1);
+  border-color:rgba(232,207,140,.55);
+  color:var(--gold-light);
+}
+
 /* ACCESSIBILITY */
 
 button:focus-visible,
