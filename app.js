@@ -1,6 +1,7 @@
+
 /* =========================================================
-   GGRData — Main Application (Milestone 2)
-   Authentication, Password Recovery & Customer Dashboard
+   GGRData — Main Application (Milestone 3)
+   Authentication, Customer Dashboard & Data Catalogue
    ========================================================= */
 
 "use strict";
@@ -26,7 +27,21 @@ const supabaseClient = window.supabase.createClient(
 );
 
 /* ---------------------------------------------------------
-   2. DOM ELEMENTS
+   2. DATA CATALOGUE CONFIGURATION
+   --------------------------------------------------------- */
+
+const DATA_CATALOGUE_URL =
+  `${SUPABASE_URL}/functions/v1/vtpass-catalogue`;
+
+const SUPPORTED_DATA_NETWORKS = {
+  mtn: "MTN",
+  airtel: "Airtel",
+  glo: "Glo",
+  "9mobile": "9mobile"
+};
+
+/* ---------------------------------------------------------
+   3. DOM ELEMENTS
    --------------------------------------------------------- */
 
 const elements = {
@@ -71,11 +86,17 @@ const elements = {
   bottomNavigation: document.getElementById("bottomNavigation"),
   recentTransactions: document.getElementById("recentTransactions"),
 
+  dataStoreView: document.getElementById("dataStoreView"),
+  dataCatalogueStatus: document.getElementById("dataCatalogueStatus"),
+  dataPlans: document.getElementById("dataPlans"),
+  refreshDataCatalogue: document.getElementById("refreshDataCatalogue"),
+  backToHomeFromData: document.getElementById("backToHomeFromData"),
+
   dashMessage: document.getElementById("dashMessage")
 };
 
 /* ---------------------------------------------------------
-   3. APPLICATION STATE
+   4. APPLICATION STATE
    --------------------------------------------------------- */
 
 let currentMode = "login";
@@ -85,8 +106,14 @@ let loadingUserId = null;
 let loadedUserId = null;
 let dashMessageTimer = null;
 
+let balanceHidden = false;
+let lastBalanceText = "";
+
+let selectedDataNetwork = "mtn";
+let catalogueRequestNumber = 0;
+
 /* ---------------------------------------------------------
-   4. GENERAL HELPERS
+   5. GENERAL HELPERS
    --------------------------------------------------------- */
 
 function showMessage(message, type = "success") {
@@ -139,13 +166,17 @@ function setButtonLoading(button, loading, loadingText = "Please wait...") {
   if (!button) return;
 
   if (loading) {
-    button.dataset.originalText = button.textContent;
+    if (!button.dataset.originalText) {
+      button.dataset.originalText = button.textContent;
+    }
+
     button.textContent = loadingText;
     button.disabled = true;
   } else {
     button.textContent =
       button.dataset.originalText || button.textContent;
 
+    delete button.dataset.originalText;
     button.disabled = false;
   }
 }
@@ -209,7 +240,7 @@ function showScreen(screen) {
 }
 
 /* ---------------------------------------------------------
-   5. NIGERIAN PHONE NUMBER NORMALISATION
+   6. NIGERIAN PHONE NUMBER NORMALISATION
    --------------------------------------------------------- */
 
 function normaliseNigerianPhone(input) {
@@ -229,7 +260,7 @@ function normaliseNigerianPhone(input) {
 }
 
 /* ---------------------------------------------------------
-   6. AUTHENTICATION SCREEN MODES
+   7. AUTHENTICATION SCREEN MODES
    --------------------------------------------------------- */
 
 function setMode(mode, options = {}) {
@@ -312,7 +343,7 @@ function showAuth() {
 }
 
 /* ---------------------------------------------------------
-   7. SIGN IN / CREATE ACCOUNT TABS
+   8. SIGN IN / CREATE ACCOUNT TABS
    --------------------------------------------------------- */
 
 if (elements.loginTab) {
@@ -328,7 +359,7 @@ if (elements.signupTab) {
 }
 
 /* ---------------------------------------------------------
-   8. REGISTRATION AND SIGN IN
+   9. REGISTRATION AND SIGN IN
    --------------------------------------------------------- */
 
 if (elements.authForm) {
@@ -432,7 +463,7 @@ async function loginUser(email, password) {
 }
 
 /* ---------------------------------------------------------
-   9. PASSWORD RECOVERY
+   10. PASSWORD RECOVERY
    --------------------------------------------------------- */
 
 if (elements.forgotBtn) {
@@ -478,7 +509,7 @@ if (elements.forgotBtn) {
 }
 
 /* ---------------------------------------------------------
-   10. COMPLETE PASSWORD RESET
+   11. COMPLETE PASSWORD RESET
    --------------------------------------------------------- */
 
 if (elements.resetForm) {
@@ -552,7 +583,7 @@ if (elements.resetForm) {
 }
 
 /* ---------------------------------------------------------
-   11. AUTHENTICATION ERROR MESSAGES
+   12. AUTHENTICATION ERROR MESSAGES
    --------------------------------------------------------- */
 
 function getFriendlyAuthError(error) {
@@ -599,22 +630,19 @@ function getFriendlyAuthError(error) {
 }
 
 /* ---------------------------------------------------------
-   12. DASHBOARD NAVIGATION
+   13. DASHBOARD NAVIGATION
    --------------------------------------------------------- */
 
 const TAB_VIEW_IDS = {
   transactions: "transactionsView",
   wallet: "walletView",
-  profile: "profileView"
+  profile: "profileView",
+  "data-store": "dataStoreView"
 };
-
-let balanceHidden = false;
-let lastBalanceText = "";
 
 function showTab(tabName) {
   const isHome = tabName === "home";
 
-  /* Home content = every dashboard section that is not a tab view */
   Array.from(elements.dashboardScreen.children).forEach((section) => {
     if (section.id === "dashMessage") return;
 
@@ -636,6 +664,10 @@ function showTab(tabName) {
   window.scrollTo(0, 0);
 }
 
+/* ---------------------------------------------------------
+   14. BALANCE VISIBILITY
+   --------------------------------------------------------- */
+
 function applyBalanceVisibility() {
   if (!elements.balance || !lastBalanceText) return;
 
@@ -650,6 +682,243 @@ function applyBalanceVisibility() {
     );
   }
 }
+
+/* ---------------------------------------------------------
+   15. DATA CATALOGUE
+   --------------------------------------------------------- */
+
+function setCatalogueStatus(message, type = "info") {
+  if (!elements.dataCatalogueStatus) return;
+
+  elements.dataCatalogueStatus.textContent = message;
+  elements.dataCatalogueStatus.className =
+    `data-catalogue-status ${type}`;
+}
+
+function setSelectedDataNetwork(network) {
+  if (!SUPPORTED_DATA_NETWORKS[network]) return;
+
+  selectedDataNetwork = network;
+
+  document.querySelectorAll("[data-catalogue-network]").forEach((button) => {
+    const isSelected = button.dataset.catalogueNetwork === network;
+
+    button.classList.toggle("active", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+}
+
+function clearDataPlans() {
+  if (elements.dataPlans) {
+    elements.dataPlans.replaceChildren();
+  }
+}
+
+function renderDataPlans(plans, networkName) {
+  if (!elements.dataPlans) return;
+
+  clearDataPlans();
+
+  if (!Array.isArray(plans) || plans.length === 0) {
+    setCatalogueStatus(
+      `No data plans are currently available for ${networkName}. Please try again later.`,
+      "empty"
+    );
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  plans.forEach((plan) => {
+    const amount = Number(plan.amount);
+
+    if (
+      !plan ||
+      !plan.name ||
+      !Number.isFinite(amount) ||
+      amount < 0
+    ) {
+      return;
+    }
+
+    const card = document.createElement("article");
+    card.className = "data-plan-card";
+
+    const details = document.createElement("div");
+    details.className = "data-plan-details";
+
+    const name = document.createElement("h3");
+    name.className = "data-plan-name";
+    name.textContent = String(plan.name);
+
+    const network = document.createElement("span");
+    network.className = "data-plan-network";
+    network.textContent = networkName;
+
+    details.append(name, network);
+
+    const price = document.createElement("strong");
+    price.className = "data-plan-price";
+    price.textContent = formatNaira(amount);
+
+    const footer = document.createElement("div");
+    footer.className = "data-plan-footer";
+
+    const availability = document.createElement("span");
+    availability.className = "data-plan-availability";
+    availability.textContent = "Catalogue listing";
+
+    footer.append(availability);
+
+    card.append(details, price, footer);
+
+    fragment.append(card);
+  });
+
+  if (!fragment.childNodes.length) {
+    setCatalogueStatus(
+      `The catalogue returned no usable plans for ${networkName}.`,
+      "empty"
+    );
+    return;
+  }
+
+  elements.dataPlans.append(fragment);
+
+  setCatalogueStatus(
+    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Prices are from the provider catalogue.`,
+    "success"
+  );
+}
+
+async function loadDataCatalogue(network = selectedDataNetwork) {
+  if (!SUPPORTED_DATA_NETWORKS[network]) {
+    setCatalogueStatus("Please select a supported network.", "error");
+    return;
+  }
+
+  if (!elements.dataCatalogueStatus || !elements.dataPlans) {
+    console.error("Data catalogue elements are missing from index.html.");
+    return;
+  }
+
+  setSelectedDataNetwork(network);
+
+  const requestNumber = ++catalogueRequestNumber;
+  const networkName = SUPPORTED_DATA_NETWORKS[network];
+
+  clearDataPlans();
+
+  setCatalogueStatus(
+    `Loading ${networkName} data plans...`,
+    "loading"
+  );
+
+  setButtonLoading(
+    elements.refreshDataCatalogue,
+    true,
+    "Loading..."
+  );
+
+  try {
+    const response = await fetch(
+      `${DATA_CATALOGUE_URL}?network=${encodeURIComponent(network)}`,
+      {
+        method: "GET",
+        headers: {
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+          "Accept": "application/json"
+        },
+        cache: "no-store"
+      }
+    );
+
+    const result = await response.json().catch(() => null);
+
+    if (requestNumber !== catalogueRequestNumber) {
+      return;
+    }
+
+    if (!response.ok || !result?.success) {
+      throw new Error(
+        result?.error ||
+        `The catalogue request failed (${response.status}).`
+      );
+    }
+
+    if (result.network !== network) {
+      throw new Error("The provider returned an unexpected network.");
+    }
+
+    renderDataPlans(
+      result.plans,
+      result.networkName || networkName
+    );
+
+  } catch (error) {
+    if (requestNumber !== catalogueRequestNumber) {
+      return;
+    }
+
+    console.error("Data catalogue error:", error);
+
+    const message = String(error?.message || "");
+
+    if (
+      message.toLowerCase().includes("failed to fetch") ||
+      message.toLowerCase().includes("networkerror")
+    ) {
+      setCatalogueStatus(
+        "We could not connect to the catalogue. Check your internet connection or the function's allowed website origins, then try again.",
+        "error"
+      );
+    } else {
+      setCatalogueStatus(
+        message || "We could not load these data plans. Please try again.",
+        "error"
+      );
+    }
+
+  } finally {
+    if (requestNumber === catalogueRequestNumber) {
+      setButtonLoading(
+        elements.refreshDataCatalogue,
+        false
+      );
+    }
+  }
+}
+
+function openDataStore() {
+  showTab("data-store");
+  loadDataCatalogue(selectedDataNetwork);
+}
+
+/* Network selection */
+document.querySelectorAll("[data-catalogue-network]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const network = button.dataset.catalogueNetwork;
+    loadDataCatalogue(network);
+  });
+});
+
+/* Catalogue refresh */
+if (elements.refreshDataCatalogue) {
+  elements.refreshDataCatalogue.addEventListener("click", () => {
+    loadDataCatalogue(selectedDataNetwork);
+  });
+}
+
+/* Return to dashboard home */
+if (elements.backToHomeFromData) {
+  elements.backToHomeFromData.addEventListener("click", () => {
+    showTab("home");
+  });
+}
+
+/* ---------------------------------------------------------
+   16. SERVICE MESSAGES AND DASHBOARD ACTIONS
+   --------------------------------------------------------- */
 
 function showComingSoon(label) {
   showDashboardMessage(
@@ -676,6 +945,13 @@ document.addEventListener("click", (event) => {
   const serviceTarget = event.target.closest("[data-service]");
 
   if (serviceTarget) {
+    const service = serviceTarget.dataset.service;
+
+    if (service === "data") {
+      openDataStore();
+      return;
+    }
+
     const label =
       serviceTarget.querySelector("span:last-child")?.textContent.trim() ||
       "This service";
@@ -695,7 +971,7 @@ document.addEventListener("click", (event) => {
 });
 
 /* ---------------------------------------------------------
-   13. TRANSACTION LIST RENDERING
+   17. TRANSACTION LIST RENDERING
    --------------------------------------------------------- */
 
 function buildTransactionItem(transaction) {
@@ -737,6 +1013,8 @@ function buildTransactionItem(transaction) {
 }
 
 function showTransactionMessage(container, title, text) {
+  if (!container) return;
+
   container.className = "empty-activity";
   container.replaceChildren();
 
@@ -784,7 +1062,7 @@ function renderTransactionError(container) {
 }
 
 /* ---------------------------------------------------------
-   14. LOAD USER PROFILE, WALLET AND TRANSACTIONS
+   18. LOAD USER PROFILE, WALLET AND TRANSACTIONS
    --------------------------------------------------------- */
 
 async function loadDashboard(user) {
@@ -949,7 +1227,7 @@ async function loadDashboard(user) {
 }
 
 /* ---------------------------------------------------------
-   15. SIGN OUT
+   19. SIGN OUT
    --------------------------------------------------------- */
 
 if (elements.logoutBtn) {
@@ -980,7 +1258,7 @@ if (elements.logoutBtn) {
 }
 
 /* ---------------------------------------------------------
-   16. SUPABASE AUTH STATE LISTENER
+   20. SUPABASE AUTH STATE LISTENER
    --------------------------------------------------------- */
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -1031,7 +1309,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 });
 
 /* ---------------------------------------------------------
-   17. INITIAL APPLICATION STATE
+   21. INITIAL APPLICATION STATE
    --------------------------------------------------------- */
 
 async function initialiseApplication() {
