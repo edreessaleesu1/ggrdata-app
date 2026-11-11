@@ -1280,6 +1280,58 @@ html,body{background:#fff}
 .bottom-navigation{background:#fff;border-top-color:rgba(196,154,67,.4)}
 footer{background:#fff}
 
+/* DARK GOLD: balance card, funding card and bottom navigation */
+
+.account-balance-card{
+  color:#fff;
+  background:
+    radial-gradient(circle at 90% 0%,rgba(255,255,255,.18),transparent 32%),
+    linear-gradient(125deg,#7a5a12,#b08a34);
+  border:1px solid rgba(255,240,200,.4);
+  box-shadow:0 14px 32px rgba(122,90,18,.3);
+}
+.account-balance-card::before{border-color:rgba(255,255,255,.2)}
+.balance-title{color:rgba(255,255,255,.88)}
+.main-balance{border-right-color:rgba(255,255,255,.5)}
+.balance-value-row strong{color:#fff}
+.visibility-button,
+.referral-symbol{color:#fff4d6}
+.wallet-footnote{color:rgba(255,255,255,.88)}
+
+.fund-wallet-button{
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:0 8px 20px rgba(0,0,0,.22);
+}
+
+.funding-account-card{
+  color:#fff;
+  background:linear-gradient(120deg,#7a5a12,#a98230);
+  border:1px solid rgba(255,240,200,.4);
+  box-shadow:0 12px 28px rgba(122,90,18,.26);
+}
+.funding-card-heading h2{color:#fff}
+.card-kicker.light{color:#fff4d6}
+.funding-icon{
+  color:#fff4d6;
+  border-color:rgba(255,255,255,.45);
+  background:rgba(255,255,255,.12);
+}
+.funding-placeholder{
+  color:rgba(255,255,255,.94);
+  background:rgba(255,255,255,.12);
+  border-color:rgba(255,255,255,.28);
+}
+.funding-security{color:#fff4d6}
+
+.bottom-navigation{
+  background:#7a5a12;
+  border-top:1px solid rgba(255,240,200,.35);
+  box-shadow:0 -7px 25px rgba(122,90,18,.3);
+}
+.nav-item{color:rgba(255,255,255,.78)}
+.nav-item.active{color:#fff;background:rgba(255,255,255,.18)}
+.nav-item.active .nav-icon{color:#fff}
+
 /* ACCESSIBILITY */
 
 button:focus-visible,
