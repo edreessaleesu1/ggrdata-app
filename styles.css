@@ -1332,6 +1332,146 @@ footer{background:#fff}
 .nav-item.active{color:#fff;background:rgba(255,255,255,.18)}
 .nav-item.active .nav-icon{color:#fff}
 
+/* PREMIUM PALETTE
+   Deep emerald #063b30 · Emerald #0d6b52 · Dark gold #7a5a12 · Gold #b08a34
+   Light gold #e8cf8c · Champagne #fbf5e4 · Charcoal #1d2a25 · White #ffffff */
+
+:root{
+  --emerald:#063b30;
+  --emerald-dark:#04261f;
+  --emerald-light:#0d6b52;
+  --gold:#b08a34;
+  --gold-dark:#7a5a12;
+  --gold-light:#e8cf8c;
+  --champagne:#fbf5e4;
+  --ink:#1d2a25;
+  --muted:#6f7a73;
+  --line:#efe6cf;
+}
+
+/* Header and welcome */
+.topbar{
+  background:#fff;
+  border-bottom:1px solid var(--gold-light);
+  box-shadow:0 6px 22px rgba(122,90,18,.07);
+}
+.brand-mark{
+  color:var(--emerald-dark);
+  background:linear-gradient(145deg,#f4e3b0,#b08a34);
+  box-shadow:0 7px 18px rgba(122,90,18,.3);
+}
+.welcome-panel{
+  background:linear-gradient(120deg,#fff 40%,var(--champagne));
+  border-bottom:1px solid var(--gold-light);
+}
+.welcome-logo{
+  border:2px solid var(--gold);
+  color:var(--gold-light);
+  background:linear-gradient(145deg,#0d6b52,#04261f);
+  box-shadow:0 6px 16px rgba(4,38,31,.25);
+}
+.welcome-caption{color:var(--gold-dark)}
+.welcome-brand h1{color:var(--emerald-dark)}
+.notification-button{border-color:var(--gold-light);color:var(--gold-dark)}
+
+/* Section headings and labels */
+.card-kicker{color:var(--gold-dark)}
+.services-heading h2,
+.network-panel h2,
+.detail-card h2{color:var(--emerald-dark)}
+.services-caption{color:var(--gold-dark);font-weight:600}
+.package-label{color:var(--gold-dark)}
+.package-panel strong{color:var(--emerald)}
+
+/* Services */
+.service-icon{
+  border:2px solid var(--gold);
+  color:var(--gold-light);
+  background:linear-gradient(145deg,#0d6b52,#04261f);
+  box-shadow:0 8px 18px rgba(4,38,31,.22),0 0 0 3px rgba(176,138,52,.12);
+}
+.service-item{color:var(--emerald-dark)}
+.service-item:active{background:var(--champagne)}
+
+/* Cards */
+.detail-card,
+.network-panel{
+  background:#fff;
+  border:1px solid var(--gold-light);
+  box-shadow:0 10px 26px rgba(122,90,18,.08);
+}
+.detail-row{border-top-color:var(--line)}
+.detail-row span{color:var(--muted)}
+.empty-activity{
+  background:var(--champagne);
+  border:1px dashed var(--gold);
+}
+.empty-activity-icon{color:var(--gold-dark)}
+.empty-activity b{color:var(--emerald)}
+
+.network-chip{
+  background:#fff;
+  border:1px solid var(--gold-light);
+  box-shadow:0 2px 8px rgba(122,90,18,.07);
+}
+
+.dashboard-notice{
+  background:linear-gradient(120deg,var(--champagne),#fff);
+  border:1px solid var(--gold-light);
+}
+.notice-icon{color:var(--gold-dark)}
+
+/* Transaction list */
+.tx-item{border-color:var(--gold-light);background:#fff}
+.tx-icon.in{color:var(--emerald-light);background:#e6f3ec}
+.tx-icon.out{color:var(--gold-dark);background:var(--champagne)}
+.tx-amount.in{color:var(--emerald-light)}
+.tx-amount.out{color:var(--gold-dark)}
+
+/* Buttons stay green with a gold edge */
+.fund-wallet-button,
+.button-outline,
+.logout-button,
+.button-primary{
+  background:linear-gradient(110deg,#04261f,#0d6b52);
+  border:1px solid rgba(232,207,140,.55);
+  color:#fff;
+}
+
+/* Gold cards and navigation */
+.account-balance-card{
+  background:
+    radial-gradient(circle at 90% 0%,rgba(255,244,214,.28),transparent 34%),
+    linear-gradient(125deg,#6b4e0e,#a98230 60%,#c19b44);
+}
+.funding-account-card{
+  background:
+    radial-gradient(circle at 100% 0%,rgba(255,244,214,.22),transparent 36%),
+    linear-gradient(120deg,#6b4e0e,#a98230);
+}
+.bottom-navigation{background:linear-gradient(180deg,#8a6a1f,#6b4e0e)}
+
+/* Sign-in screen */
+.hero-panel{
+  background:
+    radial-gradient(circle at 90% 8%,rgba(232,207,140,.28),transparent 30%),
+    radial-gradient(circle at 5% 100%,rgba(13,107,82,.5),transparent 36%),
+    linear-gradient(145deg,#06483a,#04261f 85%);
+}
+.hero-panel>h1 em,
+.feature-icon{color:var(--gold-light)}
+.auth-card{border:1px solid var(--gold-light);box-shadow:0 22px 60px rgba(122,90,18,.1)}
+.auth-heading h2{color:var(--emerald-dark)}
+.tabs{background:var(--champagne);border-color:var(--gold-light)}
+.tab.active{color:var(--emerald)}
+.field input{background:#fff;border-color:#e7dcbc}
+.field input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(176,138,52,.2)}
+.text-button{color:var(--gold-dark)}
+.secure-note span{color:var(--gold)}
+
+footer{background:#fff;border-top:1px solid var(--gold-light)}
+footer span{color:var(--gold)}
+
 /* ACCESSIBILITY */
 
 button:focus-visible,
