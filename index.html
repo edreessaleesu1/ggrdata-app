@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#073d32">
+  <title>GGRData | Your connection. Your control.</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --green:#073d32; --green2:#0b5948; --gold:#c9a45c;
+      --cream:#f7f6f0; --white:#fff; --muted:#718078;
+      --border:#e6e9e3; --danger:#b42318;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--cream);color:#172b25;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+    header{background:var(--green);color:white;padding:20px 6%;
+      display:flex;align-items:center;justify-content:space-between}
+    .brand{font-size:24px;font-weight:850;letter-spacing:-1px}
+    .brand span{color:var(--gold)}
+    .tagline{font-size:12px;color:#d9e7df;margin-top:3px}
+    main{max-width:1000px;margin:45px auto;padding:0 18px}
+    .layout{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+    .intro{background:var(--green);color:white;border-radius:22px;padding:36px;
+      display:flex;flex-direction:column;justify-content:center;min-height:430px}
+    .intro h1{font-size:38px;line-height:1.12;margin:15px 0}
+    .intro p{color:#d9e7df;line-height:1.7}
+    .gold-line{width:55px;height:4px;background:var(--gold);border-radius:8px}
+    .panel{background:white;border:1px solid var(--border);border-radius:22px;
+      padding:30px;box-shadow:0 12px 35px #163e2b0b}
+    h2{margin:0 0 8px;font-size:25px}
+    .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+    label{display:block;font-size:13px;font-weight:650;margin:15px 0 7px}
+    input{width:100%;padding:13px 14px;border:1px solid var(--border);
+      border-radius:10px;font-size:15px;outline:none;background:#fff}
+    input:focus{border-color:var(--green2);box-shadow:0 0 0 3px #0b594815}
+    button{border:0;border-radius:10px;padding:14px 17px;font-weight:750;
+      cursor:pointer;font-size:14px}
+    .primary{background:var(--green);color:white;width:100%;margin-top:20px}
+    .primary:hover{background:var(--green2)}
+    .secondary{background:#edf3ef;color:var(--green)}
+    .tabs{display:flex;gap:8px;margin-bottom:20px}
+    .tabs button{flex:1;background:#f0f3ef;color:#53635b}
+    .tabs button.active{background:var(--green);color:white}
+    .switch{font-size:13px;color:var(--muted);text-align:center;margin-top:18px}
+    .link{color:var(--green2);font-weight:700;cursor:pointer}
+    .message{display:none;padding:12px;border-radius:9px;font-size:13px;
+      margin-top:15px;line-height:1.5}
+    .message.show{display:block}
+    .message.error{background:#fff0ef;color:var(--danger)}
+    .message.success{background:#eaf6ef;color:#17613d}
+    .hidden{display:none!important}
+    .dashboard{max-width:700px;margin:0 auto}
+    .welcome{font-size:28px;margin:0 0 5px}
+    .balance{background:var(--green);color:white;padding:28px;border-radius:18px;
+      margin:22px 0}
+    .balance small{color:#d8e5df}
+    .amount{font-size:36px;font-weight:800;margin-top:10px}
+    .info{background:white;padding:20px;border-radius:15px;border:1px solid var(--border);
+      margin-bottom:14px}
+    .info p{color:var(--muted);font-size:13px;margin-bottom:5px}
+    footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+    @media(max-width:720px){
+      main{margin:22px auto}.layout{grid-template-columns:1fr}
+      .intro{min-height:220px;padding:25px}.intro h1{font-size:30px}
+      .panel{padding:23px}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="brand">GGR<span>Data</span></div>
+    <div class="tagline">Your connection. Your control.</div>
+  </div>
+  <span style="font-size:12px;color:#d9e7df">AIRTIME · DATA</span>
+</header>
+
+<main>
+  <section id="authScreen" class="layout">
+    <div class="intro">
+      <div class="gold-line"></div>
+      <h1>Stay connected.<br>Stay in control.</h1>
+      <p>One simple place for airtime, data and smarter everyday connectivity.</p>
+      <p><strong style="color:var(--gold)">GGR QuickBuy</strong><br>
+      Your favourite numbers and repeat purchases, made easier.</p>
+    </div>
+
+    <div class="panel">
+      <div class="tabs">
+        <button id="loginTab" class="active" type="button">Sign in</button>
+        <button id="signupTab" type="button">Create account</button>
+      </div>
+
+      <form id="authForm">
+        <div id="nameField" class="hidden">
+          <label for="fullName">Full name</label>
+          <input id="fullName" autocomplete="name" maxlength="120">
+        </div>
+        <div id="phoneField" class="hidden">
+          <label for="phone">Phone number</label>
+          <input id="phone" type="tel" placeholder="08012345678"
+            autocomplete="tel">
+        </div>
+        <label for="email">Email address</label>
+        <input id="email" type="email" required autocomplete="email"
+          placeholder="you@example.com">
+        <label for="password">Password</label>
+        <input id="password" type="password" required minlength="8"
+          autocomplete="current-password" placeholder="At least 8 characters">
+        <button id="submitBtn" class="primary" type="submit">Sign in</button>
+      </form>
+
+      <div id="forgotRow" class="switch">
+        <span class="link" id="forgotBtn">Forgot your password?</span>
+      </div>
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="dashboardScreen" class="dashboard hidden">
+    <h1 class="welcome" id="welcome">Welcome</h1>
+    <p class="sub">Your GGRData account overview</p>
+    <div class="balance">
+      <small>Wallet balance</small>
+      <div class="amount" id="balance">₦0.00</div>
+      <small>NGN · Your wallet is protected</small>
+    </div>
+    <div class="info">
+      <strong>Account details</strong>
+      <p>Full name</p><strong id="profileName">—</strong>
+      <p>Email address</p><strong id="profileEmail">—</strong>
+      <p>Phone number</p><strong id="profilePhone">—</strong>
+    </div>
+    <div class="info">
+      <strong>Coming next</strong>
+      <p>Airtime · Data bundles · GGR QuickBuy · TrustTrack receipts</p>
+      <small style="color:var(--muted)">Purchases and wallet funding remain disabled during testing.</small>
+    </div>
+    <button id="logoutBtn" class="secondary" type="button">Sign out</button>
+    <div id="dashMessage" class="message" role="status"></div>
+  </section>
+</main>
+<footer>© 2026 GGRData. Your connection. Your control.</footer>
+
+<script>
+const SUPABASE_URL = "https://jftmbpeopmvtohwvopxo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TzO5sjc_KHr1aZBXWpz3eA_fCIxduMx";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const $ = id => document.getElementById(id);
+let mode = "login";
+
+function message(text, type="success") {
+  const el = $("message");
+  el.textContent = text;
+  el.className = `message show ${type}`;
+}
+function setMode(next) {
+  mode = next;
+  $("loginTab").classList.toggle("active", mode === "login");
+  $("signupTab").classList.toggle("active", mode === "signup");
+  $("nameField").classList.toggle("hidden", mode !== "signup");
+  $("phoneField").classList.toggle("hidden", mode !== "signup");
+  $("forgotRow").classList.toggle("hidden", mode !== "login");
+  $("submitBtn").textContent = mode === "login" ? "Sign in" : "Create account";
+  $("password").autocomplete = mode === "login" ? "current-password" : "new-password";
+  $("message").className = "message";
+}
+function normaliseNigerianPhone(value) {
+  const digits = value.replace(/\D/g, "");
+  if (/^0[789][01]\d{8}$/.test(digits)) return "+234" + digits.slice(1);
+  if (/^234[789][01]\d{8}$/.test(digits)) return "+" + digits;
+  if (/^[789][01]\d{8}$/.test(digits)) return "+234" + digits;
+  return null;
+}
+function showAuth() {
+  $("authScreen").classList.remove("hidden");
+  $("dashboardScreen").classList.add("hidden");
+}
+function showDashboard() {
+  $("authScreen").classList.add("hidden");
+  $("dashboardScreen").classList.remove("hidden");
+}
+async function loadDashboard(user) {
+  const [{data: profile, error: profileError},
+         {data: wallet, error: walletError}] = await Promise.all([
+    db.from("profiles").select("full_name, phone_e164, email")
+      .eq("user_id", user.id).maybeSingle(),
+    db.from("wallets").select("balance, currency")
+      .eq("user_id", user.id).maybeSingle()
+  ]);
+
+  if (profileError) console.error("Profile load:", profileError.message);
+  if (walletError) console.error("Wallet load:", walletError.message);
+
+  $("welcome").textContent = `Welcome, ${profile?.full_name || "to GGRData"}`;
+  $("profileName").textContent = profile?.full_name || "Not available";
+  $("profileEmail").textContent = user.email || "Not available";
+  $("profilePhone").textContent = profile?.phone_e164 || "Not added";
+  $("balance").textContent = wallet
+    ? new Intl.NumberFormat("en-NG", {
+        style:"currency", currency:wallet.currency || "NGN"
+      }).format(Number(wallet.balance))
+    : "₦0.00";
+
+  if (!profile || !wallet) {
+    $("dashMessage").textContent =
+      "Your account is active, but your profile or wallet is still being provisioned. Refresh shortly or contact support if this continues.";
+    $("dashMessage").className = "message show error";
+  } else {
+    $("dashMessage").className = "message";
+  }
+  showDashboard();
+}
+
+$("loginTab").addEventListener("click", () => setMode("login"));
+$("signupTab").addEventListener("click", () => setMode("signup"));
+
+$("authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  $("submitBtn").disabled = true;
+  $("submitBtn").textContent = "Please wait…";
+  $("message").className = "message";
+
+  try {
+    const email = $("email").value.trim().toLowerCase();
+    const password = $("password").value;
+
+    if (mode === "signup") {
+      const fullName = $("fullName").value.trim();
+      const phone = normaliseNigerianPhone($("phone").value);
+
+      if (fullName.length < 2) throw new Error("Enter your full name.");
+      if (!phone) throw new Error("Enter a valid Nigerian mobile number.");
+
+      const {data, error} = await db.auth.signUp({
+        email, password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { full_name: fullName, phone_e164: phone }
+        }
+      });
+      if (error) throw error;
+
+      if (data.session && data.user) {
+        await loadDashboard(data.user);
+      } else {
+        message("Account created. Check your email and confirm your address before signing in.");
+      }
+    } else {
+      const {data, error} = await db.auth.signInWithPassword({email, password});
+      if (error) throw error;
+      await loadDashboard(data.user);
+    }
+  } catch (err) {
+    message(err.message || "Something went wrong. Please try again.", "error");
+  } finally {
+    $("submitBtn").disabled = false;
+    $("submitBtn").textContent = mode === "login" ? "Sign in" : "Create account";
+  }
+});
+
+$("forgotBtn").addEventListener("click", async () => {
+  const email = $("email").value.trim().toLowerCase();
+  if (!email) return message("Enter your email address first.", "error");
+
+  const {error} = await db.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
+  });
+  if (error) return message(error.message, "error");
+  message("If an account exists for that email, a password-reset link will be sent.");
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  const {error} = await db.auth.signOut();
+  if (error) {
+    $("dashMessage").textContent = error.message;
+    $("dashMessage").className = "message show error";
+    return;
+  }
+  showAuth();
+  $("authForm").reset();
+  setMode("login");
+});
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT") showAuth();
+  if (event === "PASSWORD_RECOVERY") {
+    message("Password recovery link verified. Password update screen is the next auth step.", "success");
+  }
+});
+
+(async () => {
+  const {data, error} = await db.auth.getSession();
+  if (error) console.error(error.message);
+  if (data.session?.user) await loadDashboard(data.session.user);
+})();
+
+setMode("login");
+</script>
+</body>
+</html>
