@@ -1,7 +1,6 @@
-
 /* =========================================================
-   GGRData — Main Application
-   Authentication, Password Recovery & User Dashboard
+   GGRData — Main Application (Milestone 2)
+   Authentication, Password Recovery & Customer Dashboard
    ========================================================= */
 
 "use strict";
@@ -68,6 +67,10 @@ const elements = {
   profileEmail: document.getElementById("profileEmail"),
   profilePhone: document.getElementById("profilePhone"),
 
+  toggleBalance: document.getElementById("toggleBalance"),
+  bottomNavigation: document.getElementById("bottomNavigation"),
+  recentTransactions: document.getElementById("recentTransactions"),
+
   dashMessage: document.getElementById("dashMessage")
 };
 
@@ -80,6 +83,7 @@ let isPasswordRecovery = false;
 let isCompletingPasswordReset = false;
 let loadingUserId = null;
 let loadedUserId = null;
+let dashMessageTimer = null;
 
 /* ---------------------------------------------------------
    4. GENERAL HELPERS
@@ -104,8 +108,10 @@ function clearMessage() {
   elements.message.classList.remove("error");
 }
 
-function showDashboardMessage(message, type = "success") {
+function showDashboardMessage(message, type = "success", autoHide = false) {
   if (!elements.dashMessage) return;
+
+  clearTimeout(dashMessageTimer);
 
   elements.dashMessage.textContent = message;
   elements.dashMessage.classList.remove("hidden", "error");
@@ -113,10 +119,16 @@ function showDashboardMessage(message, type = "success") {
   if (type === "error") {
     elements.dashMessage.classList.add("error");
   }
+
+  if (autoHide) {
+    dashMessageTimer = setTimeout(clearDashboardMessage, 4500);
+  }
 }
 
 function clearDashboardMessage() {
   if (!elements.dashMessage) return;
+
+  clearTimeout(dashMessageTimer);
 
   elements.dashMessage.textContent = "";
   elements.dashMessage.classList.add("hidden");
@@ -153,6 +165,20 @@ function formatNaira(amount) {
   }).format(value);
 }
 
+function formatDateTime(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-NG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date);
+}
+
 function showScreen(screen) {
   if (elements.authScreen) {
     elements.authScreen.classList.toggle(
@@ -167,6 +193,19 @@ function showScreen(screen) {
       screen !== "dashboard"
     );
   }
+
+  if (elements.bottomNavigation) {
+    elements.bottomNavigation.classList.toggle(
+      "hidden",
+      screen !== "dashboard"
+    );
+  }
+
+  if (elements.dashMessage) {
+    elements.dashMessage.classList.add("toast");
+  }
+
+  window.scrollTo(0, 0);
 }
 
 /* ---------------------------------------------------------
@@ -216,38 +255,25 @@ function setMode(mode, options = {}) {
   }
 
   if (elements.nameField) {
-    elements.nameField.classList.toggle(
-      "hidden",
-      !isSignup
-    );
+    elements.nameField.classList.toggle("hidden", !isSignup);
   }
 
   if (elements.phoneField) {
-    elements.phoneField.classList.toggle(
-      "hidden",
-      !isSignup
-    );
+    elements.phoneField.classList.toggle("hidden", !isSignup);
   }
 
   if (elements.forgotRow) {
-    elements.forgotRow.classList.toggle(
-      "hidden",
-      isSignup || isReset
-    );
+    elements.forgotRow.classList.toggle("hidden", isSignup || isReset);
   }
 
   if (elements.loginTab) {
-    elements.loginTab.classList.toggle(
-      "active",
-      mode === "login"
-    );
+    elements.loginTab.classList.toggle("active", mode === "login");
+    elements.loginTab.setAttribute("aria-selected", String(mode === "login"));
   }
 
   if (elements.signupTab) {
-    elements.signupTab.classList.toggle(
-      "active",
-      isSignup
-    );
+    elements.signupTab.classList.toggle("active", isSignup);
+    elements.signupTab.setAttribute("aria-selected", String(isSignup));
   }
 
   if (elements.authTitle) {
@@ -425,11 +451,7 @@ if (elements.forgotBtn) {
       return;
     }
 
-    setButtonLoading(
-      elements.forgotBtn,
-      true,
-      "Sending..."
-    );
+    setButtonLoading(elements.forgotBtn, true, "Sending...");
 
     try {
       const { error } =
@@ -492,11 +514,7 @@ if (elements.resetForm) {
       return;
     }
 
-    setButtonLoading(
-      elements.resetSubmit,
-      true,
-      "Updating password..."
-    );
+    setButtonLoading(elements.resetSubmit, true, "Updating password...");
 
     isCompletingPasswordReset = true;
 
@@ -528,10 +546,7 @@ if (elements.resetForm) {
     } finally {
       isCompletingPasswordReset = false;
 
-      setButtonLoading(
-        elements.resetSubmit,
-        false
-      );
+      setButtonLoading(elements.resetSubmit, false);
     }
   });
 }
@@ -562,6 +577,10 @@ function getFriendlyAuthError(error) {
     return "Your password must contain at least 8 characters.";
   }
 
+  if (message.includes("database error saving new user")) {
+    return "We could not create your account just now. Please check your details and try again.";
+  }
+
   if (
     message.includes("rate limit") ||
     message.includes("too many requests")
@@ -580,7 +599,192 @@ function getFriendlyAuthError(error) {
 }
 
 /* ---------------------------------------------------------
-   12. LOAD USER PROFILE AND WALLET
+   12. DASHBOARD NAVIGATION
+   --------------------------------------------------------- */
+
+const TAB_VIEW_IDS = {
+  transactions: "transactionsView",
+  wallet: "walletView",
+  profile: "profileView"
+};
+
+let balanceHidden = false;
+let lastBalanceText = "";
+
+function showTab(tabName) {
+  const isHome = tabName === "home";
+
+  /* Home content = every dashboard section that is not a tab view */
+  Array.from(elements.dashboardScreen.children).forEach((section) => {
+    if (section.id === "dashMessage") return;
+
+    if (section.classList.contains("dashboard-view")) {
+      section.classList.toggle(
+        "active",
+        section.id === TAB_VIEW_IDS[tabName]
+      );
+    } else {
+      section.classList.toggle("hidden", !isHome);
+    }
+  });
+
+  document.querySelectorAll(".bottom-navigation .nav-item").forEach((item) => {
+    item.classList.toggle("active", item.dataset.tab === tabName);
+  });
+
+  clearDashboardMessage();
+  window.scrollTo(0, 0);
+}
+
+function applyBalanceVisibility() {
+  if (!elements.balance || !lastBalanceText) return;
+
+  elements.balance.textContent = balanceHidden
+    ? "₦ ••••••"
+    : lastBalanceText;
+
+  if (elements.toggleBalance) {
+    elements.toggleBalance.setAttribute(
+      "aria-label",
+      balanceHidden ? "Show balance" : "Hide balance"
+    );
+  }
+}
+
+function showComingSoon(label) {
+  showDashboardMessage(
+    `${label} will be available soon. We will switch it on only after payment and delivery safeguards are tested.`,
+    "success",
+    true
+  );
+}
+
+document.addEventListener("click", (event) => {
+  const tabTarget = event.target.closest("[data-tab]");
+
+  if (tabTarget) {
+    showTab(tabTarget.dataset.tab);
+    return;
+  }
+
+  if (event.target.closest("#toggleBalance")) {
+    balanceHidden = !balanceHidden;
+    applyBalanceVisibility();
+    return;
+  }
+
+  const serviceTarget = event.target.closest("[data-service]");
+
+  if (serviceTarget) {
+    const label =
+      serviceTarget.querySelector("span:last-child")?.textContent.trim() ||
+      "This service";
+
+    showComingSoon(label);
+    return;
+  }
+
+  if (event.target.closest("#fundWalletBtn, #walletFundLink")) {
+    showComingSoon("Wallet funding");
+    return;
+  }
+
+  if (event.target.closest("#notificationBtn")) {
+    showDashboardMessage("You have no new notifications.", "success", true);
+  }
+});
+
+/* ---------------------------------------------------------
+   13. TRANSACTION LIST RENDERING
+   --------------------------------------------------------- */
+
+function buildTransactionItem(transaction) {
+  const isCredit = transaction.direction === "credit";
+  const kind = isCredit ? "in" : "out";
+
+  const item = document.createElement("div");
+  item.className = "tx-item";
+
+  const iconBox = document.createElement("span");
+  iconBox.className = `tx-icon ${kind}`;
+  iconBox.textContent = isCredit ? "↓" : "↑";
+
+  const main = document.createElement("div");
+  main.className = "tx-main";
+
+  const title = document.createElement("b");
+  title.textContent =
+    transaction.description ||
+    String(transaction.transaction_type || "Wallet transaction")
+      .replace(/_/g, " ");
+
+  const meta = document.createElement("small");
+  const when = formatDateTime(transaction.created_at);
+  meta.textContent = [when, transaction.reference]
+    .filter(Boolean)
+    .join(" · ");
+
+  main.append(title, meta);
+
+  const amount = document.createElement("span");
+  amount.className = `tx-amount ${kind}`;
+  amount.textContent =
+    (isCredit ? "+" : "−") + formatNaira(transaction.amount);
+
+  item.append(iconBox, main, amount);
+
+  return item;
+}
+
+function showTransactionMessage(container, title, text) {
+  container.className = "empty-activity";
+  container.replaceChildren();
+
+  const icon = document.createElement("span");
+  icon.className = "empty-activity-icon";
+  icon.textContent = "◷";
+
+  const heading = document.createElement("b");
+  heading.textContent = title;
+
+  const note = document.createElement("p");
+  note.textContent = text;
+
+  container.append(icon, heading, note);
+}
+
+function renderTransactions(container, transactions, limit) {
+  if (!container) return;
+
+  if (!transactions.length) {
+    showTransactionMessage(
+      container,
+      "Your activity will appear here",
+      "Your verified transaction history and receipts will be displayed here."
+    );
+    return;
+  }
+
+  container.className = "tx-list";
+  container.replaceChildren();
+
+  transactions.slice(0, limit).forEach((transaction) => {
+    container.append(buildTransactionItem(transaction));
+  });
+}
+
+function renderTransactionError(container) {
+  if (!container) return;
+
+  showTransactionMessage(
+    container,
+    "Transactions could not be loaded",
+    "Please refresh the page and try again."
+  );
+}
+
+/* ---------------------------------------------------------
+   14. LOAD USER PROFILE, WALLET AND TRANSACTIONS
    --------------------------------------------------------- */
 
 async function loadDashboard(user) {
@@ -596,7 +800,7 @@ async function loadDashboard(user) {
   loadingUserId = user.id;
 
   showScreen("dashboard");
-  clearDashboardMessage();
+  showTab("home");
 
   if (elements.welcome) {
     elements.welcome.textContent = "Welcome to GGRData";
@@ -619,25 +823,36 @@ async function loadDashboard(user) {
   }
 
   try {
-    const [profileResult, walletResult] = await Promise.all([
-      supabaseClient
-        .from("profiles")
-        .select("full_name, phone_e164, email")
-        .eq("user_id", user.id)
-        .maybeSingle(),
+    const [profileResult, walletResult, transactionResult] =
+      await Promise.all([
+        supabaseClient
+          .from("profiles")
+          .select("full_name, phone_e164, email")
+          .eq("user_id", user.id)
+          .maybeSingle(),
 
-      supabaseClient
-        .from("wallets")
-        .select("balance, currency")
-        .eq("user_id", user.id)
-        .maybeSingle()
-    ]);
+        supabaseClient
+          .from("wallets")
+          .select("balance, currency")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+
+        supabaseClient
+          .from("wallet_transactions")
+          .select(
+            "id, transaction_type, direction, amount, description, reference, created_at"
+          )
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(50)
+      ]);
 
     const profile = profileResult.data;
     const wallet = walletResult.data;
 
     const profileError = profileResult.error;
     const walletError = walletResult.error;
+    const transactionError = transactionResult.error;
 
     if (profileError) {
       console.error("Profile loading error:", profileError);
@@ -647,20 +862,23 @@ async function loadDashboard(user) {
       console.error("Wallet loading error:", walletError);
     }
 
+    if (transactionError) {
+      console.error("Transaction loading error:", transactionError);
+    }
+
     const name =
       profile?.full_name ||
       user.user_metadata?.full_name ||
       "GGRData Member";
 
+    const firstName = name.trim().split(/\s+/)[0] || "there";
+
     if (elements.welcome) {
-      elements.welcome.textContent = `Welcome, ${name}`;
+      elements.welcome.textContent = `Hello, ${firstName}`;
     }
 
     if (elements.profileName) {
-      elements.profileName.textContent =
-        profileError
-          ? "Not available"
-          : name;
+      elements.profileName.textContent = profileError ? "Not available" : name;
     }
 
     if (elements.profileEmail) {
@@ -689,12 +907,25 @@ async function loadDashboard(user) {
       }
     }
 
+    if (transactionError) {
+      renderTransactionError(elements.recentTransactions);
+    } else {
+      renderTransactions(
+        elements.recentTransactions,
+        transactionResult.data || [],
+        50
+      );
+    }
+
     if (profileError || !profile || walletError || !wallet) {
       showDashboardMessage(
         "Some account information could not be loaded. Please refresh or contact support if the problem continues.",
         "error"
       );
     }
+
+    lastBalanceText = elements.balance ? elements.balance.textContent : "";
+    applyBalanceVisibility();
 
     loadedUserId = user.id;
 
@@ -704,6 +935,8 @@ async function loadDashboard(user) {
     if (elements.balance) {
       elements.balance.textContent = "Not available";
     }
+
+    renderTransactionError(elements.recentTransactions);
 
     showDashboardMessage(
       "We could not load your account information. Please refresh the page and try again.",
@@ -716,16 +949,12 @@ async function loadDashboard(user) {
 }
 
 /* ---------------------------------------------------------
-   13. SIGN OUT
+   15. SIGN OUT
    --------------------------------------------------------- */
 
 if (elements.logoutBtn) {
   elements.logoutBtn.addEventListener("click", async () => {
-    setButtonLoading(
-      elements.logoutBtn,
-      true,
-      "Signing out..."
-    );
+    setButtonLoading(elements.logoutBtn, true, "Signing out...");
 
     try {
       const { error } = await supabaseClient.auth.signOut();
@@ -751,7 +980,7 @@ if (elements.logoutBtn) {
 }
 
 /* ---------------------------------------------------------
-   14. SUPABASE AUTH STATE LISTENER
+   16. SUPABASE AUTH STATE LISTENER
    --------------------------------------------------------- */
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -802,7 +1031,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 });
 
 /* ---------------------------------------------------------
-   15. INITIAL APPLICATION STATE
+   17. INITIAL APPLICATION STATE
    --------------------------------------------------------- */
 
 async function initialiseApplication() {
@@ -830,5 +1059,3 @@ async function initialiseApplication() {
 }
 
 initialiseApplication();
-
-console.log("GGRData application initialised successfully.");
