@@ -13,13 +13,11 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./styles.css">
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./app.js"></script>
 </head>
 
 <body>
-
   <header class="topbar">
     <a class="brand" href="./" aria-label="GGRData home">
       <span class="brand-mark">G</span>
@@ -28,7 +26,6 @@
         <small>Your connection. Your control.</small>
       </span>
     </a>
-
     <span class="topbar-note">AIRTIME <i></i> DATA</span>
   </header>
 
@@ -36,18 +33,13 @@
 
     <!-- AUTHENTICATION -->
     <section id="authScreen" class="auth-layout">
-
       <div class="hero-panel">
-
         <div class="eyebrow">
           <span class="pulse"></span>
           YOUR DIGITAL CONNECTION HUB
         </div>
 
-        <h1>
-          Everyday connection.<br>
-          <em>Made smarter.</em>
-        </h1>
+        <h1>Everyday connection.<br><em>Made smarter.</em></h1>
 
         <p class="hero-copy">
           A clearer, more convenient way to manage airtime and data
@@ -55,7 +47,6 @@
         </p>
 
         <div class="feature-stack">
-
           <div class="feature">
             <span class="feature-icon">↗</span>
             <span>
@@ -79,133 +70,73 @@
               <small>Clear references and transaction updates.</small>
             </span>
           </div>
-
         </div>
 
         <div class="hero-foot">
           BUILT FOR THE WAY NIGERIA STAYS CONNECTED
         </div>
-
       </div>
 
       <div class="auth-card">
-
         <div class="auth-heading">
           <span class="eyebrow dark">WELCOME TO GGRDATA</span>
-
           <h2 id="authTitle">Good to have you back.</h2>
-
-          <p id="authSubtitle">
-            Sign in to continue to your account.
-          </p>
+          <p id="authSubtitle">Sign in to continue to your account.</p>
         </div>
 
         <div id="authTabs" class="tabs" role="tablist">
-
-          <button
-            id="loginTab"
-            class="tab active"
-            type="button"
-            role="tab"
-            aria-selected="true">
-            Sign in
-          </button>
-
-          <button
-            id="signupTab"
-            class="tab"
-            type="button"
-            role="tab"
-            aria-selected="false">
-            Create account
-          </button>
-
+          <button id="loginTab" class="tab active" type="button"
+            role="tab" aria-selected="true">Sign in</button>
+          <button id="signupTab" class="tab" type="button"
+            role="tab" aria-selected="false">Create account</button>
         </div>
 
-        <!-- SIGN IN / REGISTRATION FORM -->
         <form id="authForm" novalidate>
-
           <div id="nameField" class="field hidden">
             <label for="fullName">Full name</label>
-
-            <input
-              id="fullName"
-              autocomplete="name"
-              maxlength="120"
+            <input id="fullName" autocomplete="name" maxlength="120"
               placeholder="Your full name">
           </div>
 
           <div id="phoneField" class="field hidden">
             <label for="phone">Nigerian phone number</label>
-
-            <input
-              id="phone"
-              type="tel"
-              autocomplete="tel"
-              inputmode="tel"
-              placeholder="08012345678">
+            <input id="phone" type="tel" autocomplete="tel"
+              inputmode="tel" placeholder="08012345678">
           </div>
 
           <div class="field">
             <label for="email">Email address</label>
-
-            <input
-              id="email"
-              type="email"
-              required
-              autocomplete="email"
-              placeholder="you@example.com">
+            <input id="email" type="email" required
+              autocomplete="email" placeholder="you@example.com">
           </div>
 
           <div class="field">
             <label for="password">Password</label>
-
-            <input
-              id="password"
-              type="password"
-              required
-              minlength="8"
-              autocomplete="current-password"
-              placeholder="At least 8 characters">
+            <input id="password" type="password" required minlength="8"
+              autocomplete="current-password" placeholder="At least 8 characters">
           </div>
 
           <button id="submitBtn" class="button-primary" type="submit">
             Sign in <span>→</span>
           </button>
-
         </form>
 
-        <!-- PASSWORD RECOVERY FORM -->
         <form id="resetForm" class="hidden" novalidate>
-
           <div class="field">
             <label for="newPassword">New password</label>
-
-            <input
-              id="newPassword"
-              type="password"
-              minlength="8"
-              autocomplete="new-password"
-              required
-              placeholder="At least 8 characters">
+            <input id="newPassword" type="password" minlength="8"
+              autocomplete="new-password" required placeholder="At least 8 characters">
           </div>
 
           <div class="field">
             <label for="confirmPassword">Confirm new password</label>
-
-            <input
-              id="confirmPassword"
-              type="password"
-              minlength="8"
-              autocomplete="new-password"
-              required
-              placeholder="Enter it again">
+            <input id="confirmPassword" type="password" minlength="8"
+              autocomplete="new-password" required placeholder="Enter it again">
           </div>
 
           <button id="resetSubmit" class="button-primary" type="submit">
             Update password <span>→</span>
           </button>
-
         </form>
 
         <div id="forgotRow" class="auth-help">
@@ -214,71 +145,106 @@
           </button>
         </div>
 
-        <div
-          id="message"
-          class="message"
-          role="status"
-          aria-live="polite">
-        </div>
+        <div id="message" class="message" role="status" aria-live="polite"></div>
 
         <p class="secure-note">
-          <span>●</span>
-          Your account is protected by secure sign-in.
+          <span>●</span> Your account is protected by secure sign-in.
         </p>
-
       </div>
-
     </section>
 
     <!-- CUSTOMER DASHBOARD -->
     <section id="dashboardScreen" class="dashboard hidden">
 
       <div class="dashboard-heading">
-
         <div>
           <span class="eyebrow dark">YOUR GGRDATA SPACE</span>
-
           <h1 id="welcome">Welcome</h1>
-
-          <p>
-            Everything starts with a clear view of your account.
-          </p>
+          <p>Your connections, wallet and account at a glance.</p>
         </div>
 
         <button id="logoutBtn" class="button-outline" type="button">
           Sign out ↗
         </button>
-
       </div>
 
-      <!-- WALLET -->
-      <div class="balance-card">
-
-        <div>
-          <span class="balance-label">
-            AVAILABLE WALLET BALANCE
-          </span>
-
-          <div class="balance-amount" id="balance">
-            ₦—
-          </div>
-
-          <span class="balance-caption">
-            Nigerian naira · Wallet ledger protected
-          </span>
+      <!-- WALLET OVERVIEW -->
+      <section class="balance-card">
+        <div class="wallet-topline">
+          <span class="balance-label">AVAILABLE WALLET BALANCE</span>
+          <span class="wallet-status"><i></i> WALLET</span>
         </div>
 
-        <div class="balance-symbol">₦</div>
+        <div class="balance-amount" id="balance">₦—</div>
 
-      </div>
+        <div class="wallet-bottomline">
+          <span class="balance-caption">Nigerian naira · Protected wallet ledger</span>
+          <span class="balance-symbol">₦</span>
+        </div>
+      </section>
 
+      <!-- QUICK SERVICES -->
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <div>
+            <span class="card-kicker">YOUR EVERYDAY SERVICES</span>
+            <h2>What would you like to do?</h2>
+          </div>
+          <span class="section-note">Launching soon</span>
+        </div>
+
+        <div class="service-grid">
+          <article class="service-card service-airtime">
+            <span class="service-icon">↗</span>
+            <span class="service-status">COMING SOON</span>
+            <h3>Buy Airtime</h3>
+            <p>Top up your mobile line across supported networks.</p>
+          </article>
+
+          <article class="service-card service-data">
+            <span class="service-icon">◈</span>
+            <span class="service-status">COMING SOON</span>
+            <h3>Buy Data</h3>
+            <p>Explore data bundles and find the right plan.</p>
+          </article>
+
+          <article class="service-card service-wallet">
+            <span class="service-icon">₦</span>
+            <span class="service-status">COMING SOON</span>
+            <h3>Fund Wallet</h3>
+            <p>Add funds through a securely verified payment.</p>
+          </article>
+
+          <article class="service-card service-track">
+            <span class="service-icon">✓</span>
+            <span class="service-status">COMING SOON</span>
+            <h3>TrustTrack</h3>
+            <p>Follow transaction references and view receipts.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- NETWORK PREVIEW -->
+      <section class="network-panel">
+        <div>
+          <span class="card-kicker">SUPPORTED NETWORKS</span>
+          <h2>One place. Your networks.</h2>
+          <p>Network services will become available after secure provider integration.</p>
+        </div>
+
+        <div class="network-list">
+          <span class="network-chip mtn">MTN</span>
+          <span class="network-chip airtel">Airtel</span>
+          <span class="network-chip glo">Glo</span>
+          <span class="network-chip nine">9mobile</span>
+        </div>
+      </section>
+
+      <!-- ACCOUNT AND ACTIVITY -->
       <div class="dashboard-grid">
 
-        <!-- PROFILE -->
         <article class="detail-card">
-
           <span class="card-kicker">ACCOUNT PROFILE</span>
-
           <h2>Your details</h2>
 
           <div class="detail-row">
@@ -295,64 +261,37 @@
             <span>Phone number</span>
             <b id="profilePhone">—</b>
           </div>
-
         </article>
 
-        <!-- UPCOMING FEATURES -->
-        <article class="detail-card next-card">
+        <article class="detail-card activity-card">
+          <span class="card-kicker">GGR TRUSTTRACK</span>
+          <h2>Recent activity</h2>
 
-          <span class="card-kicker">COMING INTO VIEW</span>
-
-          <h2>Your connection tools</h2>
-
-          <div class="coming-item">
-            <span>01</span>
-            <div>
-              <b>Airtime & data</b>
-              <small>Top-ups across supported networks.</small>
-            </div>
+          <div class="empty-activity">
+            <span class="empty-activity-icon">◷</span>
+            <b>Your activity will appear here</b>
+            <p>Your transaction history and receipts will be available when services launch.</p>
           </div>
-
-          <div class="coming-item">
-            <span>02</span>
-            <div>
-              <b>QuickBuy & Data Finder</b>
-              <small>Useful shortcuts for everyday purchases.</small>
-            </div>
-          </div>
-
-          <div class="coming-item">
-            <span>03</span>
-            <div>
-              <b>TrustTrack</b>
-              <small>Receipts and clear transaction status.</small>
-            </div>
-          </div>
-
-          <p class="notice">
-            Purchases and wallet funding are not enabled yet.
-            We will activate them only after payment and delivery
-            safeguards are tested.
-          </p>
-
         </article>
 
       </div>
 
-      <div
-        id="dashMessage"
-        class="message"
-        role="status"
-        aria-live="polite">
+      <div class="dashboard-notice">
+        <span class="notice-icon">◆</span>
+        <p>
+          <b>Built around your security.</b>
+          Wallet funding and purchases remain disabled until payment
+          verification, provider delivery and refund safeguards are tested.
+        </p>
       </div>
+
+      <div id="dashMessage" class="message" role="status" aria-live="polite"></div>
 
     </section>
-
   </main>
 
   <footer>
     © 2026 GGRData <span>·</span> Your connection. Your control.
   </footer>
-
 </body>
 </html>
