@@ -1631,3 +1631,440 @@ img {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* =========================================================
+   24. PREMIUM POLISH LAYER
+   Emerald · dark gold · champagne · warm ivory
+   ========================================================= */
+
+:root{
+  --ink:var(--text);
+  --muted:var(--text-soft);
+  --line:var(--border);
+  --gold-deep:#6b4e0e;
+  --gold-rich:#a98230;
+  --ivory:#f8f6ef;
+  --ring-gold:0 0 0 3px rgba(196,154,67,.22);
+}
+
+body{
+  background:
+    radial-gradient(1000px 420px at 85% -120px,rgba(196,154,67,.10),transparent 60%),
+    radial-gradient(900px 420px at -10% 110%,rgba(7,61,50,.07),transparent 60%),
+    var(--ivory);
+  color:var(--text);
+  letter-spacing:.005em;
+}
+
+h1,h2,h3{font-family:"Manrope","DM Sans",sans-serif;letter-spacing:-.02em}
+
+/* ---------- HEADER ---------- */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  min-height:70px;
+  background:linear-gradient(180deg,#04261f,#063b30);
+  border-bottom:0;
+  box-shadow:0 1px 0 rgba(232,207,140,.55),0 12px 30px rgba(4,38,31,.22);
+}
+.brand{display:inline-flex;align-items:center}
+.brand-logo{display:block;height:40px;width:auto;max-width:62vw}
+.topbar-note{
+  padding:7px 13px;border:1px solid rgba(232,207,140,.4);border-radius:999px;
+  color:var(--gold-light);background:rgba(255,255,255,.04);font-size:9.5px;letter-spacing:2.2px;
+}
+
+/* ---------- AUTH ---------- */
+.auth-layout{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  min-height:calc(100vh - 170px);padding:24px 4px;background:none;
+}
+.auth-intro{width:min(100%,440px);text-align:left}
+.auth-intro .eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--gold-dark)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(196,154,67,.25);display:inline-block}
+.auth-intro h1{
+  margin:14px 0 10px;color:var(--emerald-dark);
+  font-size:clamp(32px,9vw,46px);font-weight:800;line-height:1.06;letter-spacing:-.045em;
+}
+.auth-intro h1 em{font-style:normal;color:var(--gold-dark)}
+.auth-intro p{max-width:380px;color:var(--text-soft);font-size:14px;line-height:1.75}
+.auth-networks{display:flex;gap:10px;margin-top:16px}
+.auth-networks img{
+  width:38px;height:38px;object-fit:cover;border-radius:50%;background:#fff;
+  border:2px solid #fff;box-shadow:0 4px 12px rgba(4,38,31,.14),0 0 0 1px var(--gold-light);
+}
+.auth-card{
+  position:relative;overflow:hidden;
+  border:1px solid var(--gold-light);
+  box-shadow:0 24px 60px rgba(107,78,14,.12),0 2px 6px rgba(4,38,31,.04);
+}
+.auth-card::before{
+  content:"";position:absolute;inset:0 0 auto 0;height:4px;
+  background:linear-gradient(90deg,var(--emerald),var(--gold),var(--emerald-light));
+}
+.tabs{background:var(--champagne);border:1px solid var(--gold-light)}
+.tab.active{color:var(--emerald-dark);box-shadow:0 3px 10px rgba(107,78,14,.14)}
+.field input,.quickbuy-field input,.quickbuy-select{
+  border:1px solid #e3d9bd;background:#fff;min-height:52px;font-size:16px;
+}
+.field input:focus,.quickbuy-field input:focus,.quickbuy-select:focus{
+  border-color:var(--gold);box-shadow:var(--ring-gold);
+}
+.field small{display:block;margin-top:6px;color:var(--text-muted);font-size:11px}
+.button-primary{
+  background:linear-gradient(115deg,#04261f,#0d6954);
+  border:1px solid rgba(232,207,140,.55);
+  box-shadow:0 10px 22px rgba(4,38,31,.22);
+  font-family:"Manrope",sans-serif;letter-spacing:.01em;
+}
+.button-primary:hover{box-shadow:0 14px 28px rgba(4,38,31,.3)}
+.text-button{color:var(--gold-dark)}
+.secure-note span{color:var(--gold)}
+
+.message{padding:11px 14px;border:1px solid #cfe6da;border-radius:12px;background:#eef8f2;color:var(--emerald-dark);font-size:13px;line-height:1.6}
+.message:empty{display:none}
+.message.error{border-color:#f0cccc;background:#fdf0f0;color:#9b2c2c}
+.message.toast{
+  position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));z-index:1200;
+  width:calc(100% - 28px);max-width:460px;transform:translateX(-50%);margin:0;
+  background:#fff;box-shadow:0 18px 40px rgba(4,38,31,.25);border-color:var(--gold);
+}
+
+/* ---------- WELCOME ---------- */
+.welcome-panel{
+  position:relative;overflow:hidden;padding:18px 18px;border-radius:22px;
+  background:
+    radial-gradient(circle at 92% 0%,rgba(232,207,140,.30),transparent 38%),
+    linear-gradient(125deg,#04261f,#0d6954);
+  border:1px solid rgba(232,207,140,.55);
+  box-shadow:0 16px 34px rgba(4,38,31,.24);
+}
+.welcome-panel::after{
+  content:"";position:absolute;right:-50px;bottom:-90px;width:200px;height:200px;
+  border:1px solid rgba(232,207,140,.22);border-radius:50%;pointer-events:none;
+}
+.welcome-logo{
+  width:52px;height:52px;padding:0;border-radius:16px;object-fit:cover;
+  border:2px solid var(--gold-light);box-shadow:0 6px 16px rgba(0,0,0,.28);background:#063b30;
+}
+.welcome-caption{color:var(--gold-light);letter-spacing:2.2px}
+.welcome-panel h1{color:#fff;font-size:clamp(19px,5vw,25px)}
+.notification-button{
+  background:rgba(255,255,255,.1);border:1px solid rgba(232,207,140,.5);
+  color:var(--gold-light);box-shadow:none;position:relative;z-index:1;
+}
+.notification-button small{background:var(--gold-light);color:var(--emerald-dark);border-color:#0a5845}
+
+/* ---------- PACKAGE ---------- */
+.package-panel{
+  padding:13px 18px;border:1px solid var(--gold-light);border-radius:16px;
+  background:linear-gradient(110deg,#fff,var(--champagne));box-shadow:0 6px 18px rgba(107,78,14,.07);
+}
+.package-label{color:var(--gold-dark)}
+.package-panel strong{color:var(--emerald-dark);font-size:14px}
+
+/* ---------- BALANCE (dark gold) ---------- */
+.account-balance-card{
+  border:1px solid rgba(255,240,200,.45);
+  background:
+    radial-gradient(circle at 90% 0%,rgba(255,244,214,.30),transparent 36%),
+    linear-gradient(125deg,#6b4e0e,#a98230 62%,#c3a047);
+  box-shadow:0 20px 40px rgba(107,78,14,.32);
+}
+.account-balance-card::after{border-color:rgba(255,255,255,.18)}
+.balance-title{color:rgba(255,255,255,.85);letter-spacing:.04em}
+.balance-column + .balance-column{border-left-color:rgba(255,255,255,.4)}
+.referral-balance .balance-value-row strong{color:#fff4d6}
+.visibility-button{color:#fff4d6;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.14)}
+.fund-wallet-button{
+  width:100%;min-height:52px;justify-content:center;
+  background:linear-gradient(115deg,#04261f,#0d6954);color:#fff;
+  border:1px solid rgba(232,207,140,.6);font-family:"Manrope",sans-serif;font-size:15px;
+  box-shadow:0 10px 22px rgba(0,0,0,.25);
+}
+.fund-wallet-button span{
+  display:grid;place-items:center;width:24px;height:24px;border-radius:7px;
+  background:var(--gold-light);color:var(--emerald-dark);font-size:18px;
+}
+.wallet-footnote{color:rgba(255,255,255,.82);text-align:center}
+
+/* ---------- QUICKBUY HOME ---------- */
+.quickbuy-home{
+  padding:18px;border-radius:20px;border:1.5px solid var(--gold-light);
+  background:linear-gradient(130deg,#fff 35%,var(--champagne));
+  box-shadow:0 12px 28px rgba(107,78,14,.09);
+}
+.quickbuy-home-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.quickbuy-home h2{margin:4px 0 0;color:var(--emerald-dark);font-size:18px}
+.quickbuy-home-last{margin:8px 0 14px;color:var(--text-soft);font-size:13px}
+.quickbuy-home-last b{color:var(--emerald-dark);font-weight:800}
+.quickbuy-home-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quickbuy-home-actions .button-primary{margin-top:0;min-height:48px}
+.finder-badge{
+  display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:13px;
+  color:var(--gold-light);font-size:20px;font-weight:800;
+  background:linear-gradient(145deg,#0d6954,#04261f);border:1.5px solid var(--gold);
+}
+
+/* ---------- FUNDING (dark gold) ---------- */
+.funding-account-card{
+  border:1px solid rgba(255,240,200,.4);
+  background:radial-gradient(circle at 100% 0%,rgba(255,244,214,.24),transparent 38%),linear-gradient(120deg,#6b4e0e,#a98230);
+  box-shadow:0 14px 30px rgba(107,78,14,.26);color:#fff;
+}
+.funding-account-card .card-kicker.light{color:#fff4d6}
+.funding-card-heading h2{color:#fff}
+.funding-icon{color:#fff4d6;border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.14)}
+.funding-placeholder{color:rgba(255,255,255,.94);background:rgba(255,255,255,.12);border:1px dashed rgba(255,255,255,.4)}
+.funding-security{color:#fff4d6}
+.funding-security span{color:#fff4d6}
+
+/* ---------- SERVICES ---------- */
+.services-section{
+  padding:22px 16px 14px;border:1px solid var(--gold-light);border-radius:22px;
+  background:#fff;box-shadow:0 12px 30px rgba(107,78,14,.08);
+}
+.services-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:18px}
+.services-heading h2{margin:3px 0 0;color:var(--emerald-dark);font-size:21px}
+.services-caption{color:var(--gold-dark);font-size:11px;font-weight:700}
+.service-icon{
+  width:50px;height:50px;border:2px solid var(--gold);border-radius:16px;
+  background:linear-gradient(145deg,#0d6954,#04261f);color:var(--gold-light);
+  box-shadow:0 8px 16px rgba(4,38,31,.22),0 0 0 4px rgba(196,154,67,.12);font-size:22px;
+}
+.service-item{background:none;border:0;font-family:inherit}
+.service-item span:last-child{color:var(--emerald-dark);font-weight:700;font-size:11px}
+.service-item.soon{position:relative}
+.service-item.soon .service-icon{filter:saturate(.55);opacity:.8}
+.service-item.soon::after{
+  content:"Soon";position:absolute;top:2px;right:50%;transform:translateX(34px);
+  padding:2px 7px;border-radius:999px;background:var(--champagne);border:1px solid var(--gold-light);
+  color:var(--gold-dark);font:800 8px "Manrope",sans-serif;letter-spacing:.08em;text-transform:uppercase;
+}
+
+/* ---------- NETWORKS ---------- */
+.network-panel{
+  border:1px solid var(--gold-light);background:#fff;
+  box-shadow:0 10px 26px rgba(107,78,14,.07);
+}
+.network-panel h2{margin:3px 0 0;color:var(--emerald-dark)}
+.network-chip{
+  background:var(--champagne);border:1px solid var(--gold-light);color:var(--emerald-dark);font-weight:800;
+}
+.network-logo{border-radius:50%;object-fit:cover;background:#fff}
+
+/* ---------- SHARED DETAIL CARDS ---------- */
+.detail-card{
+  border:1px solid var(--gold-light);box-shadow:0 14px 32px rgba(107,78,14,.09);
+}
+.detail-card h2{margin:5px 0 18px;color:var(--emerald-dark)}
+.detail-row{border-bottom:1px solid #f1e9d3}
+.detail-row b{color:var(--emerald-dark)}
+.button-outline{
+  min-height:48px;width:100%;margin-top:14px;border:1px solid rgba(232,207,140,.6);
+  background:linear-gradient(115deg,#04261f,#0d6954);color:#fff;
+  font-family:"Manrope",sans-serif;font-size:13px;box-shadow:0 8px 18px rgba(4,38,31,.18);
+}
+.button-outline:hover{background:linear-gradient(115deg,#063b30,#0d7a60);color:#fff}
+.logout-button{background:#fff;color:#a33a3a;border:1px solid #e9c9c9;box-shadow:none}
+.logout-button:hover{background:#a33a3a;color:#fff;border-color:#a33a3a}
+.card-kicker,.eyebrow,.package-label{letter-spacing:2px}
+
+/* ---------- DATA STORE ---------- */
+.data-store-heading h2{font-size:24px;margin:5px 0 0}
+.data-store-icon{
+  border:1.5px solid var(--gold);background:linear-gradient(145deg,#0d6954,#04261f);color:var(--gold-light);
+}
+.quickbuy-balance{
+  border:1px solid rgba(255,240,200,.45);
+  background:radial-gradient(circle at 95% 0%,rgba(255,244,214,.28),transparent 40%),linear-gradient(125deg,#6b4e0e,#a98230);
+}
+.quickbuy-balance strong{color:#fff}
+.quickbuy-wallet-icon{color:#fff4d6;border-color:rgba(255,255,255,.4)}
+.network-detection{
+  border:1px solid #cfe6da;background:#eef8f2;color:var(--emerald);font-weight:700;
+}
+.quickbuy-field{margin-bottom:20px}
+.quickbuy-hint{color:var(--text-soft)}
+.recent-beneficiary{border:1px solid var(--gold);background:var(--champagne);border-radius:14px}
+.recent-beneficiary > span:first-child{background:#fff;color:var(--gold-dark)}
+.recent-beneficiary > span:last-child{
+  padding:7px 14px;border-radius:10px;color:#fff;background:linear-gradient(110deg,#04261f,#0d6954);
+}
+.data-network-button{
+  min-height:98px;border:1.5px solid #e9dfc3;background:#fff;box-shadow:0 4px 12px rgba(107,78,14,.06);
+}
+.data-network-button img{border-radius:50%;object-fit:cover;width:42px;height:42px;background:#fff}
+.data-network-button.active{
+  border:2px solid var(--gold);background:var(--champagne);color:var(--emerald-dark);box-shadow:var(--ring-gold);
+}
+.data-catalogue-toolbar{border-bottom:1px solid #f1e9d3}
+.data-catalogue-label{color:var(--gold-dark)}
+.data-catalogue-status{
+  border:1px solid var(--line);background:#fcfbf7;color:var(--text-soft);font-size:12.5px;
+}
+.data-catalogue-status.success{border-color:#cfe6da;background:#eef8f2;color:var(--emerald)}
+.data-catalogue-status.error{border-color:#f0cccc;background:#fdf0f0;color:#9b2c2c}
+.data-catalogue-status.loading{border-color:var(--gold-light);background:var(--champagne);color:var(--gold-dark)}
+.data-catalogue-status.empty{border-color:var(--gold-light);background:#fffaf0;color:#78612a}
+.data-plan-card{
+  position:relative;display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px;
+  border:1px solid var(--gold-light);border-radius:18px;
+  background:linear-gradient(130deg,#fff,#fffdf6);box-shadow:0 8px 20px rgba(107,78,14,.07);
+}
+.data-plan-card::before{
+  content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:0 3px 3px 0;
+  background:linear-gradient(var(--gold),var(--emerald-light));
+}
+.data-plan-details{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.data-plan-name{margin:0;color:var(--emerald-dark);font-size:14.5px;font-weight:800;overflow-wrap:anywhere;line-height:1.4}
+.data-plan-network{
+  flex:0 0 auto;padding:4px 10px;border-radius:999px;background:var(--champagne);
+  border:1px solid var(--gold-light);color:var(--gold-dark);font-size:10px;font-weight:800;
+}
+.data-plan-price{color:var(--emerald);font:800 22px "Manrope",sans-serif;letter-spacing:-.03em}
+.data-plan-footer{padding-top:10px;border-top:1px dashed #eadfc3}
+.data-plan-availability{color:var(--text-soft);font-size:10.5px;font-weight:600}
+.data-store-footnote{border:1px solid var(--gold-light);background:var(--champagne);color:#6d5a2a;font-size:11.5px}
+
+/* chips */
+.pick-label{margin:6px 0 8px;font:800 10.5px "Manrope",sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-dark)}
+.amount-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.amount-chip{
+  min-height:46px;border-radius:14px;background:#fff;border:1.5px solid #e9dfc3;color:var(--emerald-dark);
+  font:800 13px "Manrope",sans-serif;transition:.2s;
+}
+.amount-chip.selected{border-color:var(--gold);background:var(--champagne);box-shadow:var(--ring-gold)}
+.preview-note{margin-top:12px;text-align:center;color:var(--text-soft);font-size:12px}
+
+/* Smart Data Finder */
+.finder-card{
+  margin:4px 0 22px;padding:16px;border-radius:20px;border:1.5px solid var(--gold);
+  background:linear-gradient(160deg,#fff 40%,var(--champagne));box-shadow:0 12px 26px rgba(107,78,14,.11);
+}
+.finder-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.finder-head b{display:block;color:var(--emerald-dark);font:800 16px "Manrope",sans-serif}
+.finder-head .card-kicker{margin-bottom:2px}
+.need-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.need-chip{
+  display:grid;gap:2px;padding:12px 11px;border-radius:14px;text-align:left;background:#fff;
+  border:1.5px solid #e9dfc3;font-family:inherit;transition:.2s;
+}
+.need-chip b{color:var(--emerald-dark);font-size:13px}
+.need-chip small{color:var(--text-soft);font-size:11px;line-height:1.35}
+.need-chip.selected{border-color:var(--gold);background:var(--champagne);box-shadow:var(--ring-gold)}
+.finder-results{display:grid;gap:10px;margin-top:14px}
+.finder-results:empty{display:none}
+.finder-result{display:grid;gap:5px;padding:14px;border-radius:15px;background:#fff;border:1px solid var(--gold-light);box-shadow:0 6px 14px rgba(107,78,14,.06)}
+.finder-tag{
+  justify-self:start;padding:3px 11px;border-radius:999px;color:#fff;
+  font:800 10px "Manrope",sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  background:linear-gradient(110deg,#6b4e0e,#b08a34);
+}
+.finder-result b{color:var(--emerald-dark);font-size:14px;overflow-wrap:anywhere}
+.finder-result strong{color:var(--emerald);font:800 19px "Manrope",sans-serif}
+.finder-empty{padding:12px 14px;border-radius:12px;background:#fffaf0;border:1px solid var(--gold-light);color:#78612a;font-size:13px;line-height:1.6}
+
+/* ---------- TRANSACTIONS / TRUSTTRACK ---------- */
+.trust-strip{
+  display:grid;gap:3px;margin:0 0 16px;padding:13px 15px;border-radius:15px;
+  background:linear-gradient(120deg,var(--champagne),#fff);border:1px solid var(--gold-light);
+}
+.trust-strip b{color:var(--emerald-dark);font-size:13px}
+.trust-strip span{color:var(--text-soft);font-size:12px;line-height:1.6}
+.tx-list{display:grid;gap:10px}
+.tx-item{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;
+  border:1px solid var(--gold-light);border-radius:16px;background:#fff;transition:.2s;
+}
+.tx-item:hover{box-shadow:0 8px 18px rgba(107,78,14,.1);transform:translateY(-1px)}
+.tx-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:12px;font-weight:800}
+.tx-icon.in{color:var(--emerald-light);background:#e6f3ec}
+.tx-icon.out{color:var(--gold-dark);background:var(--champagne)}
+.tx-main{flex:1;min-width:0}
+.tx-main b{display:block;font-size:14px;color:var(--emerald-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:capitalize}
+.tx-main small{display:block;margin-top:2px;color:var(--text-soft);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-amount{font:800 14px "Manrope",sans-serif;white-space:nowrap}
+.tx-amount.in{color:var(--emerald-light)}
+.tx-amount.out{color:var(--gold-dark)}
+.empty-activity{border:1px dashed var(--gold);background:var(--champagne)}
+.empty-activity-icon{background:#fff;color:var(--gold-dark);border:1px solid var(--gold-light)}
+.empty-activity b{color:var(--emerald-dark)}
+
+/* TrustTrack sheet */
+.tx-sheet{position:fixed;inset:0;z-index:1300;display:flex;align-items:flex-end;justify-content:center}
+.tx-sheet-backdrop{position:absolute;inset:0;background:rgba(4,38,31,.55);backdrop-filter:blur(2px)}
+.tx-sheet-panel{
+  position:relative;width:100%;max-width:520px;max-height:90vh;overflow:auto;text-align:center;
+  padding:12px 20px calc(24px + env(safe-area-inset-bottom));background:#fff;
+  border-radius:28px 28px 0 0;border-top:3px solid var(--gold);animation:sheetUp .28s ease both;
+}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.tx-sheet-grab{width:44px;height:4px;border-radius:4px;background:#e6dbb8;margin:0 auto 16px}
+.tx-sheet-icon{display:inline-grid;place-items:center;width:58px;height:58px;border-radius:50%;font-size:24px;font-weight:800;background:var(--champagne);color:var(--gold-dark)}
+.tx-sheet-icon.in{background:#e6f3ec;color:var(--emerald-light)}
+.tx-sheet h3{margin:10px 0 2px;font-size:16px;color:var(--emerald-dark);text-transform:capitalize}
+.tx-sheet-amount{display:block;font:800 32px "Manrope",sans-serif;letter-spacing:-.04em;color:var(--ink)}
+.tx-sheet-amount.in{color:var(--emerald-light)}
+.tx-sheet-status{display:inline-block;margin:8px 0 16px;padding:4px 13px;border-radius:999px;background:#e6f3ec;color:var(--emerald-light);font:800 11px "Manrope",sans-serif}
+.tx-sheet-rows{text-align:left;margin-bottom:12px}
+.tt-timeline{list-style:none;margin:4px 0 16px;padding:0;text-align:left}
+.tt-step{position:relative;padding:0 0 14px 32px;color:var(--ink);font-size:14px;font-weight:600}
+.tt-step::before{content:"✓";position:absolute;left:0;top:0;display:grid;place-items:center;width:21px;height:21px;border-radius:50%;background:var(--emerald-light);color:#fff;font-size:11px;font-weight:800}
+.tt-step::after{content:"";position:absolute;left:10px;top:23px;bottom:2px;width:2px;background:var(--gold-light)}
+.tt-step:last-child{padding-bottom:0}
+.tt-step:last-child::after{display:none}
+.tt-step.pending{color:var(--text-soft);font-weight:500}
+.tt-step.pending::before{content:"…";background:#fff;color:var(--gold-dark);border:2px dashed var(--gold)}
+.tt-help{margin:0 0 4px;color:var(--text-soft);font-size:12.5px}
+.tt-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tt-actions .button-outline{margin-top:10px}
+.tt-actions .hidden{display:none}
+
+/* ---------- NOTICE, NAV, FOOTER ---------- */
+.dashboard-notice{
+  display:flex;align-items:flex-start;gap:12px;min-height:0;padding:15px;
+  border:1px solid var(--gold-light);border-radius:16px;background:linear-gradient(120deg,var(--champagne),#fff);
+}
+.notice-icon{flex:0 0 22px;color:var(--gold-dark);font-size:17px}
+.dashboard-notice p{margin:0;color:#6d5a2a;font-size:12px;line-height:1.75}
+.dashboard-notice b{display:block;margin-bottom:2px;color:var(--emerald-dark);font-size:12.5px}
+
+.bottom-navigation{
+  background:linear-gradient(180deg,#8a6a1f,#6b4e0e);
+  border-top:1px solid rgba(255,240,200,.4);box-shadow:0 -10px 28px rgba(107,78,14,.32);
+  backdrop-filter:none;
+}
+.nav-item{color:rgba(255,255,255,.78);font-size:10px;font-family:"Manrope",sans-serif}
+.nav-item.active{background:rgba(255,255,255,.18);color:#fff}
+.nav-item.active .nav-icon{color:#fff4d6}
+
+.site-footer{
+  margin-top:28px;padding:20px 12px 4px;text-align:center;color:var(--text-soft);font-size:12px;
+  border-top:1px solid var(--gold-light);
+}
+.site-footer span{margin:0 4px;color:var(--gold)}
+
+/* ---------- MOTION & FOCUS ---------- */
+.dashboard-view.active,.dashboard{animation:ggrFade .35s ease both}
+@keyframes ggrFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+:focus-visible{outline:3px solid rgba(196,154,67,.6);outline-offset:3px}
+
+/* ---------- RESPONSIVE TUNING ---------- */
+@media(min-width:700px){
+  .auth-layout{flex-direction:row;gap:56px;align-items:center}
+  .auth-intro{width:min(100%,420px)}
+  .auth-card{width:min(100%,440px)}
+  .data-plans{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:520px){
+  .brand-logo{height:36px}
+  .topbar-note{display:none}
+  .welcome-panel{padding:16px 15px}
+  .service-item.soon::after{transform:translateX(28px)}
+}
+@media(max-width:360px){
+  .amount-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+.service-item .service-icon{color:var(--gold-light);font-weight:800}
