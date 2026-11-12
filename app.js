@@ -118,6 +118,11 @@ const elements = {
   recentBeneficiaryNumber: document.getElementById("recentBeneficiaryNumber"),
   dataTypeSelect: document.getElementById("dataTypeSelect"),
 
+  profileAvatar: document.getElementById("profileAvatar"),
+  profileDisplayName: document.getElementById("profileDisplayName"),
+  profileUsername: document.getElementById("profileUsername"),
+  profileDetails: document.getElementById("profileDetails"),
+
   finderResults: document.getElementById("finderResults"),
   homeRecentNumber: document.getElementById("homeRecentNumber"),
 
@@ -158,6 +163,7 @@ let manuallySelectedNetworkForPhone = null;
 let catalogueRequestNumber = 0;
 let currentWalletBalance = null;
 let lastPlans = [];
+let currentUsername = "";
 let finderBudget = null;
 let finderNeed = null;
 let airtimeManualForPhone = null;
@@ -748,7 +754,8 @@ const TAB_VIEW_IDS = {
   wallet: "walletView",
   profile: "profileView",
   "data-store": "dataStoreView",
-  airtime: "airtimeView"
+  airtime: "airtimeView",
+  service: "serviceView"
 };
 
 function showTab(tabName) {
@@ -771,7 +778,9 @@ function showTab(tabName) {
 
   document.querySelectorAll(".bottom-navigation .nav-item").forEach((item) => {
     const navTab =
-      tabName === "data-store" || tabName === "airtime" ? "home" : tabName;
+      tabName === "data-store" || tabName === "airtime" || tabName === "service"
+        ? "home"
+        : tabName;
 
     item.classList.toggle("active", item.dataset.tab === navTab);
   });
@@ -801,6 +810,8 @@ function applyBalanceVisibility() {
       "aria-label",
       balanceHidden ? "Show balance" : "Hide balance"
     );
+
+    setEyeIcon(elements.toggleBalance, balanceHidden);
   }
 
   updateQuickBuyBalance();
@@ -1659,6 +1670,28 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (event.target.closest("#toggleReferral")) {
+    referralHidden = !referralHidden;
+    applyReferralVisibility();
+    return;
+  }
+
+  const profileTarget = event.target.closest("[data-profile]");
+
+  if (profileTarget) {
+    const action = profileTarget.dataset.profile;
+
+    if (action === "details") {
+      elements.profileDetails?.classList.toggle("hidden");
+    } else if (action === "dark") {
+      toggleTheme();
+    } else if (action === "soon") {
+      showSoon(profileTarget.dataset.label || "This page");
+    }
+
+    return;
+  }
+
   const netOption = event.target.closest(".net-option");
 
   if (netOption) {
@@ -1738,6 +1771,11 @@ document.addEventListener("click", (event) => {
         updateRecentBeneficiaryDisplay();
         return;
       }
+
+      if (SERVICE_SCREENS[service]) {
+        openServiceScreen(service);
+        return;
+      }
     }
 
     const label =
@@ -1761,6 +1799,350 @@ document.addEventListener("click", (event) => {
     );
   }
 });
+
+/* ---------------------------------------------------------
+   18b. SERVICE SCREENS (design previews — purchases are
+   switched on only after payment safeguards are tested)
+   --------------------------------------------------------- */
+
+const NETWORK_CHOICES = ["MTN", "Airtel", "Glo"];
+
+const DISCO_CHOICES = [
+  "Ikeja", "Eko", "Abuja", "Kano", "Kaduna", "Ibadan",
+  "Enugu", "Jos", "Port Harcourt", "Benin", "Yola", "Aba"
+];
+
+const SERVICE_SCREENS = {
+  cable: {
+    kicker: "CABLE TV",
+    title: "Pay for Cable TV",
+    sub: "Renew your decoder subscription.",
+    fields: [
+      { type: "chips", label: "Provider", options: ["DStv", "GOtv", "StarTimes"] },
+      { type: "input", label: "Smartcard / IUC number", placeholder: "Enter decoder number", mode: "numeric" }
+    ],
+    note: "Packages and prices load from the provider once cable payments are switched on.",
+    action: "Continue",
+    safeguard: true
+  },
+
+  electricity: {
+    kicker: "ELECTRICITY",
+    title: "Buy electricity",
+    sub: "Pay for prepaid or postpaid meters.",
+    fields: [
+      { type: "chips", label: "Distribution company", options: DISCO_CHOICES, wide: true },
+      { type: "chips", label: "Meter type", options: ["Prepaid", "Postpaid"] },
+      { type: "input", label: "Meter number", placeholder: "Enter meter number", mode: "numeric" },
+      { type: "input", label: "Amount (₦)", placeholder: "e.g. 5000", mode: "numeric" }
+    ],
+    note: "Your meter name is confirmed with the provider before you pay.",
+    action: "Continue",
+    safeguard: true
+  },
+
+  "data-card": {
+    kicker: "DATA CARD",
+    title: "Buy data cards",
+    sub: "Data cards you can sell or share.",
+    fields: [
+      { type: "chips", label: "Network", options: NETWORK_CHOICES },
+      { type: "input", label: "Quantity", placeholder: "e.g. 5", mode: "numeric" }
+    ],
+    note: "Card sizes and prices will appear here once data cards are switched on.",
+    action: "Continue",
+    safeguard: true
+  },
+
+  bonus: {
+    kicker: "BONUS TO WALLET",
+    title: "Move bonus to wallet",
+    sub: "Add your referral bonus to your wallet balance.",
+    useReferralInfo: true,
+    note: "Your bonus can be moved once you have a balance to transfer.",
+    action: "Move to wallet",
+    safeguard: true
+  },
+
+  "airtime-cash": {
+    kicker: "AIRTIME TO CASH",
+    title: "Convert airtime to cash",
+    sub: "Turn spare airtime into wallet money.",
+    fields: [
+      { type: "chips", label: "Network", options: NETWORK_CHOICES },
+      { type: "input", label: "Phone number", placeholder: "08012345678", mode: "numeric" },
+      { type: "input", label: "Airtime amount (₦)", placeholder: "e.g. 1000", mode: "numeric" }
+    ],
+    note: "The payout rate is shown before you confirm.",
+    action: "Continue",
+    safeguard: true
+  },
+
+  "recharge-pin": {
+    kicker: "RECHARGE PIN",
+    title: "Buy recharge PINs",
+    sub: "Printable airtime PINs.",
+    fields: [
+      { type: "chips", label: "Network", options: NETWORK_CHOICES },
+      { type: "chips", label: "Value", options: ["₦100", "₦200", "₦500", "₦1,000"] },
+      { type: "input", label: "Quantity", placeholder: "e.g. 10", mode: "numeric" }
+    ],
+    note: "PINs are delivered to your account once purchases are switched on.",
+    action: "Continue",
+    safeguard: true
+  },
+
+  "edu-pin": {
+    kicker: "EDU PIN",
+    title: "Buy exam PINs",
+    sub: "Result checker and registration PINs.",
+    fields: [
+      { type: "chips", label: "Exam body", options: ["WAEC", "NECO", "NABTEB", "JAMB"] },
+      { type: "input", label: "Quantity", placeholder: "e.g. 1", mode: "numeric" }
+    ],
+    note: "Prices appear here once exam PINs are switched on.",
+    action: "Continue",
+    safeguard: true
+  },
+
+  affiliate: {
+    kicker: "AFFILIATE WEBSITE",
+    title: "Your own GGRData website",
+    sub: "A storefront of your own, powered by GGRData.",
+    note: "Setup details will appear here when this service opens.",
+    action: "Notify me",
+    safeguard: false
+  },
+
+  referrals: {
+    kicker: "MY REFERRALS",
+    title: "Refer and earn",
+    sub: "Share your link and track the friends you bring in.",
+    referralPanel: true,
+    note: "Rewards are credited once referral tracking is switched on.",
+    safeguard: false
+  },
+
+  other: {
+    kicker: "OTHER SERVICES",
+    title: "More services",
+    sub: "We are adding more ways to pay and connect.",
+    note: "New services will show up here as soon as they are ready.",
+    safeguard: false
+  }
+};
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+
+  return node;
+}
+
+function showSoon(label) {
+  showDashboardMessage(`${label} will be added soon.`, "success", true);
+}
+
+function buildReferralPanel() {
+  const panel = el("div", "referral-panel");
+
+  const link = currentUsername
+    ? `${window.location.origin}/?ref=${encodeURIComponent(currentUsername)}`
+    : window.location.origin;
+
+  const stats = el("div", "referral-stats");
+
+  const people = el("div", "referral-stat");
+  people.append(el("b", "", "0"), el("small", "", "People referred"));
+
+  const earned = el("div", "referral-stat");
+  earned.append(
+    el("b", "", document.getElementById("referralBalance")?.textContent || "₦0.00"),
+    el("small", "", "Bonus earned")
+  );
+
+  stats.append(people, earned);
+
+  const field = el("div", "field");
+  const label = el("label", "", "Your referral link");
+  label.htmlFor = "referralLinkInput";
+
+  const input = el("input");
+  input.id = "referralLinkInput";
+  input.readOnly = true;
+  input.value = link;
+
+  field.append(label, input);
+
+  const copy = el("button", "button-primary", "Copy my link");
+  copy.type = "button";
+
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      copy.textContent = "Copied ✓";
+    } catch (error) {
+      input.select();
+      copy.textContent = "Select and copy the link";
+    }
+  });
+
+  panel.append(stats, field, copy);
+
+  return panel;
+}
+
+function renderServiceScreen(key) {
+  const config = SERVICE_SCREENS[key];
+  const body = document.getElementById("serviceBody");
+
+  if (!config || !body) return false;
+
+  body.replaceChildren();
+
+  body.append(el("span", "card-kicker", config.kicker));
+  body.append(el("h2", "", config.title));
+
+  if (config.sub) body.append(el("p", "service-sub", config.sub));
+
+  if (config.referralPanel) body.append(buildReferralPanel());
+
+  if (config.useReferralInfo) {
+    const row = el("div", "detail-row");
+    row.append(
+      el("span", "", "Referral bonus"),
+      el("b", "", document.getElementById("referralBalance")?.textContent || "₦0.00")
+    );
+    body.append(row);
+  }
+
+  (config.fields || []).forEach((field, index) => {
+    if (field.type === "chips") {
+      body.append(el("div", "pick-label", field.label));
+
+      const row = el("div", field.wide ? "choice-row wide" : "choice-row");
+
+      field.options.forEach((option) => {
+        const chip = el("button", "choice-chip", option);
+        chip.type = "button";
+        row.append(chip);
+      });
+
+      row.addEventListener("click", (event) => {
+        const chip = event.target.closest(".choice-chip");
+        if (!chip) return;
+
+        row.querySelectorAll(".choice-chip").forEach((c) =>
+          c.classList.toggle("selected", c === chip)
+        );
+      });
+
+      body.append(row);
+      return;
+    }
+
+    const wrap = el("div", "field");
+    const label = el("label", "", field.label);
+    const input = el("input");
+
+    input.id = `svc-${key}-${index}`;
+    label.htmlFor = input.id;
+    input.placeholder = field.placeholder || "";
+    input.inputMode = field.mode || "text";
+
+    wrap.append(label, input);
+    body.append(wrap);
+  });
+
+  if (config.action) {
+    const button = el("button", "button-primary", config.action);
+    button.type = "button";
+
+    button.addEventListener("click", () => {
+      if (config.safeguard) {
+        showComingSoon(config.title);
+      } else {
+        showSoon(config.title);
+      }
+    });
+
+    body.append(button);
+  }
+
+  if (config.note) body.append(el("p", "preview-note", config.note));
+
+  return true;
+}
+
+function openServiceScreen(key) {
+  if (!renderServiceScreen(key)) return;
+
+  showTab("service");
+}
+
+/* ---------------------------------------------------------
+   18c. PROFILE SETTINGS AND DARK MODE
+   --------------------------------------------------------- */
+
+const THEME_KEY = "ggrdata_theme";
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light";
+
+  document.getElementById("darkSwitch")?.setAttribute(
+    "aria-checked",
+    String(theme === "dark")
+  );
+}
+
+function loadSavedTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+  } catch (error) {
+    return "light";
+  }
+}
+
+function toggleTheme() {
+  const next =
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+
+  applyTheme(next);
+
+  try {
+    localStorage.setItem(THEME_KEY, next);
+  } catch (error) {
+    console.warn("Could not save theme:", error);
+  }
+}
+
+applyTheme(loadSavedTheme());
+
+function setEyeIcon(button, hidden) {
+  button
+    ?.querySelector("use")
+    ?.setAttribute("href", hidden ? "#i-eye" : "#i-eyeoff");
+}
+
+let referralHidden = false;
+
+function applyReferralVisibility() {
+  const value = document.getElementById("referralBalance");
+  const button = document.getElementById("toggleReferral");
+
+  if (!value) return;
+
+  value.textContent = referralHidden ? "₦ ••••" : "₦0.00";
+
+  button?.setAttribute(
+    "aria-label",
+    referralHidden ? "Show referral bonus" : "Hide referral bonus"
+  );
+
+  setEyeIcon(button, referralHidden);
+}
 
 /* ---------------------------------------------------------
    19. TRANSACTION LIST RENDERING
@@ -1959,6 +2341,23 @@ async function loadDashboard(user) {
       elements.welcome.textContent = `Hello, ${firstName}`;
     }
 
+    currentUsername = String(user.user_metadata?.username || "").trim();
+
+    if (elements.profileDisplayName) {
+      elements.profileDisplayName.textContent = name;
+    }
+
+    if (elements.profileUsername) {
+      elements.profileUsername.textContent = currentUsername
+        ? `@${currentUsername}`
+        : "";
+    }
+
+    if (elements.profileAvatar) {
+      elements.profileAvatar.textContent =
+        name.trim().charAt(0).toUpperCase() || "G";
+    }
+
     if (elements.profileName) {
       elements.profileName.textContent =
         profileError ? "Not available" : name;
@@ -2049,7 +2448,7 @@ async function loadDashboard(user) {
 
 if (elements.logoutBtn) {
   elements.logoutBtn.addEventListener("click", async () => {
-    setButtonLoading(elements.logoutBtn, true, "Signing out...");
+    elements.logoutBtn.disabled = true;
 
     try {
       const { error } = await supabaseClient.auth.signOut();
@@ -2071,7 +2470,7 @@ if (elements.logoutBtn) {
         "error"
       );
     } finally {
-      setButtonLoading(elements.logoutBtn, false);
+      elements.logoutBtn.disabled = false;
     }
   });
 }
