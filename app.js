@@ -35,9 +35,6 @@ const supabaseClient = window.supabase.createClient(
 const DATA_CATALOGUE_URL =
   `${SUPABASE_URL}/functions/v1/vtpass-catalogue`;
 
-const DATA_PURCHASE_URL =
-  `${SUPABASE_URL}/functions/v1/vtpass-data-purchase`;
-
 const SUPPORTED_DATA_NETWORKS = {
   mtn: "MTN",
   airtel: "Airtel",
@@ -163,14 +160,16 @@ let selectedDataCategory = "standard";
 let manuallySelectedNetworkForPhone = null;
 
 let catalogueRequestNumber = 0;
-let purchaseInProgress = false;
-let lastReconciliationAt = 0;
 let currentWalletBalance = null;
 let lastPlans = [];
 let currentUsername = "";
 let finderBudget = null;
 let finderNeed = null;
 let airtimeManualForPhone = null;
+
+/* Preserve the user's position separately for each dashboard page. */
+let activeDashboardTab = null;
+const dashboardScrollPositions = Object.create(null);
 
 /* Notifications Center state */
 let activeNotificationsUserId = null;
@@ -302,7 +301,7 @@ function showScreen(screen) {
     elements.dashMessage.classList.add("toast");
   }
 
-  window.scrollTo(0, 0);
+  /* Do not force the user to the top when screens are toggled. */
 }
 
 /* ---------------------------------------------------------
@@ -1060,6 +1059,11 @@ function showTab(tabName) {
 
   if (!elements.dashboardScreen) return;
 
+  /* Save the page being left before changing the visible dashboard view. */
+  if (activeDashboardTab) {
+    dashboardScrollPositions[activeDashboardTab] = window.scrollY || 0;
+  }
+
   Array.from(elements.dashboardScreen.children).forEach((section) => {
     if (section.id === "dashMessage") return;
 
@@ -1086,7 +1090,13 @@ function showTab(tabName) {
   });
 
   clearDashboardMessage();
-  window.scrollTo(0, 0);
+
+  /* Restore the exact scroll position previously reached on this page. */
+  activeDashboardTab = tabName;
+  const savedScrollPosition = dashboardScrollPositions[tabName] || 0;
+  window.requestAnimationFrame(() => {
+    window.scrollTo(0, savedScrollPosition);
+  });
 
   if (tabName === "data-store") {
     updateQuickBuyBalance();
@@ -1395,16 +1405,12 @@ function renderDataPlans(plans, networkName) {
 
     const availability = document.createElement("span");
     availability.className = "data-plan-availability";
-    availability.textContent = "Available via VTpass";
+    availability.textContent = "Catalogue listing";
 
-    const buyButton = document.createElement("button");
-    buyButton.type = "button";
-    buyButton.className = "data-plan-buy button-primary";
-    buyButton.textContent = "Buy bundle";
-    buyButton.addEventListener("click", () => purchaseDataPlan(plan, buyButton));
+    footer.append(availability);
 
-    footer.append(availability, buyButton);
     card.append(details, price, footer);
+
     fragment.append(card);
   });
 
@@ -1419,7 +1425,7 @@ function renderDataPlans(plans, networkName) {
   elements.dataPlans.append(fragment);
 
   setCatalogueStatus(
-    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Choose a plan and tap Buy bundle to continue.`,
+    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Select a plan for purchase once checkout is enabled.`,
     "success"
   );
 }
@@ -1490,11 +1496,8 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
       );
     }
 
-    const displayPlans = (Array.isArray(result.plans) ? result.plans : [])
-      .filter((plan) => !/\bglo\s*tv\b|\bvod\b|\btv\s+(?:lite|max)\b/i.test(String(plan?.name || "")));
-
     renderDataPlans(
-      displayPlans,
+      result.plans,
       result.networkName || networkName
     );
 
@@ -1532,151 +1535,11 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
   }
 }
 
-async function getAuthenticatedSession() {
-  const { data, error } = await supabaseClient.auth.getSession();
-  if (error || !data?.session?.access_token) {
-    throw new Error("Please sign in again before purchasing data.");
-  }
-  return data.session;
-}
-
-async function callDataPurchase(payload) {
-  const session = await getAuthenticatedSession();
-  const response = await fetch(DATA_PURCHASE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": SUPABASE_PUBLISHABLE_KEY,
-      "Authorization": `Bearer ${session.access_token}`
-    },
-    body: JSON.stringify(payload),
-    cache: "no-store"
-  });
-  const result = await response.json().catch(() => null);
-  if (!response.ok || !result?.success) {
-    throw new Error(result?.error || `Purchase request failed (${response.status}).`);
-  }
-  return result;
-}
-
-async function refreshWalletAndTransactions() {
-  const { data: authData } = await supabaseClient.auth.getUser();
-  const user = authData?.user;
-  if (!user) return;
-
-  const [walletResult, transactionsResult] = await Promise.all([
-    supabaseClient.from("wallets").select("balance, currency").eq("user_id", user.id).maybeSingle(),
-    supabaseClient.from("wallet_transactions")
-      .select("id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at")
-      .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50)
-  ]);
-
-  if (!walletResult.error && walletResult.data) {
-    currentWalletBalance = Number(walletResult.data.balance);
-    lastBalanceText = formatNaira(currentWalletBalance);
-    if (elements.balance) elements.balance.textContent = lastBalanceText;
-    applyBalanceVisibility();
-  }
-  if (!transactionsResult.error && elements.recentTransactions) {
-    renderTransactions(elements.recentTransactions, transactionsResult.data || [], 50);
-  }
-}
-
-async function purchaseDataPlan(plan, button) {
-  if (purchaseInProgress) return;
-
-  const phone = getLocalPhoneDigits(elements.dataPhone?.value || "");
-  if (!phone) {
-    setCatalogueStatus("Enter a valid Nigerian mobile number before choosing a plan.", "error");
-    elements.dataPhone?.focus();
-    return;
-  }
-  if (!plan?.code || !Number.isFinite(Number(plan.amount)) || Number(plan.amount) <= 0) {
-    setCatalogueStatus("This plan is not valid. Refresh the catalogue and try again.", "error");
-    return;
-  }
-  if (currentWalletBalance === null || !Number.isFinite(currentWalletBalance)) {
-    setCatalogueStatus("Your wallet balance is not available. Refresh your account and try again.", "error");
-    return;
-  }
-  if (currentWalletBalance < Number(plan.amount)) {
-    setCatalogueStatus("Your wallet balance is insufficient for this plan. Fund your wallet and try again.", "error");
-    return;
-  }
-
-  const confirmed = window.confirm(
-    `Confirm data purchase\n\nNetwork: ${SUPPORTED_DATA_NETWORKS[selectedDataNetwork]}\nPhone: ${phone}\nPlan: ${plan.name}\nAmount: ${formatNaira(plan.amount)}\n\nThe amount will be deducted from your GGRData wallet.`
-  );
-  if (!confirmed) return;
-
-  purchaseInProgress = true;
-  if (button) {
-    button.disabled = true;
-    button.textContent = "Processing...";
-  }
-  document.querySelectorAll(".data-plan-buy").forEach((item) => { item.disabled = true; });
-  setCatalogueStatus("Submitting your purchase securely. Please do not close this page.", "loading");
-
-  try {
-    const idempotencyKey = crypto.randomUUID().replaceAll("-", "");
-    const result = await callDataPurchase({
-      action: "purchase",
-      network: selectedDataNetwork,
-      phone,
-      variationCode: String(plan.code),
-      idempotencyKey
-    });
-
-    saveRecentBeneficiary(phone);
-    if (result.status === "successful") {
-      setCatalogueStatus(`Purchase successful: ${plan.name} sent to ${phone}.`, "success");
-    } else if (result.status === "failed") {
-      setCatalogueStatus("VTpass reported that this purchase failed. Your wallet refund has been processed.", "error");
-    } else {
-      setCatalogueStatus("Your purchase is still processing. Your wallet debit is held while VTpass confirms delivery. Check your transactions shortly.", "loading");
-    }
-    await refreshWalletAndTransactions();
-  } catch (error) {
-    console.error("Data purchase error:", error);
-    setCatalogueStatus(error?.message || "We could not complete this purchase. Please check your transactions before trying again.", "error");
-    await refreshWalletAndTransactions().catch(() => {});
-  } finally {
-    purchaseInProgress = false;
-    document.querySelectorAll(".data-plan-buy").forEach((item) => {
-      item.disabled = false;
-      item.textContent = "Buy bundle";
-    });
-  }
-}
-
-async function reconcilePendingDataOrders(force = false) {
-  const now = Date.now();
-  if (!force && now - lastReconciliationAt < 120000) return;
-  lastReconciliationAt = now;
-
-  try {
-    const result = await callDataPurchase({ action: "reconcile" });
-    if (result.checked > 0) {
-      const changed = (result.results || []).some((item) =>
-        item.status === "successful" || item.status === "failed"
-      );
-      if (changed) await refreshWalletAndTransactions();
-      const summary = (result.results || []).map((item) => item.status);
-      if (summary.includes("successful") || summary.includes("failed")) {
-        setCatalogueStatus("We checked pending purchases and updated the confirmed results.", "success");
-      }
-    }
-  } catch (error) {
-    console.warn("Pending data purchase reconciliation was not completed:", error);
-  }
-}
-
 function openDataStore() {
   showTab("data-store");
 
   updateQuickBuyBalance();
   updateRecentBeneficiaryDisplay();
-  reconcilePendingDataOrders();
 
   if (
     !elements.dataPlans ||
@@ -2719,6 +2582,12 @@ async function loadDashboard(user) {
   notificationFilter = "all";
   updateNotificationCount();
   loadNotifications(user.id, true);
+
+  /* A newly signed-in account starts with a clean page-position history. */
+  activeDashboardTab = null;
+  Object.keys(dashboardScrollPositions).forEach((key) => {
+    delete dashboardScrollPositions[key];
+  });
 
   showScreen("dashboard");
   showTab("home");
