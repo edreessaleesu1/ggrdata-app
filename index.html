@@ -23,6 +23,51 @@
 
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-dollar" viewBox="0 0 24 24"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-badge" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="i-headset" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  </defs>
+</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="personArt" viewBox="0 0 200 220">
+      <ellipse cx="100" cy="212" rx="86" ry="10" fill="#000" opacity=".12"/>
+      <path d="M22 220c0-46 34-74 78-74s78 28 78 74z" fill="#e8cf8c"/>
+      <path d="M72 150c8 14 20 20 28 20s20-6 28-20l-10-12H82z" fill="#7a4a2e"/>
+      <path d="M100 170l-14-22h28z" fill="#fff" opacity=".9"/>
+      <rect x="86" y="120" width="28" height="30" rx="12" fill="#8d5a3b"/>
+      <ellipse cx="100" cy="92" rx="38" ry="42" fill="#9c6644"/>
+      <ellipse cx="62" cy="96" rx="6" ry="9" fill="#8d5a3b"/>
+      <ellipse cx="138" cy="96" rx="6" ry="9" fill="#8d5a3b"/>
+      <path d="M62 84c-4-34 18-48 40-48s42 12 38 48c-6-16-20-24-40-24s-32 8-38 24z" fill="#1d1712"/>
+      <circle cx="86" cy="94" r="3.6" fill="#1d1712"/>
+      <circle cx="114" cy="94" r="3.6" fill="#1d1712"/>
+      <path d="M84 112c8 10 24 10 32 0" fill="none" stroke="#1d1712" stroke-width="3.5" stroke-linecap="round"/>
+      <rect x="140" y="132" width="26" height="44" rx="6" transform="rotate(12 153 154)" fill="#04261f" stroke="#e8cf8c" stroke-width="2.5"/>
+      <rect x="145" y="139" width="16" height="26" rx="2" transform="rotate(12 153 154)" fill="#0d6954"/>
+      <path d="M126 170c8 6 18 2 24-10" fill="none" stroke="#9c6644" stroke-width="9" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+
   <!-- BRAND HEADER -->
   <header class="topbar">
     <a class="brand" href="./" aria-label="GGRData home">
@@ -186,7 +231,7 @@
 
               <button id="toggleBalance" class="visibility-button"
                 type="button" aria-label="Hide balance">
-                ◉
+                <svg class="ico"><use href="#i-eyeoff"/></svg>
               </button>
             </div>
           </div>
@@ -196,7 +241,11 @@
 
             <div class="balance-value-row">
               <strong id="referralBalance">₦0.00</strong>
-              <span class="referral-symbol">◇</span>
+
+              <button id="toggleReferral" class="visibility-button"
+                type="button" aria-label="Hide referral bonus">
+                <svg class="ico"><use href="#i-eyeoff"/></svg>
+              </button>
             </div>
           </div>
 
@@ -204,30 +253,10 @@
 
         <button id="fundWalletBtn" class="fund-wallet-button"
           type="button">
-          <span>＋</span> Fund Wallet
+          <span class="fund-plus"><svg class="ico"><use href="#i-plus"/></svg></span>
+          Fund Wallet
         </button>
 
-        <p class="wallet-footnote">
-          Your wallet balance is based on your verified account ledger.
-        </p>
-
-      </section>
-
-
-      <!-- GGR QUICKBUY (home shortcut) -->
-      <section class="quickbuy-home">
-        <div class="quickbuy-home-top">
-          <div>
-            <span class="card-kicker">GGR QUICKBUY</span>
-            <h2>Buy again in a tap</h2>
-          </div>
-          <span class="finder-badge">↗</span>
-        </div>
-        <p class="quickbuy-home-last">Last number: <b id="homeRecentNumber">none yet</b></p>
-        <div class="quickbuy-home-actions">
-          <button class="button-primary" type="button" data-service="data">Buy data</button>
-          <button class="button-primary" type="button" data-service="airtime">Buy airtime</button>
-        </div>
       </section>
 
 
@@ -255,6 +284,23 @@
       </section>
 
 
+      <!-- GGR QUICKBUY (home shortcut) -->
+      <section class="quickbuy-home">
+        <div class="quickbuy-home-top">
+          <div>
+            <span class="card-kicker">GGR QUICKBUY</span>
+            <h2>Buy again in a tap</h2>
+          </div>
+          <span class="finder-badge">↗</span>
+        </div>
+        <p class="quickbuy-home-last">Last number: <b id="homeRecentNumber">none yet</b></p>
+        <div class="quickbuy-home-actions">
+          <button class="button-primary" type="button" data-service="data">Buy data</button>
+          <button class="button-primary" type="button" data-service="airtime">Buy airtime</button>
+        </div>
+      </section>
+
+
       <!-- SERVICES -->
       <section class="services-section">
 
@@ -279,58 +325,72 @@
             <span>Airtime</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="cable">
+          <button class="service-item" type="button" data-service="cable">
             <span class="service-icon">▤</span>
             <span>Cable TV</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="electricity">
+          <button class="service-item" type="button" data-service="electricity">
             <span class="service-icon">ϟ</span>
             <span>Electricity</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="data-card">
+          <button class="service-item" type="button" data-service="data-card">
             <span class="service-icon">▣</span>
             <span>Data Card</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="bonus">
+          <button class="service-item" type="button" data-service="bonus">
             <span class="service-icon">♧</span>
             <span>Bonus to Wallet</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="airtime-cash">
+          <button class="service-item" type="button" data-service="airtime-cash">
             <span class="service-icon">↻</span>
             <span>Airtime to Cash</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="recharge-pin">
+          <button class="service-item" type="button" data-service="recharge-pin">
             <span class="service-icon">▣</span>
             <span>Recharge PIN</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="edu-pin">
+          <button class="service-item" type="button" data-service="edu-pin">
             <span class="service-icon">▧</span>
             <span>Edu PIN</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="affiliate">
+          <button class="service-item" type="button" data-service="affiliate">
             <span class="service-icon">↗</span>
             <span>Affiliate Website</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="referrals">
+          <button class="service-item" type="button" data-service="referrals">
             <span class="service-icon">♙</span>
             <span>My Referrals</span>
           </button>
 
-          <button class="service-item soon" type="button" data-service="other">
+          <button class="service-item" type="button" data-service="other">
             <span class="service-icon">•••</span>
             <span>Other Services</span>
           </button>
 
         </div>
       </section>
+
+
+      <!-- REFERRAL BANNER -->
+      <button class="referral-banner" type="button" data-service="referrals" aria-label="Open referrals">
+        <span class="referral-copy">
+          <small>REFER &amp; EARN</small>
+          <strong>Invite friends.<br>Earn together.</strong>
+          <span class="referral-cta">Get my link →</span>
+        </span>
+        <span class="referral-art">
+          <svg class="person" viewBox="0 0 200 220"><use href="#personArt"/></svg>
+          <img class="referral-photo" src="./assets/referral.jpg" alt="" onerror="this.remove()">
+        </span>
+      </button>
 
 
       <!-- SUPPORTED NETWORKS -->
@@ -633,31 +693,106 @@
 
 
       <!-- ACCOUNT PROFILE -->
-      <section id="profileView" class="dashboard-view detail-card">
+      <section id="profileView" class="dashboard-view detail-card profile-view">
 
-        <span class="card-kicker">ACCOUNT PROFILE</span>
-        <h2>Your details</h2>
-
-        <div class="detail-row">
-          <span>Full name</span>
-          <b id="profileName">—</b>
+        <div class="profile-head">
+          <span id="profileAvatar" class="profile-avatar">G</span>
+          <h2 id="profileDisplayName">GGRData Member</h2>
+          <span id="profileUsername" class="profile-username">@member</span>
         </div>
 
-        <div class="detail-row">
-          <span>Email address</span>
-          <b id="profileEmail">—</b>
+        <div id="profileDetails" class="profile-details hidden">
+          <div class="detail-row">
+            <span>Full name</span>
+            <b id="profileName">—</b>
+          </div>
+
+          <div class="detail-row">
+            <span>Email address</span>
+            <b id="profileEmail">—</b>
+          </div>
+
+          <div class="detail-row">
+            <span>Phone number</span>
+            <b id="profilePhone">—</b>
+          </div>
         </div>
 
-        <div class="detail-row">
-          <span>Phone number</span>
-          <b id="profilePhone">—</b>
-        </div>
+        <div class="settings-label">General Settings</div>
 
-        <button id="logoutBtn"
-          class="button-outline logout-button"
-          type="button">
-          Sign out ↗
-        </button>
+        <div class="settings-list">
+          <button class="settings-item" type="button" data-profile="details">
+            <span class="settings-icon"><svg class="ico"><use href="#i-user"/></svg></span>
+            <span class="settings-text"><b>Profile</b><small>Your personal information</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Pricing">
+            <span class="settings-icon"><svg class="ico"><use href="#i-dollar"/></svg></span>
+            <span class="settings-text"><b>Pricing</b><small>Our pricing</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Balance codes">
+            <span class="settings-icon"><svg class="ico"><use href="#i-code"/></svg></span>
+            <span class="settings-text"><b>Code To Check Balance</b><small>Codes to check data and airtime balance</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Contact details">
+            <span class="settings-icon"><svg class="ico"><use href="#i-phone"/></svg></span>
+            <span class="settings-text"><b>Contact Us</b><small>Contact our support</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Complaints">
+            <span class="settings-icon"><svg class="ico"><use href="#i-chat"/></svg></span>
+            <span class="settings-text"><b>Log Complaint</b><small>Report a problem with a transaction</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Account limits">
+            <span class="settings-icon"><svg class="ico"><use href="#i-badge"/></svg></span>
+            <span class="settings-text"><b>Account Limits</b><small>Your account transaction limit</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Account upgrades">
+            <span class="settings-icon"><svg class="ico"><use href="#i-up"/></svg></span>
+            <span class="settings-text"><b>Upgrade Account</b><small>Upgrade your GGRData account</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-service="referrals">
+            <span class="settings-icon"><svg class="ico"><use href="#i-users"/></svg></span>
+            <span class="settings-text"><b>My Referrals</b><small>Referrals and commissions</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="dark">
+            <span class="settings-icon"><svg class="ico"><use href="#i-moon"/></svg></span>
+            <span class="settings-text"><b>Dark Mode</b><small>Switch app display mode to your preference</small></span>
+            <span class="switch" id="darkSwitch" role="switch" aria-checked="false"><i></i></span>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Help and support">
+            <span class="settings-icon"><svg class="ico"><use href="#i-headset"/></svg></span>
+            <span class="settings-text"><b>Help &amp; Support</b><small>Help or contact our customer service</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Legal pages">
+            <span class="settings-icon"><svg class="ico"><use href="#i-shield"/></svg></span>
+            <span class="settings-text"><b>Legal</b><small>Privacy, security &amp; terms of use</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+
+          <button id="logoutBtn" class="settings-item" type="button">
+            <span class="settings-icon"><svg class="ico"><use href="#i-logout"/></svg></span>
+            <span class="settings-text"><b>Log Out</b><small>Sign out of your account</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-tab="home">
+            <span class="settings-icon"><svg class="ico"><use href="#i-x"/></svg></span>
+            <span class="settings-text"><b>Close</b><small>Go back to dashboard</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="settings-item" type="button" data-profile="soon" data-label="Our address">
+            <span class="settings-icon"><svg class="ico"><use href="#i-pin"/></svg></span>
+            <span class="settings-text"><b>Address</b><small>Check our address</small></span>
+            <svg class="ico chev"><use href="#i-chev"/></svg>
+          </button>
+        </div>
 
       </section>
 
@@ -760,6 +895,13 @@
         <p class="preview-note">Purchases open after payment safeguards are tested.</p>
 
         <button class="button-outline" type="button" data-tab="home">← Back to dashboard</button>
+      </section>
+
+
+      <!-- SERVICE SCREENS (built by app.js) -->
+      <section id="serviceView" class="dashboard-view detail-card">
+        <button class="back-link" type="button" data-tab="home">← Back</button>
+        <div id="serviceBody"></div>
       </section>
 
 
