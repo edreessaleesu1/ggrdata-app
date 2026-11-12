@@ -162,6 +162,8 @@ let manuallySelectedNetworkForPhone = null;
 let catalogueRequestNumber = 0;
 let currentWalletBalance = null;
 let lastPlans = [];
+let selectedDataPlan = null;
+let dataPurchaseInProgress = false;
 let currentUsername = "";
 let finderBudget = null;
 let finderNeed = null;
@@ -1344,6 +1346,164 @@ function clearDataPlans() {
   if (elements.dataPlans) {
     elements.dataPlans.replaceChildren();
   }
+  selectedDataPlan = null;
+  const panel = document.getElementById("dataPurchasePanel");
+  if (panel) panel.remove();
+}
+
+function ensureDataPurchasePanel() {
+  let panel = document.getElementById("dataPurchasePanel");
+  if (panel || !elements.dataPlans) return panel;
+
+  panel = document.createElement("section");
+  panel.id = "dataPurchasePanel";
+  panel.className = "data-purchase-panel hidden";
+  panel.setAttribute("aria-live", "polite");
+  elements.dataPlans.insertAdjacentElement("afterend", panel);
+  return panel;
+}
+
+function renderDataPurchasePanel(message = "") {
+  const panel = ensureDataPurchasePanel();
+  if (!panel) return;
+
+  if (!selectedDataPlan) {
+    panel.classList.add("hidden");
+    panel.replaceChildren();
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  panel.replaceChildren();
+
+  const heading = document.createElement("h3");
+  heading.textContent = "Your selected bundle";
+
+  const summary = document.createElement("p");
+  summary.textContent = `${SUPPORTED_DATA_NETWORKS[selectedDataNetwork]} · ${selectedDataPlan.name} · ${formatNaira(selectedDataPlan.amount)}`;
+
+  const recipient = document.createElement("p");
+  recipient.className = "data-purchase-recipient";
+  const phone = getLocalPhoneDigits(elements.dataPhone?.value || "");
+  recipient.textContent = phone ? `Recipient: ${phone}` : "Enter a valid recipient phone number above to continue.";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "button-primary data-purchase-button";
+  button.textContent = dataPurchaseInProgress ? "Processing purchase…" : "Purchase bundle";
+  button.disabled = dataPurchaseInProgress;
+  button.addEventListener("click", purchaseSelectedDataPlan);
+
+  const status = document.createElement("p");
+  status.className = "data-purchase-result";
+  status.textContent = message;
+
+  panel.append(heading, summary, recipient, button, status);
+}
+
+async function refreshWalletAfterDataPurchase() {
+  const userResult = await supabaseClient.auth.getUser();
+  const user = userResult?.data?.user;
+  if (!user) return;
+
+  const [walletResult, transactionResult] = await Promise.all([
+    supabaseClient.from("wallets").select("balance, currency").eq("user_id", user.id).maybeSingle(),
+    supabaseClient.from("wallet_transactions")
+      .select("id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at")
+      .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50)
+  ]);
+
+  if (!walletResult.error && walletResult.data && elements.balance) {
+    currentWalletBalance = Number(walletResult.data.balance);
+    elements.balance.textContent = formatNaira(currentWalletBalance);
+    lastBalanceText = elements.balance.textContent;
+    applyBalanceVisibility();
+  }
+
+  if (!transactionResult.error) {
+    renderTransactions(elements.recentTransactions, transactionResult.data || [], 50);
+  }
+}
+
+async function purchaseSelectedDataPlan() {
+  if (!selectedDataPlan || dataPurchaseInProgress) return;
+
+  const phone = getLocalPhoneDigits(elements.dataPhone?.value || "");
+  if (!phone) {
+    setCatalogueStatus("Enter a valid Nigerian recipient phone number before purchasing.", "error");
+    elements.dataPhone?.focus();
+    return;
+  }
+
+  if (!selectedDataPlan.code) {
+    setCatalogueStatus("This bundle has no verified VTpass variation code. Refresh the catalogue and select another plan.", "error");
+    return;
+  }
+
+  const networkName = SUPPORTED_DATA_NETWORKS[selectedDataNetwork];
+  const confirmation = window.confirm(
+    `VERIFY YOUR PURCHASE\n\nNetwork: ${networkName}\nBundle: ${selectedDataPlan.name}\nRecipient: ${phone}\nAmount: ${formatNaira(selectedDataPlan.amount)}\n\nProceed with this purchase?`
+  );
+  if (!confirmation) return;
+
+  dataPurchaseInProgress = true;
+  renderDataPurchasePanel("Verifying your account, bundle price and wallet balance…");
+  setCatalogueStatus("Purchase verification in progress. Please do not close this page.", "loading");
+
+  try {
+    const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (sessionError || !accessToken) {
+      throw new Error("Your session has expired. Sign in again before purchasing.");
+    }
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/vtpass-data-purchase`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_PUBLISHABLE_KEY,
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        action: "purchase",
+        network: selectedDataNetwork,
+        phone,
+        variationCode: String(selectedDataPlan.code),
+        idempotencyKey: `ggrdata_${crypto.randomUUID().replaceAll("-", "")}`
+      })
+    });
+
+    const result = await response.json().catch(() => null);
+    if (!response.ok || !result) {
+      throw new Error(result?.error || `Purchase request failed (${response.status}).`);
+    }
+
+    const status = String(result.status || "processing").toLowerCase();
+    if (status === "successful" || status === "success" || status === "completed") {
+      setCatalogueStatus(`Purchase completed. ${result.message || "Your data bundle has been delivered."}`, "success");
+      renderDataPurchasePanel(`✓ Purchase completed. Reference: ${result.orderId || result.requestId || "Recorded"}`);
+      saveRecentBeneficiary(phone);
+      await refreshWalletAfterDataPurchase();
+    } else if (status === "failed" || status === "reversed") {
+      setCatalogueStatus(result.message || "Purchase failed. The secure service will handle the refund according to the transaction result.", "error");
+      renderDataPurchasePanel(result.message || "Purchase failed. Check your transaction history for the refund status.");
+      await refreshWalletAfterDataPurchase();
+    } else if (result.success && status === "processing") {
+      setCatalogueStatus(result.message || "Your purchase is processing. We are checking the provider result.", "loading");
+      renderDataPurchasePanel(`⏳ Processing. Order reference: ${result.orderId || result.requestId || "Pending"}. Check your transaction history for updates.`);
+      await refreshWalletAfterDataPurchase();
+    } else {
+      throw new Error(result.error || result.message || "The purchase could not be confirmed.");
+    }
+  } catch (error) {
+    console.error("Data purchase error:", error);
+    const message = error instanceof Error ? error.message : "The purchase could not be completed.";
+    setCatalogueStatus(message, "error");
+    renderDataPurchasePanel(message);
+  } finally {
+    dataPurchaseInProgress = false;
+    renderDataPurchasePanel(document.querySelector("#dataPurchasePanel .data-purchase-result")?.textContent || "");
+  }
 }
 
 function renderDataPlans(plans, networkName) {
@@ -1409,7 +1569,20 @@ function renderDataPlans(plans, networkName) {
 
     footer.append(availability);
 
-    card.append(details, price, footer);
+    const selectButton = document.createElement("button");
+    selectButton.type = "button";
+    selectButton.className = "button-outline data-plan-select";
+    selectButton.textContent = "Select bundle";
+    selectButton.addEventListener("click", () => {
+      selectedDataPlan = plan;
+      elements.dataPlans.querySelectorAll(".data-plan-card").forEach((item) => {
+        item.classList.toggle("selected", item === card);
+      });
+      renderDataPurchasePanel();
+      document.getElementById("dataPurchasePanel")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+
+    card.append(details, price, footer, selectButton);
 
     fragment.append(card);
   });
@@ -1425,7 +1598,7 @@ function renderDataPlans(plans, networkName) {
   elements.dataPlans.append(fragment);
 
   setCatalogueStatus(
-    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Select a plan for purchase once checkout is enabled.`,
+    `${elements.dataPlans.children.length} bundles loaded for ${networkName}. Select a bundle to continue to purchase verification.`,
     "success"
   );
 }
