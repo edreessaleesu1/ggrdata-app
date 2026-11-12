@@ -672,13 +672,14 @@ img {
 }
 
 /* =========================================================
-   9. SERVICES GRID — 4 ITEMS PER ROW
+   9. SERVICES GRID — 4 COLUMNS × 3 ROWS
    ========================================================= */
 
 .service-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px 10px;
+  grid-template-rows: repeat(3, auto);
+  gap: 18px 10px;
   width: 100%;
 }
 
@@ -721,16 +722,14 @@ img {
   transform: scale(0.94);
 }
 
-/* Smaller screens */
 @media (max-width: 360px) {
   .service-grid {
-    gap: 13px 6px;
+    gap: 14px 6px;
   }
 
   .service-icon {
     width: 40px;
     height: 40px;
-    border-radius: 12px;
     font-size: 19px;
   }
 
@@ -738,7 +737,6 @@ img {
   .service-item p {
     font-size: 10px;
   }
-}
 
 /* ---------------------------------------------------------
    10. SUPPORTED NETWORKS
