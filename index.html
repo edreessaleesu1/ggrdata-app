@@ -702,6 +702,57 @@
 
 
       <!-- ACCOUNT PROFILE -->
+      
+<!-- NOTIFICATIONS CENTER -->
+<section id="notificationsView"
+  class="dashboard-view detail-card notifications-view">
+
+  <div class="notifications-heading">
+    <div>
+      <span class="card-kicker">YOUR ACCOUNT UPDATES</span>
+      <h2>Notifications</h2>
+      <p>Important updates about your wallet and services.</p>
+    </div>
+
+    <button id="markAllNotificationsRead"
+      class="button-outline notifications-mark-all"
+      type="button">
+      Mark all as read
+    </button>
+  </div>
+
+  <div class="notifications-filters"
+    role="group"
+    aria-label="Filter notifications">
+
+    <button class="notification-filter active"
+      type="button"
+      data-notification-filter="all"
+      aria-pressed="true">
+      All
+    </button>
+
+    <button class="notification-filter"
+      type="button"
+      data-notification-filter="unread"
+      aria-pressed="false">
+      Unread
+    </button>
+
+  </div>
+
+  <div id="notificationsList"
+    class="notifications-list"
+    aria-live="polite">
+
+    <div class="notifications-empty">
+      Your notifications will appear here.
+    </div>
+
+  </div>
+
+</section>
+
       <section id="profileView" class="dashboard-view detail-card profile-view">
 
         <div class="profile-head">
