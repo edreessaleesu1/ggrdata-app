@@ -1,6 +1,8 @@
+
 /* =========================================================
    GGRData — Main Application
-   Authentication, Dashboard, Wallet, Transactions & QuickBuy
+   Authentication, Dashboard, Wallet, Transactions,
+   QuickBuy and Notifications Center
    Supported networks: MTN, Airtel and Glo
    ========================================================= */
 
@@ -51,11 +53,6 @@ const DATA_CATEGORIES = {
   share: "Data Share"
 };
 
-/*
- * The current VTpass catalogue integration provides standard
- * data plans. Other categories remain unavailable until their
- * provider service IDs and purchase rules are verified.
- */
 const AVAILABLE_DATA_CATEGORIES = ["standard"];
 
 /* ---------------------------------------------------------
@@ -132,6 +129,13 @@ const elements = {
   airtimeRecent: document.getElementById("airtimeRecent"),
   airtimeRecentNumber: document.getElementById("airtimeRecentNumber"),
 
+  /* Notifications Center */
+  notificationBtn: document.getElementById("notificationBtn"),
+  notificationCount: document.getElementById("notificationCount"),
+  notificationsView: document.getElementById("notificationsView"),
+  notificationsList: document.getElementById("notificationsList"),
+  markAllNotificationsRead: document.getElementById("markAllNotificationsRead"),
+
   dashMessage: document.getElementById("dashMessage")
 };
 
@@ -153,11 +157,6 @@ let lastBalanceText = "";
 let selectedDataNetwork = "mtn";
 let selectedDataCategory = "standard";
 
-/*
- * Keep track of a customer's manual network choice.
- * Automatic detection must not override that choice
- * while the same phone number remains in the field.
- */
 let manuallySelectedNetworkForPhone = null;
 
 let catalogueRequestNumber = 0;
@@ -167,6 +166,12 @@ let currentUsername = "";
 let finderBudget = null;
 let finderNeed = null;
 let airtimeManualForPhone = null;
+
+/* Notifications Center state */
+let activeNotificationsUserId = null;
+let notificationItems = [];
+let notificationFilter = "all";
+let notificationsRequestNumber = 0;
 
 /* ---------------------------------------------------------
    5. GENERAL HELPERS
@@ -322,14 +327,6 @@ function getLocalPhoneDigits(input) {
 
   return normalised.replace("+234", "0");
 }
-
-/*
- * Only MTN, Airtel and Glo are supported.
- *
- * Prefix detection is an estimate, not proof of the
- * customer's current network. Number portability means
- * customers must be able to override the suggestion.
- */
 
 function detectNigerianNetwork(input) {
   const localNumber = getLocalPhoneDigits(input);
@@ -746,13 +743,307 @@ function getFriendlyAuthError(error) {
 }
 
 /* ---------------------------------------------------------
-   13. DASHBOARD NAVIGATION
+   13. NOTIFICATIONS CENTER
+   --------------------------------------------------------- */
+
+function formatNotificationTime(value) {
+  if (!value) return "Just now";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-NG", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(date);
+}
+
+function updateNotificationCount() {
+  if (!elements.notificationCount) return;
+
+  const unread = notificationItems.filter(
+    (item) => !item.read_at
+  ).length;
+
+  elements.notificationCount.textContent =
+    unread > 99 ? "99+" : String(unread);
+
+  elements.notificationCount.hidden = unread === 0;
+
+  elements.notificationBtn?.setAttribute(
+    "aria-label",
+    unread
+      ? `Notifications, ${unread} unread`
+      : "Notifications"
+  );
+}
+
+function renderNotifications() {
+  const list = elements.notificationsList;
+
+  if (!list) return;
+
+  const visible = notificationItems.filter((item) =>
+    notificationFilter === "unread"
+      ? !item.read_at
+      : true
+  );
+
+  list.replaceChildren();
+
+  if (!visible.length) {
+    const empty = document.createElement("div");
+    empty.className = "notifications-empty";
+
+    empty.textContent =
+      notificationFilter === "unread"
+        ? "You are all caught up. No unread notifications."
+        : "No notifications yet. Account and service updates will appear here.";
+
+    list.appendChild(empty);
+
+    updateNotificationCount();
+    return;
+  }
+
+  visible.forEach((item) => {
+    const card = document.createElement("button");
+
+    card.type = "button";
+    card.className =
+      `notification-item${item.read_at ? "" : " unread"}`;
+
+    card.dataset.notificationId = item.id;
+
+    card.setAttribute(
+      "aria-label",
+      `${item.title}. ${item.message}`
+    );
+
+    const marker = document.createElement("span");
+    marker.className = "notification-item-marker";
+    marker.setAttribute("aria-hidden", "true");
+
+    const category = String(item.category || "").toLowerCase();
+
+    marker.textContent =
+      category === "wallet" ? "₦"
+      : category === "services" ? "↗"
+      : category === "transactions" ? "↔"
+      : category === "account" ? "♙"
+      : "•";
+
+    const copy = document.createElement("span");
+    copy.className = "notification-item-copy";
+
+    const title = document.createElement("strong");
+    title.textContent = item.title || "GGRData update";
+
+    const message = document.createElement("span");
+    message.textContent = item.message || "";
+
+    const time = document.createElement("small");
+    time.textContent = formatNotificationTime(item.created_at);
+
+    copy.append(title, message, time);
+    card.append(marker, copy);
+
+    if (!item.read_at) {
+      const dot = document.createElement("span");
+
+      dot.className = "notification-unread-dot";
+      dot.setAttribute("aria-label", "Unread");
+
+      card.appendChild(dot);
+    }
+
+    list.appendChild(card);
+  });
+
+  updateNotificationCount();
+}
+
+async function loadNotifications(userId, showLoading = false) {
+  if (!userId || !supabaseClient) return;
+
+  if (activeNotificationsUserId !== userId) {
+    notificationItems = [];
+    updateNotificationCount();
+  }
+
+  activeNotificationsUserId = userId;
+
+  const requestNumber = ++notificationsRequestNumber;
+
+  if (showLoading && elements.notificationsList) {
+    elements.notificationsList.textContent =
+      "Loading notifications...";
+  }
+
+  const { data, error } = await supabaseClient
+    .from("notifications")
+    .select("id, category, title, message, read_at, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (
+    requestNumber !== notificationsRequestNumber ||
+    activeNotificationsUserId !== userId
+  ) {
+    return;
+  }
+
+  if (error) {
+    console.error("Notifications loading error:", error);
+
+    if (elements.notificationsList) {
+      elements.notificationsList.textContent =
+        "Notifications could not be loaded. Please try again.";
+    }
+
+    return;
+  }
+
+  notificationItems = Array.isArray(data) ? data : [];
+
+  renderNotifications();
+}
+
+async function markNotificationRead(notificationId) {
+  const userId = activeNotificationsUserId;
+
+  const item = notificationItems.find(
+    (entry) => entry.id === notificationId
+  );
+
+  if (!item || item.read_at || !userId) return;
+
+  const readAt = new Date().toISOString();
+
+  const { error } = await supabaseClient
+    .from("notifications")
+    .update({ read_at: readAt })
+    .eq("id", notificationId)
+    .eq("user_id", userId);
+
+  if (activeNotificationsUserId !== userId) return;
+
+  if (error) {
+    console.error("Mark notification read error:", error);
+
+    showDashboardMessage(
+      "We could not update this notification. Please try again.",
+      "error"
+    );
+
+    return;
+  }
+
+  const currentItem = notificationItems.find(
+    (entry) => entry.id === notificationId
+  );
+
+  if (currentItem) {
+    currentItem.read_at = readAt;
+  }
+
+  renderNotifications();
+}
+
+async function markAllNotificationsRead() {
+  const userId = activeNotificationsUserId;
+
+  if (!userId) return;
+
+  const unreadItems = notificationItems.filter(
+    (item) => !item.read_at
+  );
+
+  if (!unreadItems.length) return;
+
+  setButtonLoading(
+    elements.markAllNotificationsRead,
+    true,
+    "Updating..."
+  );
+
+  const readAt = new Date().toISOString();
+
+  try {
+    const { error } = await supabaseClient
+      .from("notifications")
+      .update({ read_at: readAt })
+      .eq("user_id", userId)
+      .is("read_at", null);
+
+    if (activeNotificationsUserId !== userId) return;
+
+    if (error) throw error;
+
+    notificationItems.forEach((item) => {
+      if (!item.read_at) {
+        item.read_at = readAt;
+      }
+    });
+
+    renderNotifications();
+
+  } catch (error) {
+    console.error("Mark all notifications read error:", error);
+
+    if (activeNotificationsUserId === userId) {
+      showDashboardMessage(
+        "We could not update your notifications. Please try again.",
+        "error"
+      );
+    }
+
+  } finally {
+    setButtonLoading(
+      elements.markAllNotificationsRead,
+      false
+    );
+  }
+}
+
+/* Notification filters */
+
+document.querySelectorAll("[data-notification-filter]").forEach((button) => {
+  button.addEventListener("click", () => {
+    notificationFilter =
+      button.dataset.notificationFilter === "unread"
+        ? "unread"
+        : "all";
+
+    document.querySelectorAll("[data-notification-filter]").forEach((filter) => {
+      const active = filter === button;
+
+      filter.classList.toggle("active", active);
+      filter.setAttribute("aria-pressed", String(active));
+    });
+
+    renderNotifications();
+  });
+});
+
+if (elements.markAllNotificationsRead) {
+  elements.markAllNotificationsRead.addEventListener(
+    "click",
+    markAllNotificationsRead
+  );
+}
+
+/* ---------------------------------------------------------
+   14. DASHBOARD NAVIGATION
    --------------------------------------------------------- */
 
 const TAB_VIEW_IDS = {
   transactions: "transactionsView",
   wallet: "walletView",
   profile: "profileView",
+  notifications: "notificationsView",
   "data-store": "dataStoreView",
   airtime: "airtimeView",
   service: "serviceView"
@@ -778,7 +1069,10 @@ function showTab(tabName) {
 
   document.querySelectorAll(".bottom-navigation .nav-item").forEach((item) => {
     const navTab =
-      tabName === "data-store" || tabName === "airtime" || tabName === "service"
+      tabName === "data-store" ||
+      tabName === "airtime" ||
+      tabName === "service" ||
+      tabName === "notifications"
         ? "home"
         : tabName;
 
@@ -792,10 +1086,17 @@ function showTab(tabName) {
     updateQuickBuyBalance();
     updateRecentBeneficiaryDisplay();
   }
+
+  if (
+    tabName === "notifications" &&
+    activeNotificationsUserId
+  ) {
+    loadNotifications(activeNotificationsUserId, true);
+  }
 }
 
 /* ---------------------------------------------------------
-   14. BALANCE VISIBILITY
+   15. BALANCE VISIBILITY
    --------------------------------------------------------- */
 
 function applyBalanceVisibility() {
@@ -830,7 +1131,7 @@ function updateQuickBuyBalance() {
 }
 
 /* ---------------------------------------------------------
-   15. GGR QUICKBUY — BENEFICIARY AND NETWORK
+   16. GGR QUICKBUY — BENEFICIARY AND NETWORK
    --------------------------------------------------------- */
 
 function updateDetectedNetworkDisplay(network) {
@@ -853,11 +1154,6 @@ function handleBeneficiaryInput() {
   const value = elements.dataPhone.value.trim();
   const normalised = normaliseNigerianPhone(value);
 
-  /*
-   * If the phone number changes from the number for which
-   * a manual override was made, allow automatic detection
-   * to suggest a network for the new number.
-   */
   if (normalised !== manuallySelectedNetworkForPhone) {
     manuallySelectedNetworkForPhone = null;
   }
@@ -876,10 +1172,6 @@ function handleBeneficiaryInput() {
 
   updateDetectedNetworkDisplay(detected);
 
-  /*
-   * Do not override a manual network choice for the
-   * same beneficiary phone number.
-   */
   if (!manuallySelectedNetworkForPhone) {
     setSelectedDataNetwork(detected);
   }
@@ -962,11 +1254,6 @@ if (elements.useRecentBeneficiary) {
     if (!recent || !elements.dataPhone) return;
 
     elements.dataPhone.value = recent;
-
-    /*
-     * A different beneficiary should get a fresh
-     * automatic network suggestion.
-     */
     manuallySelectedNetworkForPhone = null;
 
     handleBeneficiaryInput();
@@ -974,7 +1261,7 @@ if (elements.useRecentBeneficiary) {
 }
 
 /* ---------------------------------------------------------
-   16. DATA CATEGORY SELECTOR
+   17. DATA CATEGORY SELECTOR
    --------------------------------------------------------- */
 
 function handleDataCategoryChange() {
@@ -1008,7 +1295,7 @@ if (elements.dataTypeSelect) {
 }
 
 /* ---------------------------------------------------------
-   17. DATA CATALOGUE
+   18. DATA CATALOGUE
    --------------------------------------------------------- */
 
 function setCatalogueStatus(message, type = "info") {
@@ -1050,7 +1337,9 @@ function renderDataPlans(plans, networkName) {
 
   lastPlans = Array.isArray(plans) ? plans : [];
 
-  if (elements.finderResults) elements.finderResults.replaceChildren();
+  if (elements.finderResults) {
+    elements.finderResults.replaceChildren();
+  }
 
   if (!Array.isArray(plans) || plans.length === 0) {
     setCatalogueStatus(
@@ -1245,16 +1534,13 @@ function openDataStore() {
 }
 
 /* Network selection */
+
 document.querySelectorAll("[data-catalogue-network]").forEach((button) => {
   button.addEventListener("click", () => {
     const network = button.dataset.catalogueNetwork;
 
     if (!SUPPORTED_DATA_NETWORKS[network]) return;
 
-    /*
-     * Remember the customer's manual choice for the
-     * current beneficiary number.
-     */
     manuallySelectedNetworkForPhone =
       normaliseNigerianPhone(elements.dataPhone?.value || "");
 
@@ -1269,6 +1555,7 @@ document.querySelectorAll("[data-catalogue-network]").forEach((button) => {
 });
 
 /* Catalogue refresh */
+
 if (elements.refreshDataCatalogue) {
   elements.refreshDataCatalogue.addEventListener("click", () => {
     if (selectedDataCategory !== "standard") {
@@ -1284,6 +1571,7 @@ if (elements.refreshDataCatalogue) {
 }
 
 /* Return to dashboard home */
+
 if (elements.backToHomeFromData) {
   elements.backToHomeFromData.addEventListener("click", () => {
     showTab("home");
@@ -1291,7 +1579,7 @@ if (elements.backToHomeFromData) {
 }
 
 /* ---------------------------------------------------------
-   17b. AIRTIME SCREEN (design preview only)
+   18b. AIRTIME SCREEN (design preview only)
    --------------------------------------------------------- */
 
 function setAirtimeNetwork(network) {
@@ -1353,8 +1641,7 @@ if (elements.airtimeRecent) {
 }
 
 /* ---------------------------------------------------------
-   17c. GGR SMART DATA FINDER
-   Works only on plans returned by the live VTpass catalogue.
+   18c. GGR SMART DATA FINDER
    --------------------------------------------------------- */
 
 function parsePlanSizeGb(name) {
@@ -1519,7 +1806,7 @@ function runDataFinder() {
 }
 
 /* ---------------------------------------------------------
-   17d. GGR TRUSTTRACK — TRANSACTION DETAILS SHEET
+   18d. GGR TRUSTTRACK — TRANSACTION DETAILS SHEET
    --------------------------------------------------------- */
 
 let sheetReference = "";
@@ -1576,6 +1863,7 @@ function openTransactionSheet(transaction) {
   sheetReference = transaction.reference || "";
 
   const copyButton = document.getElementById("txCopyRef");
+
   if (copyButton) {
     copyButton.classList.toggle("hidden", !sheetReference);
     copyButton.textContent = "Copy reference";
@@ -1635,7 +1923,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 /* ---------------------------------------------------------
-   18. SERVICE MESSAGES AND DASHBOARD ACTIONS
+   19. SERVICE MESSAGES AND DASHBOARD ACTIONS
    --------------------------------------------------------- */
 
 function showComingSoon(label) {
@@ -1651,6 +1939,18 @@ document.addEventListener("click", (event) => {
 
   if (tabTarget) {
     showTab(tabTarget.dataset.tab);
+    return;
+  }
+
+  const notificationItem = event.target.closest("[data-notification-id]");
+
+  if (notificationItem) {
+    markNotificationRead(notificationItem.dataset.notificationId);
+    return;
+  }
+
+  if (event.target.closest("#notificationBtn")) {
+    showTab("notifications");
     return;
   }
 
@@ -1698,6 +1998,7 @@ document.addEventListener("click", (event) => {
     airtimeManualForPhone = normaliseNigerianPhone(
       elements.airtimePhone?.value || ""
     );
+
     setAirtimeNetwork(netOption.dataset.net);
     return;
   }
@@ -1742,6 +2043,7 @@ document.addEventListener("click", (event) => {
       .forEach((chip) =>
         chip.classList.toggle("selected", chip === needChip)
       );
+
     return;
   }
 
@@ -1790,19 +2092,10 @@ document.addEventListener("click", (event) => {
     showComingSoon("Wallet funding");
     return;
   }
-
-  if (event.target.closest("#notificationBtn")) {
-    showDashboardMessage(
-      "You have no new notifications.",
-      "success",
-      true
-    );
-  }
 });
 
 /* ---------------------------------------------------------
-   18b. SERVICE SCREENS (design previews — purchases are
-   switched on only after payment safeguards are tested)
+   19b. SERVICE SCREENS
    --------------------------------------------------------- */
 
 const NETWORK_CHOICES = ["MTN", "Airtel", "Glo"];
@@ -2083,7 +2376,7 @@ function openServiceScreen(key) {
 }
 
 /* ---------------------------------------------------------
-   18c. PROFILE SETTINGS AND DARK MODE
+   19c. PROFILE SETTINGS AND DARK MODE
    --------------------------------------------------------- */
 
 const THEME_KEY = "ggrdata_theme";
@@ -2145,7 +2438,7 @@ function applyReferralVisibility() {
 }
 
 /* ---------------------------------------------------------
-   19. TRANSACTION LIST RENDERING
+   20. TRANSACTION LIST RENDERING
    --------------------------------------------------------- */
 
 function buildTransactionItem(transaction) {
@@ -2248,7 +2541,7 @@ function renderTransactionError(container) {
 }
 
 /* ---------------------------------------------------------
-   20. LOAD USER PROFILE, WALLET AND TRANSACTIONS
+   21. LOAD USER PROFILE, WALLET, TRANSACTIONS
    --------------------------------------------------------- */
 
 async function loadDashboard(user) {
@@ -2262,6 +2555,12 @@ async function loadDashboard(user) {
   }
 
   loadingUserId = user.id;
+
+  /* Start a fresh notification session for this user. */
+  activeNotificationsUserId = user.id;
+  notificationItems = [];
+  updateNotificationCount();
+  loadNotifications(user.id, true);
 
   showScreen("dashboard");
   showTab("home");
@@ -2425,7 +2724,6 @@ async function loadDashboard(user) {
     }
 
     currentWalletBalance = null;
-
     lastBalanceText = "Not available";
 
     updateQuickBuyBalance();
@@ -2443,8 +2741,28 @@ async function loadDashboard(user) {
 }
 
 /* ---------------------------------------------------------
-   21. SIGN OUT
+   22. SIGN OUT
    --------------------------------------------------------- */
+
+function clearNotificationSession() {
+  activeNotificationsUserId = null;
+  notificationItems = [];
+
+  /* Invalidate outstanding notification requests. */
+  notificationsRequestNumber += 1;
+
+  updateNotificationCount();
+
+  if (elements.notificationsList) {
+    elements.notificationsList.replaceChildren();
+
+    const empty = document.createElement("div");
+    empty.className = "notifications-empty";
+    empty.textContent = "Sign in to view your notifications.";
+
+    elements.notificationsList.appendChild(empty);
+  }
+}
 
 if (elements.logoutBtn) {
   elements.logoutBtn.addEventListener("click", async () => {
@@ -2459,6 +2777,8 @@ if (elements.logoutBtn) {
       loadingUserId = null;
       currentWalletBalance = null;
       lastBalanceText = "";
+
+      clearNotificationSession();
 
       showAuth();
 
@@ -2476,7 +2796,7 @@ if (elements.logoutBtn) {
 }
 
 /* ---------------------------------------------------------
-   22. SUPABASE AUTH STATE LISTENER
+   23. SUPABASE AUTH STATE LISTENER
    --------------------------------------------------------- */
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -2499,6 +2819,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     loadingUserId = null;
     currentWalletBalance = null;
     lastBalanceText = "";
+
+    clearNotificationSession();
 
     if (!isCompletingPasswordReset) {
       showAuth();
@@ -2529,7 +2851,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 });
 
 /* ---------------------------------------------------------
-   23. INITIAL APPLICATION STATE
+   24. INITIAL APPLICATION STATE
    --------------------------------------------------------- */
 
 async function initialiseApplication() {
@@ -2543,12 +2865,14 @@ async function initialiseApplication() {
     if (data.session?.user) {
       await loadDashboard(data.session.user);
     } else if (!isPasswordRecovery) {
+      clearNotificationSession();
       showAuth();
     }
 
   } catch (error) {
     console.error("Session initialisation error:", error);
 
+    clearNotificationSession();
     showAuth();
 
     showMessage(
