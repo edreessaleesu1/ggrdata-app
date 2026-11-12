@@ -2068,3 +2068,211 @@ h1,h2,h3{font-family:"Manrope","DM Sans",sans-serif;letter-spacing:-.02em}
 }
 
 .service-item .service-icon{color:var(--gold-light);font-weight:800}
+
+
+/* =========================================================
+   25. ROUND 3: icons, compact balance, profile list,
+   service screens, referral banner, remembered login, dark mode
+   ========================================================= */
+
+.ico{
+  width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+}
+
+/* ---------- Remembered account ---------- */
+.remembered-card{
+  display:grid;justify-items:center;gap:2px;margin:0 0 18px;padding:18px 14px;text-align:center;
+  border:1px solid var(--gold-light);border-radius:16px;
+  background:linear-gradient(130deg,var(--champagne),#fff);
+}
+.remembered-label{color:var(--gold-dark);font:800 10px "Manrope",sans-serif;letter-spacing:2px}
+.remembered-name{color:var(--emerald-dark);font:800 24px "Manrope",sans-serif;letter-spacing:-.03em;overflow-wrap:anywhere}
+.remembered-card .text-button{margin-top:4px;font-size:12px}
+
+/* ---------- Compact balance card (as in the reference) ---------- */
+.account-balance-card{padding:16px 16px 14px;border-radius:22px}
+.account-balance-card::after{display:none}
+.balance-columns{gap:12px;align-items:center}
+.balance-column + .balance-column{padding-left:14px;border-left:1px solid rgba(255,255,255,.6)}
+.balance-title{margin:0;font-size:13px;font-weight:500;letter-spacing:0;color:rgba(255,255,255,.92)}
+.referral-balance .balance-title{font-size:11px}
+.balance-value-row{margin-top:4px;gap:6px}
+.balance-value-row strong{font-size:clamp(20px,6vw,26px);letter-spacing:-.03em}
+.referral-balance .balance-value-row strong{font-size:clamp(15px,4.4vw,19px);color:#fff}
+.visibility-button{width:auto;height:auto;border:0;background:none;padding:2px;color:#fff;display:inline-grid;place-items:center}
+.visibility-button .ico{width:20px;height:20px}
+.referral-balance .visibility-button .ico{width:17px;height:17px}
+.fund-wallet-button{
+  min-height:44px;margin-top:14px;gap:10px;border-radius:12px;
+  background:#fff;color:var(--emerald-dark);border:0;
+  font-family:"Manrope",sans-serif;font-size:15px;font-weight:800;
+  box-shadow:0 6px 16px rgba(0,0,0,.18);
+}
+.fund-plus{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--gold-rich);color:#fff}
+.fund-plus .ico{width:15px;height:15px;stroke-width:3}
+.wallet-footnote{display:none}
+
+/* ---------- Profile (settings list) ---------- */
+.profile-view{padding:20px 16px 8px}
+.profile-head{display:grid;justify-items:center;gap:4px;margin-bottom:18px;text-align:center}
+.profile-avatar{
+  display:grid;place-items:center;width:84px;height:84px;border-radius:50%;
+  background:linear-gradient(145deg,#0d6954,#04261f);color:var(--gold-light);
+  font:800 34px "Manrope",sans-serif;border:3px solid var(--gold);
+  box-shadow:0 10px 22px rgba(4,38,31,.25),0 0 0 6px rgba(196,154,67,.14);
+}
+.profile-head h2{margin:10px 0 0;font-size:20px}
+.profile-username{color:var(--text-soft);font-size:14px;font-weight:600}
+.profile-details{margin:0 0 14px;padding:4px 14px;border:1px solid var(--gold-light);border-radius:16px;background:var(--champagne)}
+.profile-details .detail-row:last-child{border-bottom:0}
+.settings-label{margin:6px 2px 6px;color:var(--text-soft);font:700 14px "DM Sans",sans-serif}
+.settings-list{display:grid}
+.settings-item{
+  display:flex;align-items:center;gap:14px;width:100%;margin:0;padding:12px 2px;
+  background:none;border:0;border-bottom:1px solid #f4edd8;text-align:left;font-family:inherit;color:inherit;
+}
+.settings-item:last-child{border-bottom:0}
+.settings-icon{
+  display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:50%;
+  background:var(--champagne);color:var(--gold-dark);border:1px solid var(--gold-light);
+}
+.settings-icon .ico{width:21px;height:21px}
+.settings-text{flex:1;min-width:0;display:grid;gap:1px}
+.settings-text b{color:var(--emerald-dark);font:700 15.5px "Manrope",sans-serif;letter-spacing:-.01em}
+.settings-text small{color:var(--text-soft);font-size:12.5px;line-height:1.4}
+.settings-item .chev{color:#6d7a73;width:20px;height:20px}
+.settings-item:active{background:var(--champagne)}
+.switch{
+  position:relative;flex:0 0 46px;width:46px;height:26px;border-radius:999px;background:#d9ded9;transition:.2s;
+}
+.switch i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25);transition:.2s}
+.switch[aria-checked="true"]{background:var(--emerald-light)}
+.switch[aria-checked="true"] i{transform:translateX(20px)}
+#logoutBtn .settings-icon{color:#a33a3a;background:#fdf0f0;border-color:#f0cccc}
+#logoutBtn{background:none;box-shadow:none;margin:0;min-height:0}
+
+/* ---------- Service screens ---------- */
+.back-link{
+  display:inline-block;margin:0 0 12px;padding:4px 0;border:0;background:none;
+  color:var(--gold-dark);font:800 13px "Manrope",sans-serif;
+}
+.service-sub{margin:-8px 0 18px;color:var(--text-soft);font-size:13px;line-height:1.7}
+.choice-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.choice-row.wide{grid-template-columns:repeat(3,1fr)}
+.choice-chip{
+  min-height:46px;padding:6px 4px;border-radius:14px;background:#fff;border:1.5px solid #e9dfc3;
+  color:var(--emerald-dark);font:800 12.5px "Manrope",sans-serif;transition:.2s;
+}
+.choice-chip.selected{border-color:var(--gold);background:var(--champagne);box-shadow:var(--ring-gold)}
+.pick-label+.choice-row{margin-top:0}
+.referral-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.referral-stat{display:grid;gap:2px;padding:14px;border-radius:15px;text-align:center;background:var(--champagne);border:1px solid var(--gold-light)}
+.referral-stat b{color:var(--emerald-dark);font:800 22px "Manrope",sans-serif}
+.referral-stat small{color:var(--text-soft);font-size:11.5px}
+.referral-panel .button-primary{margin-top:0}
+
+/* ---------- Referral banner ---------- */
+.referral-banner{
+  position:relative;display:flex;align-items:stretch;justify-content:space-between;gap:8px;
+  width:100%;min-height:150px;padding:0 0 0 20px;overflow:hidden;text-align:left;
+  border:1px solid rgba(232,207,140,.6);border-radius:22px;color:#fff;font-family:inherit;
+  background:
+    radial-gradient(circle at 80% 20%,rgba(232,207,140,.28),transparent 45%),
+    linear-gradient(120deg,#04261f,#0d6954);
+  box-shadow:0 16px 32px rgba(4,38,31,.25);
+}
+.referral-banner::before{
+  content:"";position:absolute;right:-40px;top:-60px;width:220px;height:220px;border-radius:50%;
+  border:1px solid rgba(232,207,140,.3);
+}
+.referral-copy{position:relative;z-index:1;display:grid;align-content:center;gap:6px;padding:18px 0}
+.referral-copy small{color:var(--gold-light);font:800 10px "Manrope",sans-serif;letter-spacing:2px}
+.referral-copy strong{font:800 clamp(19px,5.6vw,24px) "Manrope",sans-serif;line-height:1.15;letter-spacing:-.03em}
+.referral-cta{
+  justify-self:start;margin-top:4px;padding:8px 14px;border-radius:999px;
+  background:var(--gold-light);color:var(--emerald-dark);font:800 12px "Manrope",sans-serif;
+}
+.referral-art{position:relative;flex:0 0 46%;max-width:190px;align-self:flex-end}
+.referral-art .person{display:block;width:100%;height:auto;max-height:158px}
+.referral-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}
+
+/* ---------- Dark mode ---------- */
+html[data-theme="dark"]{color-scheme:dark}
+html[data-theme="dark"] body{
+  background:radial-gradient(900px 400px at 85% -120px,rgba(196,154,67,.10),transparent 60%),#0b1512;
+  color:#e6eee9;
+}
+html[data-theme="dark"]{
+  --text:#e6eee9;--text-soft:#9db0a6;--text-muted:#7f9187;--border:#25382f;
+  --champagne:#16251f;--gold-light:#4a3d1a;--emerald-dark:#f1e6c4;
+}
+html[data-theme="dark"] .detail-card,
+html[data-theme="dark"] .quickbuy-home,
+html[data-theme="dark"] .services-section,
+html[data-theme="dark"] .network-panel,
+html[data-theme="dark"] .package-panel,
+html[data-theme="dark"] .auth-card,
+html[data-theme="dark"] .finder-card,
+html[data-theme="dark"] .data-plan-card,
+html[data-theme="dark"] .tx-item,
+html[data-theme="dark"] .finder-result,
+html[data-theme="dark"] .tx-sheet-panel,
+html[data-theme="dark"] .dashboard-notice,
+html[data-theme="dark"] .trust-strip,
+html[data-theme="dark"] .remembered-card,
+html[data-theme="dark"] .referral-stat,
+html[data-theme="dark"] .profile-details{
+  background:#12231e;border-color:#2a3f35;box-shadow:0 10px 26px rgba(0,0,0,.35);
+}
+html[data-theme="dark"] .field input,
+html[data-theme="dark"] .quickbuy-field input,
+html[data-theme="dark"] .quickbuy-select,
+html[data-theme="dark"] .need-chip,
+html[data-theme="dark"] .amount-chip,
+html[data-theme="dark"] .choice-chip,
+html[data-theme="dark"] .data-network-button,
+html[data-theme="dark"] .network-chip,
+html[data-theme="dark"] .tab.active{
+  background:#0f1d18;border-color:#2f453a;color:#e6eee9;
+}
+html[data-theme="dark"] .tabs,
+html[data-theme="dark"] .recent-beneficiary,
+html[data-theme="dark"] .empty-activity,
+html[data-theme="dark"] .data-store-footnote,
+html[data-theme="dark"] .data-catalogue-status{background:#0f1d18;border-color:#2f453a;color:#b9c8c0}
+html[data-theme="dark"] .data-plan-name,
+html[data-theme="dark"] .finder-result b,
+html[data-theme="dark"] .settings-text b,
+html[data-theme="dark"] .services-heading h2,
+html[data-theme="dark"] .network-panel h2,
+html[data-theme="dark"] .detail-card h2,
+html[data-theme="dark"] .quickbuy-home h2,
+html[data-theme="dark"] .auth-heading h2,
+html[data-theme="dark"] .auth-intro h1,
+html[data-theme="dark"] .tx-main b,
+html[data-theme="dark"] .service-item span:last-child,
+html[data-theme="dark"] .detail-row b,
+html[data-theme="dark"] .remembered-name,
+html[data-theme="dark"] .need-chip b,
+html[data-theme="dark"] .choice-chip,
+html[data-theme="dark"] .amount-chip{color:#f1e6c4}
+html[data-theme="dark"] .data-plan-price,
+html[data-theme="dark"] .finder-result strong,
+html[data-theme="dark"] .referral-stat b{color:#8fe0bd}
+html[data-theme="dark"] .field label,
+html[data-theme="dark"] .quickbuy-field > label{color:#e6eee9}
+html[data-theme="dark"] .detail-row,
+html[data-theme="dark"] .settings-item{border-bottom-color:#25382f}
+html[data-theme="dark"] .settings-icon{background:#1a2d25;border-color:#34503f;color:var(--gold-light)}
+html[data-theme="dark"] .settings-icon{color:#e8cf8c}
+html[data-theme="dark"] .data-plan-network,
+html[data-theme="dark"] .referral-cta{background:#e8cf8c;color:#04261f;border-color:#e8cf8c}
+html[data-theme="dark"] .message{background:#12231e;border-color:#2f453a;color:#cfe6da}
+html[data-theme="dark"] .message.error{background:#2a1515;border-color:#5a2a2a;color:#f0b4b4}
+html[data-theme="dark"] .site-footer,
+html[data-theme="dark"] .secure-note{color:#7f9187;border-color:#25382f}
+html[data-theme="dark"] .switch{background:#34463d}
+html[data-theme="dark"] .tx-sheet-amount{color:#f1e6c4}
+html[data-theme="dark"] #logoutBtn .settings-icon{background:#2a1515;border-color:#5a2a2a;color:#f0a0a0}
+html[data-theme="dark"] .profile-avatar{color:#e8cf8c}
