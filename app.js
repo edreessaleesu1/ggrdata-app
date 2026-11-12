@@ -878,8 +878,7 @@ async function loadNotifications(userId, showLoading = false) {
   const requestNumber = ++notificationsRequestNumber;
 
   if (showLoading && elements.notificationsList) {
-    elements.notificationsList.textContent =
-      "Loading notifications...";
+    showSkeletonRows(elements.notificationsList, 3);
   }
 
   const { data, error } = await supabaseClient
@@ -900,8 +899,11 @@ async function loadNotifications(userId, showLoading = false) {
     console.error("Notifications loading error:", error);
 
     if (elements.notificationsList) {
-      elements.notificationsList.textContent =
-        "Notifications could not be loaded. Please try again.";
+      showRetryState(
+        elements.notificationsList,
+        "Notifications could not be loaded.",
+        () => loadNotifications(userId, true)
+      );
     }
 
     return;
@@ -1082,6 +1084,7 @@ function showTab(tabName) {
 
   clearDashboardMessage();
   window.scrollTo(0, 0);
+  focusActiveView(tabName);
 
   if (tabName === "data-store") {
     updateQuickBuyBalance();
@@ -1437,6 +1440,7 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
   const networkName = SUPPORTED_DATA_NETWORKS[network];
 
   clearDataPlans();
+  showSkeletonCards(elements.dataPlans, 4);
 
   setCatalogueStatus(
     `Loading ${networkName} data plans...`,
@@ -1492,6 +1496,7 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
     }
 
     console.error("Data catalogue error:", error);
+    clearDataPlans();
 
     const message = String(error?.message || "");
 
@@ -1902,6 +1907,7 @@ function openTransactionSheet(transaction) {
   }
 
   sheet.classList.remove("hidden");
+  sheet.querySelector(".tt-actions .button-outline:last-child")?.focus({ preventScroll: true });
 }
 
 function closeTransactionSheet() {
@@ -2541,8 +2547,15 @@ function renderTransactionError(container) {
   showTransactionMessage(
     container,
     "Transactions could not be loaded",
-    "Please refresh the page and try again."
+    "Check your connection, then try again."
   );
+
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "retry-button";
+  retry.textContent = "Try again";
+  retry.addEventListener("click", () => refreshAccountData(true));
+  container.append(retry);
 }
 
 /* ---------------------------------------------------------
@@ -2576,8 +2589,11 @@ async function loadDashboard(user) {
   }
 
   if (elements.balance) {
-    elements.balance.textContent = "Loading...";
+    elements.balance.textContent = "₦00,000.00";
+    elements.balance.classList.add("skeleton-text");
   }
+
+  showTransactionSkeleton();
 
   if (elements.profileName) {
     elements.profileName.textContent = "Loading...";
@@ -2746,6 +2762,8 @@ async function loadDashboard(user) {
 
   } finally {
     loadingUserId = null;
+    lastRefreshAt = Date.now();
+    elements.balance?.classList.remove("skeleton-text");
   }
 }
 
@@ -2898,5 +2916,338 @@ async function initialiseApplication() {
     );
   }
 }
+
+/* ---------------------------------------------------------
+   25. USER EXPERIENCE ENHANCEMENTS
+   Skeletons, refresh, offline banner, input polish
+   --------------------------------------------------------- */
+
+let lastRefreshAt = Date.now();
+let refreshing = false;
+
+function showSkeletonRows(container, count = 3) {
+  if (!container) return;
+
+  container.replaceChildren();
+
+  for (let i = 0; i < count; i += 1) {
+    const row = document.createElement("div");
+    row.className = "skeleton-row";
+    row.setAttribute("aria-hidden", "true");
+    row.innerHTML =
+      '<span class="skeleton sk-icon"></span>' +
+      '<span class="sk-lines"><span class="skeleton sk-line"></span>' +
+      '<span class="skeleton sk-line short"></span></span>' +
+      '<span class="skeleton sk-amount"></span>';
+    container.append(row);
+  }
+}
+
+function showSkeletonCards(container, count = 4) {
+  if (!container) return;
+
+  container.replaceChildren();
+
+  for (let i = 0; i < count; i += 1) {
+    const card = document.createElement("div");
+    card.className = "data-plan-card sk-card";
+    card.setAttribute("aria-hidden", "true");
+    card.innerHTML =
+      '<span class="skeleton sk-line"></span>' +
+      '<span class="skeleton sk-line short"></span>' +
+      '<span class="skeleton sk-price"></span>';
+    container.append(card);
+  }
+}
+
+function showTransactionSkeleton() {
+  const box = elements.recentTransactions;
+  if (!box) return;
+
+  box.className = "tx-list";
+  showSkeletonRows(box, 3);
+}
+
+function showRetryState(container, text, onRetry) {
+  if (!container) return;
+
+  container.replaceChildren();
+
+  const box = document.createElement("div");
+  box.className = "notifications-empty";
+  box.textContent = text + " ";
+
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "retry-button";
+  retry.textContent = "Try again";
+  retry.addEventListener("click", onRetry);
+
+  box.append(retry);
+  container.append(box);
+}
+
+function focusActiveView(tabName) {
+  const id = TAB_VIEW_IDS[tabName];
+  const view = id ? document.getElementById(id) : null;
+  const heading = view?.querySelector("h2");
+
+  if (!heading) return;
+
+  heading.setAttribute("tabindex", "-1");
+  heading.focus({ preventScroll: true });
+}
+
+/* ----- Refresh ----- */
+
+async function refreshAccountData(manual = false) {
+  if (refreshing || !loadedUserId) return;
+
+  if (!navigator.onLine) {
+    if (manual) {
+      showDashboardMessage(
+        "You are offline. Reconnect and try again.",
+        "error",
+        true
+      );
+    }
+    return;
+  }
+
+  refreshing = true;
+
+  const userId = loadedUserId;
+  document.body.classList.add("is-refreshing");
+
+  try {
+    const [walletResult, txResult] = await Promise.all([
+      supabaseClient
+        .from("wallets")
+        .select("balance, currency")
+        .eq("user_id", userId)
+        .maybeSingle(),
+
+      supabaseClient
+        .from("wallet_transactions")
+        .select(
+          "id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at"
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(50)
+    ]);
+
+    if (loadedUserId !== userId) return;
+
+    if (
+      !walletResult.error &&
+      walletResult.data &&
+      Number.isFinite(Number(walletResult.data.balance))
+    ) {
+      currentWalletBalance = Number(walletResult.data.balance);
+      lastBalanceText = formatNaira(walletResult.data.balance);
+      elements.balance.textContent = lastBalanceText;
+      applyBalanceVisibility();
+    }
+
+    if (txResult.error) {
+      if (manual) renderTransactionError(elements.recentTransactions);
+    } else {
+      renderTransactions(elements.recentTransactions, txResult.data || [], 50);
+    }
+
+    await loadNotifications(userId, false);
+
+    lastRefreshAt = Date.now();
+
+    if (manual) {
+      showDashboardMessage("You are up to date.", "success", true);
+    }
+
+  } catch (error) {
+    console.error("Refresh error:", error);
+
+    if (manual) {
+      showDashboardMessage(
+        "We could not refresh just now. Please try again.",
+        "error",
+        true
+      );
+    }
+
+  } finally {
+    refreshing = false;
+    document.body.classList.remove("is-refreshing");
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (
+    document.visibilityState === "visible" &&
+    Date.now() - lastRefreshAt > 60000
+  ) {
+    refreshAccountData(false);
+  }
+});
+
+/* ----- Offline banner ----- */
+
+const offlineBanner = document.createElement("div");
+offlineBanner.id = "offlineBanner";
+offlineBanner.className = "offline-banner hidden";
+offlineBanner.setAttribute("role", "status");
+offlineBanner.textContent =
+  "You are offline. Balances and updates will refresh when you reconnect.";
+document.body.prepend(offlineBanner);
+
+function syncOnlineState() {
+  offlineBanner.classList.toggle("hidden", navigator.onLine);
+}
+
+window.addEventListener("offline", syncOnlineState);
+
+window.addEventListener("online", () => {
+  syncOnlineState();
+  refreshAccountData(false);
+});
+
+syncOnlineState();
+
+/* ----- Pull to refresh ----- */
+
+(function setupPullToRefresh() {
+  const indicator = document.createElement("div");
+  indicator.className = "pull-indicator";
+  indicator.setAttribute("aria-hidden", "true");
+  indicator.textContent = "↓";
+  document.body.append(indicator);
+
+  let startY = null;
+  let pull = 0;
+  const THRESHOLD = 80;
+
+  const active = () =>
+    elements.dashboardScreen &&
+    !elements.dashboardScreen.classList.contains("hidden") &&
+    document.getElementById("txSheet")?.classList.contains("hidden") !== false;
+
+  document.addEventListener("touchstart", (event) => {
+    startY = active() && window.scrollY <= 0
+      ? event.touches[0].clientY
+      : null;
+    pull = 0;
+  }, { passive: true });
+
+  document.addEventListener("touchmove", (event) => {
+    if (startY === null) return;
+
+    pull = Math.max(0, event.touches[0].clientY - startY);
+
+    if (pull > 0 && window.scrollY <= 0) {
+      const shown = Math.min(pull * 0.5, 56);
+      indicator.style.transform = `translate(-50%, ${shown - 44}px)`;
+      indicator.style.opacity = String(Math.min(pull / THRESHOLD, 1));
+      indicator.classList.toggle("ready", pull >= THRESHOLD);
+    }
+  }, { passive: true });
+
+  document.addEventListener("touchend", () => {
+    if (startY === null) return;
+
+    const ready = pull >= THRESHOLD;
+
+    indicator.style.transform = "";
+    indicator.style.opacity = "";
+    indicator.classList.remove("ready");
+
+    startY = null;
+    pull = 0;
+
+    if (ready) refreshAccountData(true);
+  });
+})();
+
+/* ----- Input polish ----- */
+
+function addPasswordToggles() {
+  document.querySelectorAll('input[type="password"]').forEach((input) => {
+    if (input.closest(".password-wrap")) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "password-wrap";
+
+    input.parentNode.insertBefore(wrap, input);
+    wrap.append(input);
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "pw-toggle";
+    toggle.textContent = "Show";
+    toggle.setAttribute("aria-label", "Show password");
+    toggle.setAttribute("aria-pressed", "false");
+
+    toggle.addEventListener("click", () => {
+      const show = input.type === "password";
+
+      input.type = show ? "text" : "password";
+      toggle.textContent = show ? "Hide" : "Show";
+      toggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      toggle.setAttribute("aria-pressed", String(show));
+    });
+
+    wrap.append(toggle);
+  });
+}
+
+function formatPhoneAsTyped(input) {
+  if (input.selectionStart !== input.value.length) return;
+
+  const raw = input.value;
+
+  if (raw.trim().startsWith("+")) return;
+
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+
+  if (!digits.startsWith("0")) {
+    input.value = digits;
+    return;
+  }
+
+  input.value = [digits.slice(0, 4), digits.slice(4, 7), digits.slice(7, 11)]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function polishInputs() {
+  addPasswordToggles();
+
+  ["phone", "dataPhone", "airtimePhone"].forEach((id) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.setAttribute("inputmode", "tel");
+    input.setAttribute("maxlength", "16");
+    input.addEventListener("input", () => formatPhoneAsTyped(input));
+  });
+
+  const email = document.getElementById("email");
+
+  if (email) {
+    email.setAttribute("autocapitalize", "none");
+    email.setAttribute("autocorrect", "off");
+    email.setAttribute("spellcheck", "false");
+    email.setAttribute("enterkeyhint", "next");
+  }
+
+  document.getElementById("password")?.setAttribute("enterkeyhint", "go");
+
+  document.getElementById("notificationBtn")?.setAttribute("aria-label", "Notifications");
+
+  document.querySelectorAll("button:not([type])").forEach((button) => {
+    button.type = "button";
+  });
+}
+
+polishInputs();
 
 initialiseApplication();
