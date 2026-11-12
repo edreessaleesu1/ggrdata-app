@@ -35,6 +35,9 @@ const supabaseClient = window.supabase.createClient(
 const DATA_CATALOGUE_URL =
   `${SUPABASE_URL}/functions/v1/vtpass-catalogue`;
 
+const DATA_PURCHASE_URL =
+  `${SUPABASE_URL}/functions/v1/vtpass-data-purchase`;
+
 const SUPPORTED_DATA_NETWORKS = {
   mtn: "MTN",
   airtel: "Airtel",
@@ -160,6 +163,8 @@ let selectedDataCategory = "standard";
 let manuallySelectedNetworkForPhone = null;
 
 let catalogueRequestNumber = 0;
+let purchaseInProgress = false;
+let lastReconciliationAt = 0;
 let currentWalletBalance = null;
 let lastPlans = [];
 let currentUsername = "";
@@ -878,7 +883,8 @@ async function loadNotifications(userId, showLoading = false) {
   const requestNumber = ++notificationsRequestNumber;
 
   if (showLoading && elements.notificationsList) {
-    showSkeletonRows(elements.notificationsList, 3);
+    elements.notificationsList.textContent =
+      "Loading notifications...";
   }
 
   const { data, error } = await supabaseClient
@@ -899,11 +905,8 @@ async function loadNotifications(userId, showLoading = false) {
     console.error("Notifications loading error:", error);
 
     if (elements.notificationsList) {
-      showRetryState(
-        elements.notificationsList,
-        "Notifications could not be loaded.",
-        () => loadNotifications(userId, true)
-      );
+      elements.notificationsList.textContent =
+        "Notifications could not be loaded. Please try again.";
     }
 
     return;
@@ -1084,7 +1087,6 @@ function showTab(tabName) {
 
   clearDashboardMessage();
   window.scrollTo(0, 0);
-  focusActiveView(tabName);
 
   if (tabName === "data-store") {
     updateQuickBuyBalance();
@@ -1393,12 +1395,16 @@ function renderDataPlans(plans, networkName) {
 
     const availability = document.createElement("span");
     availability.className = "data-plan-availability";
-    availability.textContent = "Catalogue listing";
+    availability.textContent = "Available via VTpass";
 
-    footer.append(availability);
+    const buyButton = document.createElement("button");
+    buyButton.type = "button";
+    buyButton.className = "data-plan-buy button-primary";
+    buyButton.textContent = "Buy bundle";
+    buyButton.addEventListener("click", () => purchaseDataPlan(plan, buyButton));
 
+    footer.append(availability, buyButton);
     card.append(details, price, footer);
-
     fragment.append(card);
   });
 
@@ -1413,7 +1419,7 @@ function renderDataPlans(plans, networkName) {
   elements.dataPlans.append(fragment);
 
   setCatalogueStatus(
-    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Select a plan for purchase once checkout is enabled.`,
+    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Choose a plan and tap Buy bundle to continue.`,
     "success"
   );
 }
@@ -1440,7 +1446,6 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
   const networkName = SUPPORTED_DATA_NETWORKS[network];
 
   clearDataPlans();
-  showSkeletonCards(elements.dataPlans, 4);
 
   setCatalogueStatus(
     `Loading ${networkName} data plans...`,
@@ -1485,8 +1490,11 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
       );
     }
 
+    const displayPlans = (Array.isArray(result.plans) ? result.plans : [])
+      .filter((plan) => !/\bglo\s*tv\b|\bvod\b|\btv\s+(?:lite|max)\b/i.test(String(plan?.name || "")));
+
     renderDataPlans(
-      result.plans,
+      displayPlans,
       result.networkName || networkName
     );
 
@@ -1496,7 +1504,6 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
     }
 
     console.error("Data catalogue error:", error);
-    clearDataPlans();
 
     const message = String(error?.message || "");
 
@@ -1525,11 +1532,151 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
   }
 }
 
+async function getAuthenticatedSession() {
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error || !data?.session?.access_token) {
+    throw new Error("Please sign in again before purchasing data.");
+  }
+  return data.session;
+}
+
+async function callDataPurchase(payload) {
+  const session = await getAuthenticatedSession();
+  const response = await fetch(DATA_PURCHASE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_PUBLISHABLE_KEY,
+      "Authorization": `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify(payload),
+    cache: "no-store"
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok || !result?.success) {
+    throw new Error(result?.error || `Purchase request failed (${response.status}).`);
+  }
+  return result;
+}
+
+async function refreshWalletAndTransactions() {
+  const { data: authData } = await supabaseClient.auth.getUser();
+  const user = authData?.user;
+  if (!user) return;
+
+  const [walletResult, transactionsResult] = await Promise.all([
+    supabaseClient.from("wallets").select("balance, currency").eq("user_id", user.id).maybeSingle(),
+    supabaseClient.from("wallet_transactions")
+      .select("id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at")
+      .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50)
+  ]);
+
+  if (!walletResult.error && walletResult.data) {
+    currentWalletBalance = Number(walletResult.data.balance);
+    lastBalanceText = formatNaira(currentWalletBalance);
+    if (elements.balance) elements.balance.textContent = lastBalanceText;
+    applyBalanceVisibility();
+  }
+  if (!transactionsResult.error && elements.recentTransactions) {
+    renderTransactions(elements.recentTransactions, transactionsResult.data || [], 50);
+  }
+}
+
+async function purchaseDataPlan(plan, button) {
+  if (purchaseInProgress) return;
+
+  const phone = getLocalPhoneDigits(elements.dataPhone?.value || "");
+  if (!phone) {
+    setCatalogueStatus("Enter a valid Nigerian mobile number before choosing a plan.", "error");
+    elements.dataPhone?.focus();
+    return;
+  }
+  if (!plan?.code || !Number.isFinite(Number(plan.amount)) || Number(plan.amount) <= 0) {
+    setCatalogueStatus("This plan is not valid. Refresh the catalogue and try again.", "error");
+    return;
+  }
+  if (currentWalletBalance === null || !Number.isFinite(currentWalletBalance)) {
+    setCatalogueStatus("Your wallet balance is not available. Refresh your account and try again.", "error");
+    return;
+  }
+  if (currentWalletBalance < Number(plan.amount)) {
+    setCatalogueStatus("Your wallet balance is insufficient for this plan. Fund your wallet and try again.", "error");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Confirm data purchase\n\nNetwork: ${SUPPORTED_DATA_NETWORKS[selectedDataNetwork]}\nPhone: ${phone}\nPlan: ${plan.name}\nAmount: ${formatNaira(plan.amount)}\n\nThe amount will be deducted from your GGRData wallet.`
+  );
+  if (!confirmed) return;
+
+  purchaseInProgress = true;
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Processing...";
+  }
+  document.querySelectorAll(".data-plan-buy").forEach((item) => { item.disabled = true; });
+  setCatalogueStatus("Submitting your purchase securely. Please do not close this page.", "loading");
+
+  try {
+    const idempotencyKey = crypto.randomUUID().replaceAll("-", "");
+    const result = await callDataPurchase({
+      action: "purchase",
+      network: selectedDataNetwork,
+      phone,
+      variationCode: String(plan.code),
+      idempotencyKey
+    });
+
+    saveRecentBeneficiary(phone);
+    if (result.status === "successful") {
+      setCatalogueStatus(`Purchase successful: ${plan.name} sent to ${phone}.`, "success");
+    } else if (result.status === "failed") {
+      setCatalogueStatus("VTpass reported that this purchase failed. Your wallet refund has been processed.", "error");
+    } else {
+      setCatalogueStatus("Your purchase is still processing. Your wallet debit is held while VTpass confirms delivery. Check your transactions shortly.", "loading");
+    }
+    await refreshWalletAndTransactions();
+  } catch (error) {
+    console.error("Data purchase error:", error);
+    setCatalogueStatus(error?.message || "We could not complete this purchase. Please check your transactions before trying again.", "error");
+    await refreshWalletAndTransactions().catch(() => {});
+  } finally {
+    purchaseInProgress = false;
+    document.querySelectorAll(".data-plan-buy").forEach((item) => {
+      item.disabled = false;
+      item.textContent = "Buy bundle";
+    });
+  }
+}
+
+async function reconcilePendingDataOrders(force = false) {
+  const now = Date.now();
+  if (!force && now - lastReconciliationAt < 120000) return;
+  lastReconciliationAt = now;
+
+  try {
+    const result = await callDataPurchase({ action: "reconcile" });
+    if (result.checked > 0) {
+      const changed = (result.results || []).some((item) =>
+        item.status === "successful" || item.status === "failed"
+      );
+      if (changed) await refreshWalletAndTransactions();
+      const summary = (result.results || []).map((item) => item.status);
+      if (summary.includes("successful") || summary.includes("failed")) {
+        setCatalogueStatus("We checked pending purchases and updated the confirmed results.", "success");
+      }
+    }
+  } catch (error) {
+    console.warn("Pending data purchase reconciliation was not completed:", error);
+  }
+}
+
 function openDataStore() {
   showTab("data-store");
 
   updateQuickBuyBalance();
   updateRecentBeneficiaryDisplay();
+  reconcilePendingDataOrders();
 
   if (
     !elements.dataPlans ||
@@ -1907,7 +2054,6 @@ function openTransactionSheet(transaction) {
   }
 
   sheet.classList.remove("hidden");
-  sheet.querySelector(".tt-actions .button-outline:last-child")?.focus({ preventScroll: true });
 }
 
 function closeTransactionSheet() {
@@ -2547,15 +2693,8 @@ function renderTransactionError(container) {
   showTransactionMessage(
     container,
     "Transactions could not be loaded",
-    "Check your connection, then try again."
+    "Please refresh the page and try again."
   );
-
-  const retry = document.createElement("button");
-  retry.type = "button";
-  retry.className = "retry-button";
-  retry.textContent = "Try again";
-  retry.addEventListener("click", () => refreshAccountData(true));
-  container.append(retry);
 }
 
 /* ---------------------------------------------------------
@@ -2589,11 +2728,8 @@ async function loadDashboard(user) {
   }
 
   if (elements.balance) {
-    elements.balance.textContent = "₦00,000.00";
-    elements.balance.classList.add("skeleton-text");
+    elements.balance.textContent = "Loading...";
   }
-
-  showTransactionSkeleton();
 
   if (elements.profileName) {
     elements.profileName.textContent = "Loading...";
@@ -2762,8 +2898,6 @@ async function loadDashboard(user) {
 
   } finally {
     loadingUserId = null;
-    lastRefreshAt = Date.now();
-    elements.balance?.classList.remove("skeleton-text");
   }
 }
 
@@ -2916,338 +3050,5 @@ async function initialiseApplication() {
     );
   }
 }
-
-/* ---------------------------------------------------------
-   25. USER EXPERIENCE ENHANCEMENTS
-   Skeletons, refresh, offline banner, input polish
-   --------------------------------------------------------- */
-
-let lastRefreshAt = Date.now();
-let refreshing = false;
-
-function showSkeletonRows(container, count = 3) {
-  if (!container) return;
-
-  container.replaceChildren();
-
-  for (let i = 0; i < count; i += 1) {
-    const row = document.createElement("div");
-    row.className = "skeleton-row";
-    row.setAttribute("aria-hidden", "true");
-    row.innerHTML =
-      '<span class="skeleton sk-icon"></span>' +
-      '<span class="sk-lines"><span class="skeleton sk-line"></span>' +
-      '<span class="skeleton sk-line short"></span></span>' +
-      '<span class="skeleton sk-amount"></span>';
-    container.append(row);
-  }
-}
-
-function showSkeletonCards(container, count = 4) {
-  if (!container) return;
-
-  container.replaceChildren();
-
-  for (let i = 0; i < count; i += 1) {
-    const card = document.createElement("div");
-    card.className = "data-plan-card sk-card";
-    card.setAttribute("aria-hidden", "true");
-    card.innerHTML =
-      '<span class="skeleton sk-line"></span>' +
-      '<span class="skeleton sk-line short"></span>' +
-      '<span class="skeleton sk-price"></span>';
-    container.append(card);
-  }
-}
-
-function showTransactionSkeleton() {
-  const box = elements.recentTransactions;
-  if (!box) return;
-
-  box.className = "tx-list";
-  showSkeletonRows(box, 3);
-}
-
-function showRetryState(container, text, onRetry) {
-  if (!container) return;
-
-  container.replaceChildren();
-
-  const box = document.createElement("div");
-  box.className = "notifications-empty";
-  box.textContent = text + " ";
-
-  const retry = document.createElement("button");
-  retry.type = "button";
-  retry.className = "retry-button";
-  retry.textContent = "Try again";
-  retry.addEventListener("click", onRetry);
-
-  box.append(retry);
-  container.append(box);
-}
-
-function focusActiveView(tabName) {
-  const id = TAB_VIEW_IDS[tabName];
-  const view = id ? document.getElementById(id) : null;
-  const heading = view?.querySelector("h2");
-
-  if (!heading) return;
-
-  heading.setAttribute("tabindex", "-1");
-  heading.focus({ preventScroll: true });
-}
-
-/* ----- Refresh ----- */
-
-async function refreshAccountData(manual = false) {
-  if (refreshing || !loadedUserId) return;
-
-  if (!navigator.onLine) {
-    if (manual) {
-      showDashboardMessage(
-        "You are offline. Reconnect and try again.",
-        "error",
-        true
-      );
-    }
-    return;
-  }
-
-  refreshing = true;
-
-  const userId = loadedUserId;
-  document.body.classList.add("is-refreshing");
-
-  try {
-    const [walletResult, txResult] = await Promise.all([
-      supabaseClient
-        .from("wallets")
-        .select("balance, currency")
-        .eq("user_id", userId)
-        .maybeSingle(),
-
-      supabaseClient
-        .from("wallet_transactions")
-        .select(
-          "id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at"
-        )
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(50)
-    ]);
-
-    if (loadedUserId !== userId) return;
-
-    if (
-      !walletResult.error &&
-      walletResult.data &&
-      Number.isFinite(Number(walletResult.data.balance))
-    ) {
-      currentWalletBalance = Number(walletResult.data.balance);
-      lastBalanceText = formatNaira(walletResult.data.balance);
-      elements.balance.textContent = lastBalanceText;
-      applyBalanceVisibility();
-    }
-
-    if (txResult.error) {
-      if (manual) renderTransactionError(elements.recentTransactions);
-    } else {
-      renderTransactions(elements.recentTransactions, txResult.data || [], 50);
-    }
-
-    await loadNotifications(userId, false);
-
-    lastRefreshAt = Date.now();
-
-    if (manual) {
-      showDashboardMessage("You are up to date.", "success", true);
-    }
-
-  } catch (error) {
-    console.error("Refresh error:", error);
-
-    if (manual) {
-      showDashboardMessage(
-        "We could not refresh just now. Please try again.",
-        "error",
-        true
-      );
-    }
-
-  } finally {
-    refreshing = false;
-    document.body.classList.remove("is-refreshing");
-  }
-}
-
-document.addEventListener("visibilitychange", () => {
-  if (
-    document.visibilityState === "visible" &&
-    Date.now() - lastRefreshAt > 60000
-  ) {
-    refreshAccountData(false);
-  }
-});
-
-/* ----- Offline banner ----- */
-
-const offlineBanner = document.createElement("div");
-offlineBanner.id = "offlineBanner";
-offlineBanner.className = "offline-banner hidden";
-offlineBanner.setAttribute("role", "status");
-offlineBanner.textContent =
-  "You are offline. Balances and updates will refresh when you reconnect.";
-document.body.prepend(offlineBanner);
-
-function syncOnlineState() {
-  offlineBanner.classList.toggle("hidden", navigator.onLine);
-}
-
-window.addEventListener("offline", syncOnlineState);
-
-window.addEventListener("online", () => {
-  syncOnlineState();
-  refreshAccountData(false);
-});
-
-syncOnlineState();
-
-/* ----- Pull to refresh ----- */
-
-(function setupPullToRefresh() {
-  const indicator = document.createElement("div");
-  indicator.className = "pull-indicator";
-  indicator.setAttribute("aria-hidden", "true");
-  indicator.textContent = "↓";
-  document.body.append(indicator);
-
-  let startY = null;
-  let pull = 0;
-  const THRESHOLD = 80;
-
-  const active = () =>
-    elements.dashboardScreen &&
-    !elements.dashboardScreen.classList.contains("hidden") &&
-    document.getElementById("txSheet")?.classList.contains("hidden") !== false;
-
-  document.addEventListener("touchstart", (event) => {
-    startY = active() && window.scrollY <= 0
-      ? event.touches[0].clientY
-      : null;
-    pull = 0;
-  }, { passive: true });
-
-  document.addEventListener("touchmove", (event) => {
-    if (startY === null) return;
-
-    pull = Math.max(0, event.touches[0].clientY - startY);
-
-    if (pull > 0 && window.scrollY <= 0) {
-      const shown = Math.min(pull * 0.5, 56);
-      indicator.style.transform = `translate(-50%, ${shown - 44}px)`;
-      indicator.style.opacity = String(Math.min(pull / THRESHOLD, 1));
-      indicator.classList.toggle("ready", pull >= THRESHOLD);
-    }
-  }, { passive: true });
-
-  document.addEventListener("touchend", () => {
-    if (startY === null) return;
-
-    const ready = pull >= THRESHOLD;
-
-    indicator.style.transform = "";
-    indicator.style.opacity = "";
-    indicator.classList.remove("ready");
-
-    startY = null;
-    pull = 0;
-
-    if (ready) refreshAccountData(true);
-  });
-})();
-
-/* ----- Input polish ----- */
-
-function addPasswordToggles() {
-  document.querySelectorAll('input[type="password"]').forEach((input) => {
-    if (input.closest(".password-wrap")) return;
-
-    const wrap = document.createElement("div");
-    wrap.className = "password-wrap";
-
-    input.parentNode.insertBefore(wrap, input);
-    wrap.append(input);
-
-    const toggle = document.createElement("button");
-    toggle.type = "button";
-    toggle.className = "pw-toggle";
-    toggle.textContent = "Show";
-    toggle.setAttribute("aria-label", "Show password");
-    toggle.setAttribute("aria-pressed", "false");
-
-    toggle.addEventListener("click", () => {
-      const show = input.type === "password";
-
-      input.type = show ? "text" : "password";
-      toggle.textContent = show ? "Hide" : "Show";
-      toggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
-      toggle.setAttribute("aria-pressed", String(show));
-    });
-
-    wrap.append(toggle);
-  });
-}
-
-function formatPhoneAsTyped(input) {
-  if (input.selectionStart !== input.value.length) return;
-
-  const raw = input.value;
-
-  if (raw.trim().startsWith("+")) return;
-
-  const digits = raw.replace(/\D/g, "").slice(0, 11);
-
-  if (!digits.startsWith("0")) {
-    input.value = digits;
-    return;
-  }
-
-  input.value = [digits.slice(0, 4), digits.slice(4, 7), digits.slice(7, 11)]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function polishInputs() {
-  addPasswordToggles();
-
-  ["phone", "dataPhone", "airtimePhone"].forEach((id) => {
-    const input = document.getElementById(id);
-    if (!input) return;
-
-    input.setAttribute("inputmode", "tel");
-    input.setAttribute("maxlength", "16");
-    input.addEventListener("input", () => formatPhoneAsTyped(input));
-  });
-
-  const email = document.getElementById("email");
-
-  if (email) {
-    email.setAttribute("autocapitalize", "none");
-    email.setAttribute("autocorrect", "off");
-    email.setAttribute("spellcheck", "false");
-    email.setAttribute("enterkeyhint", "next");
-  }
-
-  document.getElementById("password")?.setAttribute("enterkeyhint", "go");
-
-  document.getElementById("notificationBtn")?.setAttribute("aria-label", "Notifications");
-
-  document.querySelectorAll("button:not([type])").forEach((button) => {
-    button.type = "button";
-  });
-}
-
-polishInputs();
 
 initialiseApplication();
