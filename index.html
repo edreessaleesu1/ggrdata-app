@@ -202,12 +202,20 @@
           </div>
         </div>
 
-        <button id="notificationBtn" class="notification-button"
-          type="button" aria-label="Notifications">
-          <span>♧</span>
-          <small id="notificationCount">0</small>
-        </button>
+<button id="notificationBtn"
+  class="notification-button"
+  type="button"
+  aria-label="Notifications"
+  aria-haspopup="true"
+  aria-controls="notificationsView">
 
+  <svg class="ico" aria-hidden="true">
+    <use href="#i-bell"></use>
+  </svg>
+
+  <small id="notificationCount" hidden>0</small>
+</button>
+        
       </section>
 
 
