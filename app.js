@@ -818,7 +818,7 @@ function renderNotifications() {
 
     card.setAttribute(
       "aria-label",
-      `${item.title}. ${item.message}`
+      `${item.title || "GGRData update"}. ${item.message || ""}`
     );
 
     const marker = document.createElement("span");
@@ -869,6 +869,7 @@ async function loadNotifications(userId, showLoading = false) {
 
   if (activeNotificationsUserId !== userId) {
     notificationItems = [];
+    notificationFilter = "all";
     updateNotificationCount();
   }
 
@@ -915,7 +916,7 @@ async function markNotificationRead(notificationId) {
   const userId = activeNotificationsUserId;
 
   const item = notificationItems.find(
-    (entry) => entry.id === notificationId
+    (entry) => String(entry.id) === String(notificationId)
   );
 
   if (!item || item.read_at || !userId) return;
@@ -942,7 +943,7 @@ async function markNotificationRead(notificationId) {
   }
 
   const currentItem = notificationItems.find(
-    (entry) => entry.id === notificationId
+    (entry) => String(entry.id) === String(notificationId)
   );
 
   if (currentItem) {
@@ -1935,48 +1936,52 @@ function showComingSoon(label) {
 }
 
 document.addEventListener("click", (event) => {
-  const tabTarget = event.target.closest("[data-tab]");
+  const target = event.target;
+
+  if (!(target instanceof Element)) return;
+
+  const tabTarget = target.closest("[data-tab]");
 
   if (tabTarget) {
     showTab(tabTarget.dataset.tab);
     return;
   }
 
-  const notificationItem = event.target.closest("[data-notification-id]");
+  const notificationItem = target.closest("[data-notification-id]");
 
   if (notificationItem) {
     markNotificationRead(notificationItem.dataset.notificationId);
     return;
   }
 
-  if (event.target.closest("#notificationBtn")) {
+  if (target.closest("#notificationBtn")) {
     showTab("notifications");
     return;
   }
 
-  if (event.target.closest("#toggleBalance")) {
+  if (target.closest("#toggleBalance")) {
     balanceHidden = !balanceHidden;
     applyBalanceVisibility();
     return;
   }
 
-  if (event.target.closest("[data-close-sheet]")) {
+  if (target.closest("[data-close-sheet]")) {
     closeTransactionSheet();
     return;
   }
 
-  if (event.target.closest("#txCopyRef")) {
+  if (target.closest("#txCopyRef")) {
     copySheetReference();
     return;
   }
 
-  if (event.target.closest("#toggleReferral")) {
+  if (target.closest("#toggleReferral")) {
     referralHidden = !referralHidden;
     applyReferralVisibility();
     return;
   }
 
-  const profileTarget = event.target.closest("[data-profile]");
+  const profileTarget = target.closest("[data-profile]");
 
   if (profileTarget) {
     const action = profileTarget.dataset.profile;
@@ -1992,7 +1997,7 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const netOption = event.target.closest(".net-option");
+  const netOption = target.closest(".net-option");
 
   if (netOption) {
     airtimeManualForPhone = normaliseNigerianPhone(
@@ -2003,7 +2008,7 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const amountChip = event.target.closest("#amountGrid .amount-chip");
+  const amountChip = target.closest("#amountGrid .amount-chip");
 
   if (amountChip) {
     document
@@ -2017,7 +2022,7 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const budgetChip = event.target.closest("#finderBudgets .amount-chip");
+  const budgetChip = target.closest("#finderBudgets .amount-chip");
 
   if (budgetChip) {
     finderBudget = Number(budgetChip.dataset.budget);
@@ -2033,7 +2038,7 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const needChip = event.target.closest(".need-chip");
+  const needChip = target.closest(".need-chip");
 
   if (needChip) {
     finderNeed = needChip.dataset.need;
@@ -2047,17 +2052,17 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  if (event.target.closest("#finderRun")) {
+  if (target.closest("#finderRun")) {
     runDataFinder();
     return;
   }
 
-  if (event.target.closest("#airtimeBuyBtn")) {
+  if (target.closest("#airtimeBuyBtn")) {
     showComingSoon("Airtime purchase");
     return;
   }
 
-  const serviceTarget = event.target.closest("[data-service]");
+  const serviceTarget = target.closest("[data-service]");
 
   if (serviceTarget) {
     const service = serviceTarget.dataset.service;
@@ -2088,7 +2093,7 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  if (event.target.closest("#fundWalletBtn, #walletFundLink")) {
+  if (target.closest("#fundWalletBtn, #walletFundLink")) {
     showComingSoon("Wallet funding");
     return;
   }
@@ -2559,6 +2564,7 @@ async function loadDashboard(user) {
   /* Start a fresh notification session for this user. */
   activeNotificationsUserId = user.id;
   notificationItems = [];
+  notificationFilter = "all";
   updateNotificationCount();
   loadNotifications(user.id, true);
 
@@ -2609,6 +2615,9 @@ async function loadDashboard(user) {
           .order("created_at", { ascending: false })
           .limit(50)
       ]);
+
+    /* Ignore dashboard results if the signed-in user changed. */
+    if (loadedUserId && loadedUserId !== user.id) return;
 
     const profile = profileResult.data;
     const wallet = walletResult.data;
@@ -2747,6 +2756,7 @@ async function loadDashboard(user) {
 function clearNotificationSession() {
   activeNotificationsUserId = null;
   notificationItems = [];
+  notificationFilter = "all";
 
   /* Invalidate outstanding notification requests. */
   notificationsRequestNumber += 1;
@@ -2762,6 +2772,13 @@ function clearNotificationSession() {
 
     elements.notificationsList.appendChild(empty);
   }
+
+  document.querySelectorAll("[data-notification-filter]").forEach((button) => {
+    const active = button.dataset.notificationFilter === "all";
+
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
 }
 
 if (elements.logoutBtn) {
