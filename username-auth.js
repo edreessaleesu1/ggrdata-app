@@ -72,20 +72,25 @@
   nameField?.after(usernameField);
 
   // Remembered account interface.
-  const rememberedRow = document.createElement("div");
-  rememberedRow.className = "auth-help hidden";
+  const emailField = emailInput.closest(".field");
 
-  const rememberedText = document.createElement("p");
-  rememberedText.style.fontSize = "12px";
-  rememberedText.style.color = "#6f7a73";
+  const rememberedRow = document.createElement("div");
+  rememberedRow.className = "remembered-card hidden";
+
+  const rememberedLabel = document.createElement("span");
+  rememberedLabel.className = "remembered-label";
+  rememberedLabel.textContent = "WELCOME BACK";
+
+  const rememberedText = document.createElement("strong");
+  rememberedText.className = "remembered-name";
 
   const switchButton = document.createElement("button");
   switchButton.type = "button";
   switchButton.className = "text-button";
-  switchButton.textContent = "Use another account";
+  switchButton.textContent = "Not you? Use another account";
 
-  rememberedRow.append(rememberedText, switchButton);
-  emailInput.closest(".field")?.after(rememberedRow);
+  rememberedRow.append(rememberedLabel, rememberedText, switchButton);
+  emailField?.before(rememberedRow);
 
   function showMessage(text, isError = false) {
     if (!message) return;
@@ -167,6 +172,7 @@
 
     if (signup) {
       rememberedRow.classList.add("hidden");
+      emailField?.classList.remove("hidden");
       emailInput.value = "";
       return;
     }
@@ -174,15 +180,21 @@
     const saved = rememberedUsername();
 
     if (saved) {
+      /*
+       * Remembered account: greet the customer, show the username
+       * above the password field and hide the username input.
+       * The value stays in the input so sign-in still reads it.
+       */
       emailInput.value = saved;
       emailInput.readOnly = true;
 
-      rememberedText.textContent =
-        `Welcome back, ${saved}`;
+      rememberedText.textContent = `@${saved}`;
 
       rememberedRow.classList.remove("hidden");
+      emailField?.classList.add("hidden");
     } else {
       rememberedRow.classList.add("hidden");
+      emailField?.classList.remove("hidden");
     }
   }
 
@@ -358,6 +370,7 @@
     emailInput.value = "";
     emailInput.readOnly = false;
     rememberedRow.classList.add("hidden");
+    emailField?.classList.remove("hidden");
     emailInput.focus();
   });
 
