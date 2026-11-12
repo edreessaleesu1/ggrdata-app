@@ -673,86 +673,126 @@ img {
 
 
 /* ---------------------------------------------------------
-   9. SERVICES GRID
-   --------------------------------------------------------- */
+9. SERVICES GRID — PREMIUM DARK GOLD ICON BOXES
+--------------------------------------------------------- */
 
 .services-section {
-  padding: 23px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--white);
-  box-shadow: var(--shadow-sm);
+padding: 23px;
+border: 1px solid var(--border);
+border-radius: var(--radius-lg);
+background: var(--white);
+box-shadow: var(--shadow-sm);
 }
 
 .services-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 20px;
+display: flex;
+align-items: flex-end;
+justify-content: space-between;
+gap: 15px;
+margin-bottom: 20px;
 }
 
 .services-heading h2,
 .network-panel h2,
 .detail-card h2,
 .data-store-heading h2 {
-  margin: 5px 0 0;
-  color: var(--emerald-dark);
-  font-family: "Manrope", sans-serif;
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -.5px;
+margin: 5px 0 0;
+color: var(--emerald-dark);
+font-family: "Manrope", sans-serif;
+font-size: 21px;
+font-weight: 800;
+letter-spacing: -.5px;
 }
 
 .services-caption {
-  color: var(--text-muted);
-  font-size: 10px;
+color: var(--text-muted);
+font-size: 10px;
 }
 
 .service-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+display: grid;
+grid-template-columns: repeat(4, minmax(0, 1fr));
+gap: 12px;
 }
 
 .service-item {
-  min-height: 108px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px 7px;
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  background: var(--surface-soft);
-  color: var(--text);
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  transition: transform .2s, border-color .2s, box-shadow .2s, background .2s;
+min-height: 108px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 10px;
+padding: 12px 7px;
+border: 1px solid var(--border);
+border-radius: 15px;
+background: var(--surface-soft);
+color: var(--text);
+font-size: 11px;
+font-weight: 700;
+text-align: center;
+transition: transform .2s, border-color .2s, box-shadow .2s, background .2s;
 }
 
 .service-item:hover {
-  transform: translateY(-3px);
-  border-color: #d5c18d;
-  background: #fffdf8;
-  box-shadow: var(--shadow-md);
+transform: translateY(-3px);
+border-color: var(--gold);
+background: #fffdf8;
+box-shadow: var(--shadow-md);
+}
+
+/* Dark champagne-gold icon background */
+.service-icon {
+width: 46px;
+height: 46px;
+display: grid;
+place-items: center;
+flex-shrink: 0;
+border: 1px solid #98752f;
+border-radius: 14px;
+background: linear-gradient(145deg, #b18a3d, #806022);
+color: #ffffff;
+font-size: 21px;
+font-weight: 700;
+box-shadow:
+0 4px 10px rgba(100, 73, 25, .20),
+inset 0 1px 0 rgba(255,255,255,.22);
+transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.service-item:hover .service-icon {
+transform: scale(1.07);
+box-shadow: 0 6px 15px rgba(100, 73, 25, .28);
+}
+
+/* Mobile sizing */
+@media (max-width: 520px) {
+.service-grid {
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 9px;
+}
+
+.service-item {
+min-height: 100px;
+padding: 10px 5px;
+font-size: 10px;
 }
 
 .service-icon {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #e8dfc9;
-  border-radius: 13px;
-  background: var(--champagne);
-  color: var(--emerald);
-  font-size: 20px;
-  font-weight: 700;
+width: 42px;
+height: 42px;
+font-size: 19px;
+}
 }
 
+@media (max-width: 360px) {
+.service-grid {
+gap: 7px;
+}
+
+.service-item {
+min-height: 94px;
+font-size: 9px;
+}
 
 /* ---------------------------------------------------------
    10. SUPPORTED NETWORKS
