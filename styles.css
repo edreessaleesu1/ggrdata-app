@@ -671,14 +671,14 @@ img {
   color: var(--success);
 }
 
-/* =========================================================
-   9. SERVICES GRID — 4 COLUMNS × 3 ROWS
-   ========================================================= */
+
+/* ---------------------------------------------------------
+   9. SERVICES GRID — 4 COLUMNS
+   --------------------------------------------------------- */
 
 .service-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(3, auto);
   gap: 18px 10px;
   width: 100%;
 }
@@ -690,6 +690,8 @@ img {
   justify-content: flex-start;
   gap: 8px;
   min-width: 0;
+  min-height: 90px;
+  padding: 5px;
   text-align: center;
   cursor: pointer;
 }
@@ -700,43 +702,35 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(214, 180, 106, 0.5);
   border-radius: 14px;
   background: linear-gradient(145deg, #b18a3d, #806022);
   color: #ffffff;
-  border: 1px solid rgba(214, 180, 106, 0.5);
-  box-shadow: 0 4px 10px rgba(128, 96, 34, 0.18);
   font-size: 21px;
-  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(128, 96, 34, 0.18);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .service-item span,
 .service-item p {
+  margin: 0;
+  color: var(--text);
   font-size: 11px;
-  line-height: 1.3;
   font-weight: 600;
-  color: var(--text, #202b29);
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
-.service-item:active .service-icon {
-  transform: scale(0.94);
+.service-item:hover .service-icon {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 15px rgba(128, 96, 34, 0.25);
 }
 
-@media (max-width: 360px) {
-  .service-grid {
-    gap: 14px 6px;
-  }
+.service-item:active .service-icon {
+  transform: scale(.94);
+}
 
-  .service-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 19px;
-  }
-
-  .service-item span,
-  .service-item p {
-    font-size: 10px;
-  }
 
 /* ---------------------------------------------------------
    10. SUPPORTED NETWORKS
@@ -1313,12 +1307,12 @@ img {
   }
 
   .service-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px 12px;
   }
 
   .service-item {
-    min-height: 116px;
+    min-height: 100px;
   }
 
   .detail-card {
@@ -1354,7 +1348,8 @@ img {
   }
 
   .service-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px 14px;
   }
 
   .network-panel {
@@ -1480,20 +1475,25 @@ img {
   }
 
   .service-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 9px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px 6px;
   }
 
   .service-item {
-    min-height: 100px;
-    padding: 10px 5px;
+    min-height: 90px;
+    padding: 5px 2px;
     font-size: 10px;
   }
 
   .service-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
+    width: 42px;
+    height: 42px;
+    font-size: 19px;
+  }
+
+  .service-item span,
+  .service-item p {
+    font-size: 10px;
   }
 
   .network-panel {
@@ -1589,11 +1589,24 @@ img {
   }
 
   .service-grid {
-    gap: 7px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px 4px;
   }
 
   .service-item {
-    min-height: 94px;
+    min-height: 86px;
+    padding: 4px 1px;
+  }
+
+  .service-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 18px;
+  }
+
+  .service-item span,
+  .service-item p {
     font-size: 9px;
   }
 
