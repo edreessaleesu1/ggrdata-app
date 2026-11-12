@@ -7,6 +7,9 @@
   <meta name="description" content="GGRData — Your connection. Your control.">
   <title>GGRData | Your connection. Your control.</title>
 
+  <link rel="icon" type="image/svg+xml" href="./ggrdata-app-icon.svg">
+  <link rel="apple-touch-icon" href="./ggrdata-app-icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -23,11 +26,7 @@
   <!-- BRAND HEADER -->
   <header class="topbar">
     <a class="brand" href="./" aria-label="GGRData home">
-      <span class="brand-mark">G</span>
-      <span>
-        GGR<span class="gold">Data</span>
-        <small>Your connection. Your control.</small>
-      </span>
+      <img class="brand-logo" src="./ggrdata-logo-dark.svg" alt="GGRData" height="40">
     </a>
 
     <span class="topbar-note">AIRTIME <i></i> DATA</span>
@@ -37,6 +36,17 @@
 
     <!-- AUTHENTICATION -->
     <section id="authScreen" class="auth-layout">
+
+      <div class="auth-intro">
+        <span class="eyebrow"><i class="pulse"></i> YOUR DIGITAL CONNECTION HUB</span>
+        <h1>Everyday connection.<br><em>Made smarter.</em></h1>
+        <p>Airtime and data for MTN, Airtel and Glo, with clear records of every transaction.</p>
+        <div class="auth-networks">
+          <img src="./assets/mtn.png" alt="MTN" width="34" height="34">
+          <img src="./assets/airtel.png" alt="Airtel" width="34" height="34">
+          <img src="./assets/glo.jpg" alt="Glo" width="34" height="34">
+        </div>
+      </div>
 
       <div class="auth-card">
 
@@ -139,7 +149,7 @@
       <section class="welcome-panel">
 
         <div class="welcome-brand">
-          <span class="welcome-logo">G</span>
+          <img class="welcome-logo" src="./ggrdata-app-icon.svg" alt="GGRData" width="52" height="52">
 
           <div>
             <span class="welcome-caption">WELCOME!</span>
@@ -204,6 +214,23 @@
       </section>
 
 
+      <!-- GGR QUICKBUY (home shortcut) -->
+      <section class="quickbuy-home">
+        <div class="quickbuy-home-top">
+          <div>
+            <span class="card-kicker">GGR QUICKBUY</span>
+            <h2>Buy again in a tap</h2>
+          </div>
+          <span class="finder-badge">↗</span>
+        </div>
+        <p class="quickbuy-home-last">Last number: <b id="homeRecentNumber">none yet</b></p>
+        <div class="quickbuy-home-actions">
+          <button class="button-primary" type="button" data-service="data">Buy data</button>
+          <button class="button-primary" type="button" data-service="airtime">Buy airtime</button>
+        </div>
+      </section>
+
+
       <!-- BANK TRANSFER / FUNDING INFORMATION -->
       <section class="funding-account-card">
 
@@ -252,52 +279,52 @@
             <span>Airtime</span>
           </button>
 
-          <button class="service-item" type="button" data-service="cable">
+          <button class="service-item soon" type="button" data-service="cable">
             <span class="service-icon">▤</span>
             <span>Cable TV</span>
           </button>
 
-          <button class="service-item" type="button" data-service="electricity">
+          <button class="service-item soon" type="button" data-service="electricity">
             <span class="service-icon">ϟ</span>
             <span>Electricity</span>
           </button>
 
-          <button class="service-item" type="button" data-service="data-card">
+          <button class="service-item soon" type="button" data-service="data-card">
             <span class="service-icon">▣</span>
             <span>Data Card</span>
           </button>
 
-          <button class="service-item" type="button" data-service="bonus">
+          <button class="service-item soon" type="button" data-service="bonus">
             <span class="service-icon">♧</span>
             <span>Bonus to Wallet</span>
           </button>
 
-          <button class="service-item" type="button" data-service="airtime-cash">
+          <button class="service-item soon" type="button" data-service="airtime-cash">
             <span class="service-icon">↻</span>
             <span>Airtime to Cash</span>
           </button>
 
-          <button class="service-item" type="button" data-service="recharge-pin">
+          <button class="service-item soon" type="button" data-service="recharge-pin">
             <span class="service-icon">▣</span>
             <span>Recharge PIN</span>
           </button>
 
-          <button class="service-item" type="button" data-service="edu-pin">
+          <button class="service-item soon" type="button" data-service="edu-pin">
             <span class="service-icon">▧</span>
             <span>Edu PIN</span>
           </button>
 
-          <button class="service-item" type="button" data-service="affiliate">
+          <button class="service-item soon" type="button" data-service="affiliate">
             <span class="service-icon">↗</span>
             <span>Affiliate Website</span>
           </button>
 
-          <button class="service-item" type="button" data-service="referrals">
+          <button class="service-item soon" type="button" data-service="referrals">
             <span class="service-icon">♙</span>
             <span>My Referrals</span>
           </button>
 
-          <button class="service-item" type="button" data-service="other">
+          <button class="service-item soon" type="button" data-service="other">
             <span class="service-icon">•••</span>
             <span>Other Services</span>
           </button>
@@ -525,6 +552,43 @@
         </div>
 
 
+        <!-- SMART DATA FINDER -->
+        <div class="finder-card" id="finderCard">
+          <div class="finder-head">
+            <span class="finder-badge">◈</span>
+            <div>
+              <span class="card-kicker">SMART DATA FINDER</span>
+              <b>Find the right bundle for you</b>
+            </div>
+          </div>
+
+          <div class="pick-label">My budget</div>
+          <div class="amount-grid" id="finderBudgets">
+            <button type="button" class="amount-chip" data-budget="500">₦500</button>
+            <button type="button" class="amount-chip" data-budget="1000">₦1,000</button>
+            <button type="button" class="amount-chip" data-budget="2000">₦2,000</button>
+            <button type="button" class="amount-chip" data-budget="5000">₦5,000</button>
+          </div>
+
+          <div class="field">
+            <label for="finderCustom">Or type a budget (₦)</label>
+            <input id="finderCustom" type="number" inputmode="numeric" min="50" placeholder="e.g. 1500">
+          </div>
+
+          <div class="pick-label">I mostly need data for</div>
+          <div class="need-grid" id="finderNeeds">
+            <button type="button" class="need-chip" data-need="light"><b>Light use</b><small>Chats &amp; browsing</small></button>
+            <button type="button" class="need-chip" data-need="social"><b>Social &amp; video</b><small>Reels, TikTok, YouTube</small></button>
+            <button type="button" class="need-chip" data-need="work"><b>Work &amp; calls</b><small>Email, Zoom, uploads</small></button>
+            <button type="button" class="need-chip" data-need="heavy"><b>Heavy use</b><small>Streaming &amp; downloads</small></button>
+          </div>
+
+          <button id="finderRun" class="button-primary" type="button">Find my bundle</button>
+          <div id="finderResults" class="finder-results" role="status" aria-live="polite"></div>
+          <p class="quickbuy-hint">Suggestions come only from the live catalogue below. Always check the plan name before you buy.</p>
+        </div>
+
+
         <!-- AVAILABLE DATA PLANS -->
         <div class="data-catalogue-toolbar">
 
@@ -602,8 +666,10 @@
       <section id="transactionsView"
         class="dashboard-view detail-card">
 
-        <span class="card-kicker">YOUR ACTIVITY</span>
+        <span class="card-kicker">GGR TRUSTTRACK</span>
         <h2>Recent transactions</h2>
+
+        <div class="trust-strip"><b>◆ Every transaction is tracked</b><span>Each one has a clear status and a reference you can quote. Tap a transaction to see its journey.</span></div>
 
         <div id="recentTransactions" class="empty-activity">
 
@@ -641,24 +707,106 @@
       </section>
 
 
+      <!-- BUY AIRTIME (design preview: purchases are not active yet) -->
+      <section id="airtimeView" class="dashboard-view detail-card">
+        <span class="card-kicker">GGR QUICKBUY</span>
+        <h2>Top up airtime</h2>
+
+        <div class="quickbuy-field">
+          <label for="airtimePhone">Recipient phone number</label>
+          <input id="airtimePhone" type="tel" inputmode="numeric" autocomplete="tel"
+            placeholder="08012345678" maxlength="14">
+          <span id="airtimeDetected" class="network-detection">Enter phone number</span>
+
+          <button id="airtimeRecent" class="recent-beneficiary hidden" type="button">
+            <span>↺</span>
+            <span>
+              <small>RECENT BENEFICIARY</small>
+              <b id="airtimeRecentNumber">—</b>
+            </span>
+            <span>Use</span>
+          </button>
+        </div>
+
+        <div class="quickbuy-field">
+          <label>Choose network</label>
+          <div class="data-network-selector net-picker" data-picker="airtime">
+            <button type="button" class="data-network-button net-option active" data-net="mtn">
+              <img src="./assets/mtn.png" alt="MTN logo" class="network-logo" width="32" height="32"><span>MTN</span>
+            </button>
+            <button type="button" class="data-network-button net-option" data-net="airtel">
+              <img src="./assets/airtel.png" alt="Airtel logo" class="network-logo" width="32" height="32"><span>Airtel</span>
+            </button>
+            <button type="button" class="data-network-button net-option" data-net="glo">
+              <img src="./assets/glo.jpg" alt="Glo logo" class="network-logo" width="32" height="32"><span>Glo</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pick-label">Amount</div>
+        <div class="amount-grid" id="amountGrid">
+          <button type="button" class="amount-chip" data-amount="100">₦100</button>
+          <button type="button" class="amount-chip" data-amount="200">₦200</button>
+          <button type="button" class="amount-chip" data-amount="500">₦500</button>
+          <button type="button" class="amount-chip" data-amount="1000">₦1,000</button>
+        </div>
+
+        <div class="field">
+          <label for="airtimeAmount">Or enter an amount (₦)</label>
+          <input id="airtimeAmount" type="number" inputmode="numeric" min="50" max="50000" placeholder="e.g. 750">
+        </div>
+
+        <button id="airtimeBuyBtn" class="button-primary" type="button">Continue <span>→</span></button>
+        <p class="preview-note">Purchases open after payment safeguards are tested.</p>
+
+        <button class="button-outline" type="button" data-tab="home">← Back to dashboard</button>
+      </section>
+
+
       <!-- SECURITY NOTICE -->
       <section class="dashboard-notice">
-
         <span class="notice-icon">◆</span>
-
+        <p>
+          <b>Your security comes first.</b>
+          Payments and purchases switch on only after payment verification,
+          provider delivery, wallet protection and refund safeguards are tested.
+        </p>
       </section>
 
 
       <div id="dashMessage"
         class="message"
         role="status"
-        aria-live="polite">
-      </div>
+        aria-live="polite"></div>
 
     </section>
 
+    <footer class="site-footer">
+      © 2026 GGRData <span>·</span> Your connection. Your control.
+    </footer>
+
   </main>
- <!-- MOBILE BOTTOM NAVIGATION -->
+
+  <!-- TRANSACTION DETAILS SHEET -->
+  <div id="txSheet" class="tx-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="txSheetTitle">
+    <div class="tx-sheet-backdrop" data-close-sheet></div>
+    <div class="tx-sheet-panel">
+      <div class="tx-sheet-grab"></div>
+      <span id="txSheetIcon" class="tx-sheet-icon">↓</span>
+      <h3 id="txSheetTitle">Transaction</h3>
+      <strong id="txSheetAmount" class="tx-sheet-amount">₦0.00</strong>
+      <span id="txSheetStatus" class="tx-sheet-status">Recorded</span>
+      <ol id="txTimeline" class="tt-timeline"></ol>
+      <div id="txSheetRows" class="tx-sheet-rows"></div>
+      <p class="tt-help">Need help? Quote this reference to GGRData support.</p>
+      <div class="tt-actions">
+        <button id="txCopyRef" class="button-outline" type="button">Copy reference</button>
+        <button class="button-outline" type="button" data-close-sheet>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
   <nav id="bottomNavigation"
     class="bottom-navigation hidden"
     aria-label="Main navigation">
