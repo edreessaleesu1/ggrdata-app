@@ -2828,3 +2828,34 @@ input:focus-visible{
   justify-content: center;
   gap: 9px;
 }
+```css
+/* GGRData — Network Logo Display */
+
+.data-network-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.data-network-button img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.network-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.network-chip img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+}
