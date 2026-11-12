@@ -1,44 +1,43 @@
-?variant="standard" id="63821" title="GGRData — Complete Premium Stylesheet"}
-```css
 /* =========================================================
    GGRData — Premium Responsive Design System
-   Midnight Emerald × Champagne Gold
    Your connection. Your control.
    ========================================================= */
 
-/* 1. DESIGN TOKENS & RESET */
+/* ---------------------------------------------------------
+   1. DESIGN TOKENS & RESET
+   --------------------------------------------------------- */
 
 :root {
-  --emerald: #052E2B;
-  --emerald-dark: #052E2B;
-  --emerald-deep: #031F1D;
-  --emerald-light: #087568;
-  --emerald-soft: #E8F0EC;
+  --emerald: #073d32;
+  --emerald-dark: #042c25;
+  --emerald-deep: #031f1a;
+  --emerald-light: #0d6954;
+  --emerald-soft: #eaf4f0;
 
-  --gold: #D6B46A;
-  --gold-dark: #98783A;
-  --gold-light: #E9D39D;
-  --champagne: #F8F2E4;
+  --gold: #c49a43;
+  --gold-dark: #94702c;
+  --gold-light: #e8cf8c;
+  --champagne: #fbf6e9;
 
-  --white: #FFFFFF;
-  --background: #FAF8F1;
-  --surface: #FFFFFF;
-  --surface-soft: #E8F0EC;
+  --white: #ffffff;
+  --background: #f5f7f6;
+  --surface: #ffffff;
+  --surface-soft: #f8faf9;
 
-  --text: #202B29;
-  --text-soft: #626F69;
-  --text-muted: #87918B;
+  --text: #192923;
+  --text-soft: #64736c;
+  --text-muted: #8b9791;
 
-  --border: #E7EAE4;
-  --border-strong: #D7DED7;
+  --border: #e6ece8;
+  --border-strong: #d5dfd9;
 
-  --success: #16865D;
-  --danger: #C74646;
-  --warning: #B77A20;
+  --success: #16865d;
+  --danger: #c74646;
+  --warning: #b77a20;
 
-  --shadow-sm: 0 3px 12px rgba(5, 46, 43, .05);
-  --shadow-md: 0 12px 32px rgba(5, 46, 43, .08);
-  --shadow-lg: 0 20px 55px rgba(5, 46, 43, .13);
+  --shadow-sm: 0 3px 12px rgba(15, 48, 37, .05);
+  --shadow-md: 0 12px 32px rgba(15, 48, 37, .08);
+  --shadow-lg: 0 20px 55px rgba(5, 43, 34, .13);
 
   --radius-sm: 10px;
   --radius-md: 16px;
@@ -95,12 +94,14 @@ img {
 }
 
 :focus-visible {
-  outline: 3px solid rgba(214, 180, 106, .5);
+  outline: 3px solid rgba(196, 154, 67, .45);
   outline-offset: 3px;
 }
 
 
-/* 2. TOP BRAND HEADER */
+/* ---------------------------------------------------------
+   2. TOP BRAND HEADER
+   --------------------------------------------------------- */
 
 .topbar {
   min-height: 76px;
@@ -138,7 +139,7 @@ img {
   font-family: "Manrope", sans-serif;
   font-size: 25px;
   font-weight: 800;
-  box-shadow: 0 5px 16px rgba(214,180,106,.2);
+  box-shadow: 0 5px 16px rgba(196,154,67,.2);
 }
 
 .brand .gold {
@@ -173,7 +174,9 @@ img {
 }
 
 
-/* 3. PAGE LAYOUT */
+/* ---------------------------------------------------------
+   3. PAGE LAYOUT
+   --------------------------------------------------------- */
 
 .page-shell {
   width: min(100% - 36px, var(--page-width));
@@ -181,7 +184,9 @@ img {
 }
 
 
-/* 4. AUTHENTICATION */
+/* ---------------------------------------------------------
+   4. AUTHENTICATION
+   --------------------------------------------------------- */
 
 .auth-layout {
   min-height: calc(100vh - 150px);
@@ -189,8 +194,8 @@ img {
   place-items: center;
   padding: 28px 12px;
   background:
-    radial-gradient(circle at 15% 15%, rgba(214,180,106,.11), transparent 32%),
-    radial-gradient(circle at 85% 85%, rgba(8,117,104,.08), transparent 35%);
+    radial-gradient(circle at 15% 15%, rgba(196,154,67,.09), transparent 32%),
+    radial-gradient(circle at 85% 85%, rgba(7,61,50,.08), transparent 35%);
   border-radius: var(--radius-xl);
 }
 
@@ -242,7 +247,7 @@ img {
   gap: 5px;
   margin-bottom: 26px;
   padding: 5px;
-  background: var(--surface-soft);
+  background: #f1f5f2;
   border-radius: 13px;
 }
 
@@ -284,7 +289,7 @@ img {
   padding: 12px 14px;
   border: 1px solid var(--border-strong);
   border-radius: 12px;
-  background: #FCFDFB;
+  background: #fcfdfc;
   color: var(--text);
   outline: none;
   transition: border-color .2s, box-shadow .2s, background .2s;
@@ -292,7 +297,7 @@ img {
 
 .field input::placeholder,
 .quickbuy-field input::placeholder {
-  color: #A5AFA9;
+  color: #a5afa9;
 }
 
 .field input:focus,
@@ -300,7 +305,7 @@ img {
 .quickbuy-select:focus {
   border-color: var(--emerald-light);
   background: var(--white);
-  box-shadow: 0 0 0 4px rgba(8,117,104,.09);
+  box-shadow: 0 0 0 4px rgba(13,105,84,.09);
 }
 
 .button-primary {
@@ -314,10 +319,10 @@ img {
   padding: 12px 18px;
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--emerald-dark), var(--emerald-light));
+  background: linear-gradient(135deg, var(--emerald), var(--emerald-light));
   color: var(--white);
   font-weight: 800;
-  box-shadow: 0 7px 18px rgba(5,46,43,.18);
+  box-shadow: 0 7px 18px rgba(7,61,50,.18);
   transition: transform .2s, box-shadow .2s;
 }
 
@@ -328,7 +333,7 @@ img {
 
 .button-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(5,46,43,.24);
+  box-shadow: 0 10px 22px rgba(7,61,50,.24);
 }
 
 .auth-help {
@@ -370,7 +375,9 @@ img {
 }
 
 
-/* 5. DASHBOARD WELCOME PANEL */
+/* ---------------------------------------------------------
+   5. DASHBOARD WELCOME PANEL
+   --------------------------------------------------------- */
 
 .dashboard {
   display: flex;
@@ -448,7 +455,9 @@ img {
 }
 
 
-/* 6. USER PACKAGE */
+/* ---------------------------------------------------------
+   6. USER PACKAGE
+   --------------------------------------------------------- */
 
 .package-panel {
   display: flex;
@@ -456,9 +465,9 @@ img {
   justify-content: space-between;
   gap: 15px;
   padding: 16px 20px;
-  border: 1px solid #E8D9B7;
+  border: 1px solid #eee2c4;
   border-radius: var(--radius-md);
-  background: linear-gradient(110deg, #FFFEFA, var(--champagne));
+  background: linear-gradient(110deg, #fffdf7, var(--champagne));
 }
 
 .package-panel strong {
@@ -469,7 +478,9 @@ img {
 }
 
 
-/* 7. WALLET BALANCE CARD */
+/* ---------------------------------------------------------
+   7. WALLET BALANCE CARD
+   --------------------------------------------------------- */
 
 .account-balance-card {
   position: relative;
@@ -478,8 +489,8 @@ img {
   border: 1px solid rgba(255,255,255,.1);
   border-radius: var(--radius-lg);
   background:
-    radial-gradient(circle at 95% 0%, rgba(214,180,106,.2), transparent 35%),
-    linear-gradient(135deg, #052E2B, #075B50);
+    radial-gradient(circle at 95% 0%, rgba(196,154,67,.2), transparent 35%),
+    linear-gradient(135deg, var(--emerald-dark), #075344);
   color: var(--white);
   box-shadow: var(--shadow-lg);
 }
@@ -591,13 +602,15 @@ img {
 }
 
 
-/* 8. WALLET FUNDING INFORMATION */
+/* ---------------------------------------------------------
+   8. WALLET FUNDING INFORMATION
+   --------------------------------------------------------- */
 
 .funding-account-card {
   padding: 23px;
-  border: 1px solid #E8D9B7;
+  border: 1px solid #e9dfc8;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, #FFFEFA, #F8F2E4);
+  background: linear-gradient(135deg, #fffdf8, #f8f1df);
   box-shadow: var(--shadow-sm);
 }
 
@@ -626,9 +639,9 @@ img {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  border: 1px solid #E5D3A7;
+  border: 1px solid #e7d5a9;
   border-radius: 14px;
-  background: rgba(214,180,106,.15);
+  background: rgba(196,154,67,.13);
   color: var(--gold-dark);
   font-size: 23px;
   font-weight: 800;
@@ -637,7 +650,7 @@ img {
 .funding-placeholder {
   margin: 18px 0;
   padding: 14px;
-  border: 1px dashed #D9C99F;
+  border: 1px dashed #d9c99f;
   border-radius: 12px;
   background: rgba(255,255,255,.6);
   color: var(--text-soft);
@@ -659,7 +672,9 @@ img {
 }
 
 
-/* 9. SERVICES GRID */
+/* ---------------------------------------------------------
+   9. SERVICES GRID
+   --------------------------------------------------------- */
 
 .services-section {
   padding: 23px;
@@ -720,8 +735,8 @@ img {
 
 .service-item:hover {
   transform: translateY(-3px);
-  border-color: var(--gold);
-  background: #FFFEFA;
+  border-color: #d5c18d;
+  background: #fffdf8;
   box-shadow: var(--shadow-md);
 }
 
@@ -730,7 +745,7 @@ img {
   height: 42px;
   display: grid;
   place-items: center;
-  border: 1px solid #E8DDBF;
+  border: 1px solid #e8dfc9;
   border-radius: 13px;
   background: var(--champagne);
   color: var(--emerald);
@@ -739,7 +754,9 @@ img {
 }
 
 
-/* 10. SUPPORTED NETWORKS */
+/* ---------------------------------------------------------
+   10. SUPPORTED NETWORKS
+   --------------------------------------------------------- */
 
 .network-panel {
   display: flex;
@@ -789,7 +806,9 @@ img {
 }
 
 
-/* 11. SHARED DASHBOARD VIEWS */
+/* ---------------------------------------------------------
+   11. SHARED DASHBOARD VIEWS
+   --------------------------------------------------------- */
 
 .dashboard-view {
   display: none;
@@ -860,7 +879,7 @@ img {
 
 .logout-button {
   margin-top: 22px;
-  border-color: #E5CACA;
+  border-color: #e5caca;
   color: var(--danger);
 }
 
@@ -871,7 +890,9 @@ img {
 }
 
 
-/* 12. GGR QUICKBUY */
+/* ---------------------------------------------------------
+   12. GGR QUICKBUY
+   --------------------------------------------------------- */
 
 .data-store-view {
   overflow: hidden;
@@ -901,7 +922,7 @@ img {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  border: 1px solid #E5D3A7;
+  border: 1px solid #e8d7ad;
   border-radius: 15px;
   background: var(--champagne);
   color: var(--gold-dark);
@@ -976,7 +997,7 @@ img {
   padding: 9px 11px;
   border: 1px solid var(--border);
   border-radius: 11px;
-  background: var(--surface-soft);
+  background: #f3f6f4;
   color: var(--text-soft);
   font-size: 10px;
   font-weight: 700;
@@ -997,9 +1018,9 @@ img {
   gap: 12px;
   margin-top: 13px;
   padding: 12px;
-  border: 1px solid #E8DDBF;
+  border: 1px solid #e8dfc9;
   border-radius: 12px;
-  background: #FFFEFA;
+  background: #fffdf7;
   color: var(--emerald);
   text-align: left;
 }
@@ -1039,7 +1060,9 @@ img {
 }
 
 
-/* 13. QUICKBUY NETWORK SELECTOR */
+/* ---------------------------------------------------------
+   13. QUICKBUY NETWORK SELECTOR
+   --------------------------------------------------------- */
 
 .data-network-selector {
   display: grid;
@@ -1073,26 +1096,28 @@ img {
 
 .data-network-button:hover {
   transform: translateY(-2px);
-  border-color: var(--gold);
-  background: #FFFEFA;
+  border-color: #d6c18a;
+  background: #fffdf8;
 }
 
 .data-network-button.active {
   border: 2px solid var(--emerald-light);
   background: var(--emerald-soft);
   color: var(--emerald-dark);
-  box-shadow: 0 0 0 3px rgba(8,117,104,.07);
+  box-shadow: 0 0 0 3px rgba(13,105,84,.07);
 }
 
 
-/* 14. DATA TYPE SELECTOR */
+/* ---------------------------------------------------------
+   14. DATA TYPE SELECTOR
+   --------------------------------------------------------- */
 
 .quickbuy-select {
   appearance: none;
   min-height: 51px;
   padding-right: 40px;
   background-color: var(--surface-soft);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%23052E2B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%23073d32' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   cursor: pointer;
@@ -1103,7 +1128,9 @@ img {
 }
 
 
-/* 15. DATA CATALOGUE */
+/* ---------------------------------------------------------
+   15. DATA CATALOGUE
+   --------------------------------------------------------- */
 
 .data-catalogue-toolbar {
   display: flex;
@@ -1146,10 +1173,10 @@ img {
 .data-store-footnote {
   margin: 23px 0 17px;
   padding: 13px;
-  border: 1px solid #E8DDBF;
+  border: 1px solid #eadfc7;
   border-radius: 11px;
-  background: #FFFAF0;
-  color: #78663E;
+  background: #fffaf0;
+  color: #78663e;
   font-size: 10px;
   line-height: 1.7;
 }
@@ -1159,7 +1186,9 @@ img {
 }
 
 
-/* 16. TRANSACTIONS & EMPTY ACTIVITY */
+/* ---------------------------------------------------------
+   16. TRANSACTIONS & EMPTY ACTIVITY
+   --------------------------------------------------------- */
 
 .empty-activity {
   display: flex;
@@ -1206,7 +1235,9 @@ img {
 }
 
 
-/* 17. SECURITY NOTICE */
+/* ---------------------------------------------------------
+   17. SECURITY NOTICE
+   --------------------------------------------------------- */
 
 .dashboard-notice {
   min-height: 8px;
@@ -1223,7 +1254,9 @@ img {
 }
 
 
-/* 18. BOTTOM NAVIGATION */
+/* ---------------------------------------------------------
+   18. BOTTOM NAVIGATION
+   --------------------------------------------------------- */
 
 .bottom-navigation {
   position: fixed;
@@ -1236,9 +1269,9 @@ img {
   gap: 4px;
   padding: 9px max(12px, calc((100% - 650px) / 2));
   padding-bottom: max(9px, env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(5,46,43,.09);
+  border-top: 1px solid rgba(7,61,50,.09);
   background: rgba(255,255,255,.96);
-  box-shadow: 0 -7px 25px rgba(5,46,43,.07);
+  box-shadow: 0 -7px 25px rgba(12,44,34,.07);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -1274,7 +1307,9 @@ img {
 }
 
 
-/* 19. RESPONSIVE — TABLETS */
+/* ---------------------------------------------------------
+   19. RESPONSIVE — TABLETS
+   --------------------------------------------------------- */
 
 @media (min-width: 700px) {
   .page-shell {
@@ -1317,7 +1352,9 @@ img {
 }
 
 
-/* 20. RESPONSIVE — DESKTOP */
+/* ---------------------------------------------------------
+   20. RESPONSIVE — DESKTOP
+   --------------------------------------------------------- */
 
 @media (min-width: 1000px) {
   .page-shell {
@@ -1354,7 +1391,9 @@ img {
 }
 
 
-/* 21. RESPONSIVE — SMALL MOBILE */
+/* ---------------------------------------------------------
+   21. RESPONSIVE — SMALL MOBILE
+   --------------------------------------------------------- */
 
 @media (max-width: 520px) {
   .topbar {
@@ -1544,7 +1583,9 @@ img {
 }
 
 
-/* 22. EXTRA SMALL MOBILE */
+/* ---------------------------------------------------------
+   22. EXTRA SMALL MOBILE
+   --------------------------------------------------------- */
 
 @media (max-width: 360px) {
   .topbar-note {
@@ -1579,7 +1620,9 @@ img {
 }
 
 
-/* 23. REDUCED MOTION ACCESSIBILITY */
+/* ---------------------------------------------------------
+   23. REDUCED MOTION ACCESSIBILITY
+   --------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1591,4 +1634,3 @@ img {
     transition-duration: .01ms !important;
   }
 }
-```
