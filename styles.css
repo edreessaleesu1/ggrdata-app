@@ -2805,3 +2805,26 @@ input:focus-visible{
     transition: none;
   }
 }
+
+/* GGRData Network Logos */
+.network-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.network-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.data-network-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
