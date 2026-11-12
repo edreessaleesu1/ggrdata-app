@@ -1,6 +1,7 @@
 /* =========================================================
    GGRData — Main Application
    Authentication, Dashboard, Wallet, Transactions & QuickBuy
+   Supported networks: MTN, Airtel and Glo
    ========================================================= */
 
 "use strict";
@@ -35,8 +36,7 @@ const DATA_CATALOGUE_URL =
 const SUPPORTED_DATA_NETWORKS = {
   mtn: "MTN",
   airtel: "Airtel",
-  glo: "Glo",
-  "9mobile": "9mobile"
+  glo: "Glo"
 };
 
 const RECENT_BENEFICIARY_KEY = "ggrdata_recent_beneficiary_v1";
@@ -138,6 +138,13 @@ let lastBalanceText = "";
 
 let selectedDataNetwork = "mtn";
 let selectedDataCategory = "standard";
+
+/*
+ * Keep track of a customer's manual network choice.
+ * Automatic detection must not override that choice
+ * while the same phone number remains in the field.
+ */
+let manuallySelectedNetworkForPhone = null;
 
 let catalogueRequestNumber = 0;
 let currentWalletBalance = null;
@@ -298,17 +305,17 @@ function getLocalPhoneDigits(input) {
 }
 
 /*
- * Prefix-based network detection is an estimate.
- * Number portability means the user must be able to override it.
+ * Only MTN, Airtel and Glo are supported.
+ *
+ * Prefix detection is an estimate, not proof of the
+ * customer's current network. Number portability means
+ * customers must be able to override the suggestion.
  */
 
 function detectNigerianNetwork(input) {
   const localNumber = getLocalPhoneDigits(input);
 
   if (!localNumber) return null;
-
-  const prefix = localNumber.substring(0, 4);
-  const prefix3 = localNumber.substring(0, 3);
 
   const prefixes = {
     mtn: [
@@ -327,16 +334,15 @@ function detectNigerianNetwork(input) {
     glo: [
       "0805", "0807", "0811", "0815",
       "0905", "0915", "0705"
-    ],
-
-    "9mobile": [
-      "0809", "0817", "0818", "0908",
-      "0909", "0918"
     ]
   };
 
-  for (const [network, list] of Object.entries(prefixes)) {
-    if (list.includes(prefix) || list.includes(prefix3)) {
+  for (const [network, networkPrefixes] of Object.entries(prefixes)) {
+    const matched = networkPrefixes.some((prefix) =>
+      localNumber.startsWith(prefix)
+    );
+
+    if (matched) {
       return network;
     }
   }
@@ -819,6 +825,15 @@ function handleBeneficiaryInput() {
   const value = elements.dataPhone.value.trim();
   const normalised = normaliseNigerianPhone(value);
 
+  /*
+   * If the phone number changes from the number for which
+   * a manual override was made, allow automatic detection
+   * to suggest a network for the new number.
+   */
+  if (normalised !== manuallySelectedNetworkForPhone) {
+    manuallySelectedNetworkForPhone = null;
+  }
+
   if (!normalised) {
     updateDetectedNetworkDisplay(null);
     return;
@@ -834,10 +849,12 @@ function handleBeneficiaryInput() {
   updateDetectedNetworkDisplay(detected);
 
   /*
-   * Only automatically select a detected network when the user
-   * has not manually selected a different network.
+   * Do not override a manual network choice for the
+   * same beneficiary phone number.
    */
-  setSelectedDataNetwork(detected);
+  if (!manuallySelectedNetworkForPhone) {
+    setSelectedDataNetwork(detected);
+  }
 }
 
 function saveRecentBeneficiary(phone) {
@@ -915,6 +932,13 @@ if (elements.useRecentBeneficiary) {
     if (!recent || !elements.dataPhone) return;
 
     elements.dataPhone.value = recent;
+
+    /*
+     * A different beneficiary should get a fresh
+     * automatic network suggestion.
+     */
+    manuallySelectedNetworkForPhone = null;
+
     handleBeneficiaryInput();
   });
 }
@@ -1190,6 +1214,15 @@ function openDataStore() {
 document.querySelectorAll("[data-catalogue-network]").forEach((button) => {
   button.addEventListener("click", () => {
     const network = button.dataset.catalogueNetwork;
+
+    if (!SUPPORTED_DATA_NETWORKS[network]) return;
+
+    /*
+     * Remember the customer's manual choice for the
+     * current beneficiary number.
+     */
+    manuallySelectedNetworkForPhone =
+      normaliseNigerianPhone(elements.dataPhone?.value || "");
 
     if (elements.dataTypeSelect) {
       elements.dataTypeSelect.value = "standard";
