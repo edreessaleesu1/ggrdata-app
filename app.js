@@ -118,6 +118,15 @@ const elements = {
   recentBeneficiaryNumber: document.getElementById("recentBeneficiaryNumber"),
   dataTypeSelect: document.getElementById("dataTypeSelect"),
 
+  finderResults: document.getElementById("finderResults"),
+  homeRecentNumber: document.getElementById("homeRecentNumber"),
+
+  /* Airtime screen */
+  airtimePhone: document.getElementById("airtimePhone"),
+  airtimeDetected: document.getElementById("airtimeDetected"),
+  airtimeRecent: document.getElementById("airtimeRecent"),
+  airtimeRecentNumber: document.getElementById("airtimeRecentNumber"),
+
   dashMessage: document.getElementById("dashMessage")
 };
 
@@ -148,6 +157,10 @@ let manuallySelectedNetworkForPhone = null;
 
 let catalogueRequestNumber = 0;
 let currentWalletBalance = null;
+let lastPlans = [];
+let finderBudget = null;
+let finderNeed = null;
+let airtimeManualForPhone = null;
 
 /* ---------------------------------------------------------
    5. GENERAL HELPERS
@@ -734,7 +747,8 @@ const TAB_VIEW_IDS = {
   transactions: "transactionsView",
   wallet: "walletView",
   profile: "profileView",
-  "data-store": "dataStoreView"
+  "data-store": "dataStoreView",
+  airtime: "airtimeView"
 };
 
 function showTab(tabName) {
@@ -756,7 +770,10 @@ function showTab(tabName) {
   });
 
   document.querySelectorAll(".bottom-navigation .nav-item").forEach((item) => {
-    item.classList.toggle("active", item.dataset.tab === tabName);
+    const navTab =
+      tabName === "data-store" || tabName === "airtime" ? "home" : tabName;
+
+    item.classList.toggle("active", item.dataset.tab === navTab);
   });
 
   clearDashboardMessage();
@@ -897,17 +914,18 @@ function getRecentBeneficiary() {
 function updateRecentBeneficiaryDisplay() {
   const recent = getRecentBeneficiary();
 
-  if (elements.recentBeneficiaryNumber) {
-    elements.recentBeneficiaryNumber.textContent =
-      recent || "No recent beneficiary";
-  }
+  const pairs = [
+    [elements.useRecentBeneficiary, elements.recentBeneficiaryNumber],
+    [elements.airtimeRecent, elements.airtimeRecentNumber]
+  ];
 
-  if (elements.useRecentBeneficiary) {
-    elements.useRecentBeneficiary.disabled = !recent;
-    elements.useRecentBeneficiary.classList.toggle(
-      "disabled",
-      !recent
-    );
+  pairs.forEach(([button, label]) => {
+    if (label) label.textContent = recent || "No recent beneficiary";
+    if (button) button.classList.toggle("hidden", !recent);
+  });
+
+  if (elements.homeRecentNumber) {
+    elements.homeRecentNumber.textContent = recent || "none yet";
   }
 }
 
@@ -921,6 +939,7 @@ if (elements.dataPhone) {
 
     if (normalised) {
       elements.dataPhone.value = normalised;
+      saveRecentBeneficiary(normalised);
     }
   });
 }
@@ -1017,6 +1036,10 @@ function renderDataPlans(plans, networkName) {
   if (!elements.dataPlans) return;
 
   clearDataPlans();
+
+  lastPlans = Array.isArray(plans) ? plans : [];
+
+  if (elements.finderResults) elements.finderResults.replaceChildren();
 
   if (!Array.isArray(plans) || plans.length === 0) {
     setCatalogueStatus(
@@ -1257,6 +1280,350 @@ if (elements.backToHomeFromData) {
 }
 
 /* ---------------------------------------------------------
+   17b. AIRTIME SCREEN (design preview only)
+   --------------------------------------------------------- */
+
+function setAirtimeNetwork(network) {
+  document
+    .querySelectorAll('.net-picker[data-picker="airtime"] .net-option')
+    .forEach((option) => {
+      option.classList.toggle("active", option.dataset.net === network);
+    });
+}
+
+function handleAirtimePhoneInput() {
+  if (!elements.airtimePhone || !elements.airtimeDetected) return;
+
+  const value = elements.airtimePhone.value.trim();
+  const normalised = normaliseNigerianPhone(value);
+
+  if (normalised !== airtimeManualForPhone) {
+    airtimeManualForPhone = null;
+  }
+
+  const detected = detectNigerianNetwork(value);
+
+  if (!normalised || !detected) {
+    elements.airtimeDetected.textContent = "Enter phone number";
+    return;
+  }
+
+  elements.airtimeDetected.textContent =
+    `${SUPPORTED_DATA_NETWORKS[detected]} detected — you can change this manually.`;
+
+  if (!airtimeManualForPhone) {
+    setAirtimeNetwork(detected);
+  }
+}
+
+if (elements.airtimePhone) {
+  elements.airtimePhone.addEventListener("input", handleAirtimePhoneInput);
+
+  elements.airtimePhone.addEventListener("blur", () => {
+    const normalised = normaliseNigerianPhone(elements.airtimePhone.value);
+
+    if (normalised) {
+      elements.airtimePhone.value = normalised;
+      saveRecentBeneficiary(normalised);
+    }
+  });
+}
+
+if (elements.airtimeRecent) {
+  elements.airtimeRecent.addEventListener("click", () => {
+    const recent = getRecentBeneficiary();
+
+    if (!recent || !elements.airtimePhone) return;
+
+    elements.airtimePhone.value = recent;
+    airtimeManualForPhone = null;
+    handleAirtimePhoneInput();
+  });
+}
+
+/* ---------------------------------------------------------
+   17c. GGR SMART DATA FINDER
+   Works only on plans returned by the live VTpass catalogue.
+   --------------------------------------------------------- */
+
+function parsePlanSizeGb(name) {
+  const match = String(name).match(/(\d+(?:\.\d+)?)\s*(TB|GB|MB)\b/i);
+
+  if (!match) return null;
+
+  const value = Number(match[1]);
+  const unit = match[2].toUpperCase();
+
+  if (unit === "TB") return value * 1024;
+  if (unit === "GB") return value;
+
+  return value / 1024;
+}
+
+function parsePlanValidityDays(name) {
+  const match = String(name).match(
+    /(\d+)\s*(hrs?|hours?|days?|weeks?|months?|years?)\b/i
+  );
+
+  if (!match) return null;
+
+  const value = Number(match[1]);
+  const unit = match[2].toLowerCase();
+
+  if (unit.startsWith("h")) return value / 24;
+  if (unit.startsWith("d")) return value;
+  if (unit.startsWith("w")) return value * 7;
+  if (unit.startsWith("m")) return value * 30;
+
+  return value * 365;
+}
+
+const FINDER_NEEDS = {
+  light: { min: 0.1, max: 2, target: 1 },
+  social: { min: 1.5, max: 8, target: 3 },
+  work: { min: 3, max: 20, target: 8 },
+  heavy: { min: 10, max: 1024, target: 30 }
+};
+
+function renderFinderMessage(text) {
+  if (!elements.finderResults) return;
+
+  elements.finderResults.replaceChildren();
+
+  const note = document.createElement("div");
+  note.className = "finder-empty";
+  note.textContent = text;
+
+  elements.finderResults.append(note);
+}
+
+function addFinderResult(label, plan) {
+  const card = document.createElement("div");
+  card.className = "finder-result";
+
+  const tag = document.createElement("span");
+  tag.className = "finder-tag";
+  tag.textContent = label;
+
+  const name = document.createElement("b");
+  name.textContent = plan.name;
+
+  const price = document.createElement("strong");
+  price.textContent = formatNaira(plan.amount);
+
+  card.append(tag, name, price);
+  elements.finderResults.append(card);
+}
+
+function runDataFinder() {
+  if (!elements.finderResults) return;
+
+  const typed = Number(document.getElementById("finderCustom")?.value);
+  const budget = Number.isFinite(typed) && typed > 0 ? typed : finderBudget;
+
+  if (!budget) {
+    renderFinderMessage("Choose or type a budget first.");
+    return;
+  }
+
+  if (!lastPlans.length) {
+    renderFinderMessage(
+      "Plans are still loading. Wait for the bundle list below, then try again."
+    );
+    return;
+  }
+
+  const affordable = lastPlans
+    .map((plan) => ({
+      ...plan,
+      gb: parsePlanSizeGb(plan.name),
+      days: parsePlanValidityDays(plan.name)
+    }))
+    .filter((plan) => plan.amount > 0 && plan.amount <= budget);
+
+  if (!affordable.length) {
+    renderFinderMessage(
+      `No plan on ${SUPPORTED_DATA_NETWORKS[selectedDataNetwork]} fits ${formatNaira(budget)}. Try a higher budget.`
+    );
+    return;
+  }
+
+  const sized = affordable.filter((plan) => plan.gb);
+  const picks = [];
+  const used = new Set();
+
+  const pick = (label, plan) => {
+    if (!plan || used.has(plan.code)) return;
+    used.add(plan.code);
+    picks.push([label, plan]);
+  };
+
+  if (sized.length) {
+    const need = FINDER_NEEDS[finderNeed];
+
+    if (need) {
+      const inRange = sized.filter(
+        (plan) => plan.gb >= need.min && plan.gb <= need.max
+      );
+
+      const pool = inRange.length ? inRange : sized;
+
+      pick(
+        inRange.length ? "Best match for you" : "Closest match",
+        [...pool].sort(
+          (a, b) =>
+            Math.abs(a.gb - need.target) - Math.abs(b.gb - need.target)
+        )[0]
+      );
+    }
+
+    pick(
+      "Best value",
+      [...sized].sort((a, b) => a.amount / a.gb - b.amount / b.gb)[0]
+    );
+
+    pick(
+      "Most data for your budget",
+      [...sized].sort((a, b) => b.gb - a.gb)[0]
+    );
+
+    const withDays = sized.filter((plan) => plan.days);
+
+    if (withDays.length) {
+      pick(
+        "Longest validity",
+        [...withDays].sort((a, b) => b.days - a.days)[0]
+      );
+    }
+  } else {
+    pick(
+      "Lowest price",
+      [...affordable].sort((a, b) => a.amount - b.amount)[0]
+    );
+  }
+
+  elements.finderResults.replaceChildren();
+
+  picks.slice(0, 4).forEach(([label, plan]) => addFinderResult(label, plan));
+}
+
+/* ---------------------------------------------------------
+   17d. GGR TRUSTTRACK — TRANSACTION DETAILS SHEET
+   --------------------------------------------------------- */
+
+let sheetReference = "";
+
+function buildTimeline(transaction) {
+  const isCredit = transaction.direction === "credit";
+
+  const steps = isCredit
+    ? [
+        ["done", "Payment received"],
+        ["done", "Wallet credited"]
+      ]
+    : [
+        ["done", "Order received"],
+        ["done", "Wallet debited"],
+        ["pending", "Delivery status — shown here once purchases are live"]
+      ];
+
+  const list = document.getElementById("txTimeline");
+  if (!list) return;
+
+  list.replaceChildren();
+
+  steps.forEach(([state, label]) => {
+    const item = document.createElement("li");
+    item.className = `tt-step ${state}`;
+    item.textContent = label;
+    list.append(item);
+  });
+}
+
+function openTransactionSheet(transaction) {
+  const sheet = document.getElementById("txSheet");
+  if (!sheet) return;
+
+  const isCredit = transaction.direction === "credit";
+  const kind = isCredit ? "in" : "out";
+
+  const icon = document.getElementById("txSheetIcon");
+  icon.textContent = isCredit ? "↓" : "↑";
+  icon.className = `tx-sheet-icon ${kind}`;
+
+  document.getElementById("txSheetTitle").textContent =
+    transaction.description ||
+    String(transaction.transaction_type || "Wallet transaction")
+      .replace(/_/g, " ");
+
+  const amount = document.getElementById("txSheetAmount");
+  amount.textContent = (isCredit ? "+" : "−") + formatNaira(transaction.amount);
+  amount.className = `tx-sheet-amount ${kind}`;
+
+  buildTimeline(transaction);
+
+  sheetReference = transaction.reference || "";
+
+  const copyButton = document.getElementById("txCopyRef");
+  if (copyButton) {
+    copyButton.classList.toggle("hidden", !sheetReference);
+    copyButton.textContent = "Copy reference";
+  }
+
+  const rows = document.getElementById("txSheetRows");
+  rows.replaceChildren();
+
+  const addRow = (label, value) => {
+    if (value === null || value === undefined || value === "") return;
+
+    const row = document.createElement("div");
+    row.className = "detail-row";
+
+    const l = document.createElement("span");
+    l.textContent = label;
+
+    const v = document.createElement("b");
+    v.textContent = value;
+
+    row.append(l, v);
+    rows.append(row);
+  };
+
+  addRow("Type", String(transaction.transaction_type || "").replace(/_/g, " "));
+  addRow("Date", formatDateTime(transaction.created_at));
+  addRow("Reference", transaction.reference);
+
+  if (transaction.balance_before !== undefined && transaction.balance_before !== null) {
+    addRow("Balance before", formatNaira(transaction.balance_before));
+  }
+
+  if (transaction.balance_after !== undefined && transaction.balance_after !== null) {
+    addRow("Balance after", formatNaira(transaction.balance_after));
+  }
+
+  sheet.classList.remove("hidden");
+}
+
+function closeTransactionSheet() {
+  document.getElementById("txSheet")?.classList.add("hidden");
+}
+
+async function copySheetReference() {
+  const button = document.getElementById("txCopyRef");
+
+  try {
+    await navigator.clipboard.writeText(sheetReference);
+    if (button) button.textContent = "Copied ✓";
+  } catch (error) {
+    if (button) button.textContent = sheetReference;
+  }
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeTransactionSheet();
+});
+
+/* ---------------------------------------------------------
    18. SERVICE MESSAGES AND DASHBOARD ACTIONS
    --------------------------------------------------------- */
 
@@ -1282,14 +1649,95 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (event.target.closest("[data-close-sheet]")) {
+    closeTransactionSheet();
+    return;
+  }
+
+  if (event.target.closest("#txCopyRef")) {
+    copySheetReference();
+    return;
+  }
+
+  const netOption = event.target.closest(".net-option");
+
+  if (netOption) {
+    airtimeManualForPhone = normaliseNigerianPhone(
+      elements.airtimePhone?.value || ""
+    );
+    setAirtimeNetwork(netOption.dataset.net);
+    return;
+  }
+
+  const amountChip = event.target.closest("#amountGrid .amount-chip");
+
+  if (amountChip) {
+    document
+      .querySelectorAll("#amountGrid .amount-chip")
+      .forEach((chip) =>
+        chip.classList.toggle("selected", chip === amountChip)
+      );
+
+    const input = document.getElementById("airtimeAmount");
+    if (input) input.value = amountChip.dataset.amount;
+    return;
+  }
+
+  const budgetChip = event.target.closest("#finderBudgets .amount-chip");
+
+  if (budgetChip) {
+    finderBudget = Number(budgetChip.dataset.budget);
+
+    document
+      .querySelectorAll("#finderBudgets .amount-chip")
+      .forEach((chip) =>
+        chip.classList.toggle("selected", chip === budgetChip)
+      );
+
+    const custom = document.getElementById("finderCustom");
+    if (custom) custom.value = "";
+    return;
+  }
+
+  const needChip = event.target.closest(".need-chip");
+
+  if (needChip) {
+    finderNeed = needChip.dataset.need;
+
+    document
+      .querySelectorAll(".need-chip")
+      .forEach((chip) =>
+        chip.classList.toggle("selected", chip === needChip)
+      );
+    return;
+  }
+
+  if (event.target.closest("#finderRun")) {
+    runDataFinder();
+    return;
+  }
+
+  if (event.target.closest("#airtimeBuyBtn")) {
+    showComingSoon("Airtime purchase");
+    return;
+  }
+
   const serviceTarget = event.target.closest("[data-service]");
 
   if (serviceTarget) {
     const service = serviceTarget.dataset.service;
 
-    if (service === "data") {
-      openDataStore();
-      return;
+    if (!serviceTarget.classList.contains("soon")) {
+      if (service === "data") {
+        openDataStore();
+        return;
+      }
+
+      if (service === "airtime") {
+        showTab("airtime");
+        updateRecentBeneficiaryDisplay();
+        return;
+      }
     }
 
     const label =
@@ -1354,6 +1802,16 @@ function buildTransactionItem(transaction) {
     (isCredit ? "+" : "−") + formatNaira(transaction.amount);
 
   item.append(iconBox, main, amount);
+
+  item.tabIndex = 0;
+  item.setAttribute("role", "button");
+  item.addEventListener("click", () => openTransactionSheet(transaction));
+  item.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openTransactionSheet(transaction);
+    }
+  });
 
   return item;
 }
@@ -1464,7 +1922,7 @@ async function loadDashboard(user) {
         supabaseClient
           .from("wallet_transactions")
           .select(
-            "id, transaction_type, direction, amount, description, reference, created_at"
+            "id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at"
           )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
