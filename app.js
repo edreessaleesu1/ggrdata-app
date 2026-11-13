@@ -3872,4 +3872,504 @@ async function confirmPurchase() {
     const accessToken = sessionData?.session?.access_token;
 
     if (sessionError || !accessToken) {
-      throw new Error("Your 
+      throw new Error("Your session has expired. Please sign in again.");
+    }
+
+    const slug =
+      p.kind === "data" ? "vtpass-data-purchase" : "vtpass-airtime-purchase";
+
+    const payload =
+      p.kind === "data"
+        ? {
+            action: "purchase",
+            network: p.network,
+            phone: p.phone,
+            variationCode: p.planCode,
+            idempotencyKey: p.key
+          }
+        : {
+            action: "purchase",
+            network: p.network,
+            phone: p.phone,
+            amount: p.amount,
+            idempotencyKey: p.key
+          };
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/${slug}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_PUBLISHABLE_KEY,
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok || !result) {
+      throw new Error(
+        result?.error || `Purchase request failed (${response.status}).`
+      );
+    }
+
+    const status = String(result.status || "processing").toLowerCase();
+    const reference = result.orderId || result.requestId || "";
+
+    if (["successful", "success", "completed"].includes(status)) {
+      p.state = "done";
+      saveRecentBeneficiary(p.phone);
+      clearSelectionsAfterPurchase();
+
+      renderPurchaseResult(
+        "success",
+        "Purchase successful",
+        result.message || "Your purchase has been delivered.",
+        reference
+      );
+
+    } else if (["failed", "reversed"].includes(status)) {
+      p.state = "done";
+
+      renderPurchaseResult(
+        "failed",
+        "Purchase failed",
+        result.message ||
+          "The purchase could not be completed. Any debit is refunded to your wallet.",
+        reference
+      );
+
+    } else if (result.success && status === "processing") {
+      p.state = "done";
+      clearSelectionsAfterPurchase();
+
+      renderPurchaseResult(
+        "pending",
+        "Purchase processing",
+        result.message ||
+          "We are confirming this purchase with the provider. Check your transactions for updates.",
+        reference
+      );
+
+    } else {
+      throw new Error(
+        result.error || result.message || "The purchase could not be confirmed."
+      );
+    }
+
+    refreshWalletAfterDataPurchase();
+
+  } catch (error) {
+    console.error("Purchase error:", error);
+
+    renderPurchaseReview(
+      error instanceof Error
+        ? error.message
+        : "The purchase could not be completed. Please try again."
+    );
+
+  } finally {
+    purchaseInProgress = false;
+  }
+}
+
+/* ----- Information pages (profile settings) ----- */
+
+function infoCard(title, paragraphs = []) {
+  const card = el("section", "info-card");
+
+  if (title) card.append(el("h3", "", title));
+
+  paragraphs.forEach((text) => card.append(el("p", "", text)));
+
+  return card;
+}
+
+function infoRows(rows) {
+  const card = el("div", "purchase-card");
+
+  rows
+    .filter(([, value]) => value)
+    .forEach(([label, value]) => card.append(purchaseRow(label, value)));
+
+  return card;
+}
+
+function faqList(items) {
+  const wrap = el("div", "faq-list");
+
+  items.forEach(([question, answer]) => {
+    const item = document.createElement("details");
+    item.className = "faq-item";
+
+    item.append(el("summary", "", question), el("p", "", answer));
+    wrap.append(item);
+  });
+
+  return wrap;
+}
+
+function actionButton(label, onClick, outline = false) {
+  const button = el(
+    "button",
+    outline ? "button-outline" : "button-primary",
+    label
+  );
+
+  button.type = "button";
+  button.addEventListener("click", onClick);
+
+  return button;
+}
+
+function linkButton(label, href) {
+  const link = el("a", "button-primary info-link", label);
+
+  link.href = href;
+  link.target = href.startsWith("http") ? "_blank" : "_self";
+  link.rel = "noopener";
+
+  return link;
+}
+
+function formatMemberSince(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-NG", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(date);
+}
+
+function contactButtons() {
+  const buttons = [];
+
+  if (SITE_CONTACT.whatsapp) {
+    buttons.push(
+      linkButton(
+        "Chat on WhatsApp",
+        `https://wa.me/${SITE_CONTACT.whatsapp.replace(/\D/g, "")}`
+      )
+    );
+  }
+
+  if (SITE_CONTACT.phone) {
+    buttons.push(
+      linkButton(
+        `Call ${SITE_CONTACT.phone}`,
+        `tel:${SITE_CONTACT.phone.replace(/\s/g, "")}`
+      )
+    );
+  }
+
+  if (SITE_CONTACT.email) {
+    buttons.push(
+      linkButton("Send an email", `mailto:${SITE_CONTACT.email}`)
+    );
+  }
+
+  return buttons;
+}
+
+const INFO_PAGES = {
+  profile() {
+    const info = profileInfo || {};
+    const name = info.name || "GGRData Member";
+    const pack =
+      document.getElementById("userPackage")?.textContent.trim() ||
+      "GGR Starter";
+
+    const head = el("div", "profile-head");
+    const avatar = el(
+      "span",
+      "profile-avatar",
+      name.trim().charAt(0).toUpperCase() || "G"
+    );
+
+    head.append(avatar, el("h2", "", name));
+
+    if (info.username) {
+      head.append(el("span", "profile-username", `@${info.username}`));
+    }
+
+    return {
+      title: "My profile",
+      nodes: [
+        head,
+        infoRows([
+          ["Full name", name],
+          ["Username", info.username ? `@${info.username}` : ""],
+          ["Email address", info.email],
+          ["Phone number", info.phone],
+          ["Account package", pack],
+          ["Account status", "Active"],
+          ["Member since", formatMemberSince(info.joined)]
+        ]),
+        el(
+          "p",
+          "purchase-safety",
+          "To change your name, email or phone number, contact support. Your password can be reset from the sign-in screen."
+        )
+      ]
+    };
+  },
+
+  pricing() {
+    return {
+      title: "Pricing",
+      nodes: [
+        infoCard("Clear, live prices", [
+          "Data bundle prices come straight from the live catalogue and are shown before you buy. The price you see on the confirmation page is the amount debited from your wallet.",
+          "Airtime is charged at the amount you enter. Bundle availability and prices can change when the network or provider updates them, so always check the confirmation page."
+        ]),
+        actionButton("View live data prices", () => openDataStore())
+      ]
+    };
+  },
+
+  codes() {
+    const dial = (code) => `tel:${code.replace("#", "%23")}`;
+
+    const codeCard = (label, code) => {
+      const row = el("div", "code-row");
+      const text = el("div");
+
+      text.append(el("small", "", label), el("strong", "", code));
+
+      const call = el("a", "code-dial", "Dial");
+      call.href = dial(code);
+
+      row.append(text, call);
+      return row;
+    };
+
+    const list = el("div", "purchase-card code-card");
+
+    list.append(
+      codeCard("Airtime (account) balance", "*310#"),
+      codeCard("Data balance", "*323#")
+    );
+
+    return {
+      title: "Balance codes",
+      nodes: [
+        infoCard("Check your balance", [
+          "These are the unified codes published by the Nigerian Communications Commission. They work on MTN, Airtel and Glo."
+        ]),
+        list,
+        el(
+          "p",
+          "purchase-safety",
+          "If a code does not respond on your SIM, your network may still use its own older code. Check with your network provider."
+        )
+      ]
+    };
+  },
+
+  contact() {
+    const buttons = contactButtons();
+
+    const nodes = [];
+
+    if (buttons.length) {
+      nodes.push(
+        infoCard("We are here to help", [
+          SITE_CONTACT.hours
+            ? `Support hours: ${SITE_CONTACT.hours}.`
+            : "Reach us on any of the channels below."
+        ]),
+        ...buttons
+      );
+    } else {
+      nodes.push(
+        infoCard("Contact support", [
+          "Our support contact details will appear here soon.",
+          "In the meantime, quote the reference from your Transactions page for any order question."
+        ])
+      );
+    }
+
+    return { title: "Contact us", nodes };
+  },
+
+  complaint() {
+    const steps = faqList([
+      [
+        "1. Find the transaction",
+        "Open Transactions and tap the order you want to report."
+      ],
+      [
+        "2. Copy the reference",
+        "Tap “Copy reference” on the details sheet. The reference helps support find your order quickly."
+      ],
+      [
+        "3. Send it to support",
+        "Send the reference with a short description of what went wrong and the number you used."
+      ]
+    ]);
+
+    steps.querySelectorAll("details").forEach((d) => (d.open = true));
+
+    return {
+      title: "Log a complaint",
+      nodes: [
+        infoCard("Report a problem", [
+          "If a purchase did not arrive or a debit looks wrong, follow these steps. Failed deliveries are refunded to your wallet automatically."
+        ]),
+        steps,
+        actionButton("Open my transactions", () => showTab("transactions")),
+        ...contactButtons()
+      ]
+    };
+  },
+
+  limits() {
+    const pack =
+      document.getElementById("userPackage")?.textContent.trim() ||
+      "GGR Starter";
+
+    return {
+      title: "Account limits",
+      nodes: [
+        infoRows([
+          ["Account package", pack],
+          ["Airtime per purchase", "₦50 – ₦50,000"],
+          ["Data bundles", "Price of the selected bundle"],
+          ["Wallet funding limits", "Shown when funding is live"]
+        ]),
+        el(
+          "p",
+          "purchase-safety",
+          "Limits protect your wallet and may change as account levels are introduced. Any change will be shown here."
+        )
+      ]
+    };
+  },
+
+  upgrade() {
+    const pack =
+      document.getElementById("userPackage")?.textContent.trim() ||
+      "GGR Starter";
+
+    return {
+      title: "Upgrade account",
+      nodes: [
+        infoRows([["Current package", pack]]),
+        infoCard("Account upgrades", [
+          "Account upgrades are not open yet. When they are, you will see the available packages and what each one includes on this page."
+        ])
+      ]
+    };
+  },
+
+  help() {
+    return {
+      title: "Help & support",
+      nodes: [
+        faqList([
+          [
+            "How do I buy data or airtime?",
+            "Choose Data or Airtime, enter the recipient's number (the network is detected automatically), pick a bundle or amount, then tap Next. Review the details and tap Purchase."
+          ],
+          [
+            "How do I fund my wallet?",
+            "Wallet funding is being switched on after payment verification is fully tested. Your funding details will appear on the home screen."
+          ],
+          [
+            "My purchase is still processing",
+            "Some purchases take a little time to be confirmed by the provider. Your wallet debit is held while it is checked. Open Transactions for updates. If it fails, the amount is refunded to your wallet."
+          ],
+          [
+            "I sent airtime or data to a wrong number",
+            "Always check the number on the confirmation page before you buy. Delivered purchases cannot be recalled, but contact support with your reference and we will look into it."
+          ],
+          [
+            "Which networks are supported?",
+            "MTN, Airtel and Glo."
+          ],
+          [
+            "Where do I find my transaction reference?",
+            "Open Transactions, tap an order, and use Copy reference."
+          ]
+        ]),
+        actionButton("Contact support", () => openInfoPage("contact"), true)
+      ]
+    };
+  },
+
+  legal() {
+    return {
+      title: "Legal",
+      nodes: [
+        faqList([
+          [
+            "Privacy",
+            "We collect the details you give us when you register (name, username, email and phone number) and your wallet and order records. We use them to run your account, deliver your purchases and provide support. Your records are stored securely and each account can only access its own information. We share only what is needed with the payment and delivery providers that complete your orders. GGRData will never ask for your password."
+          ],
+          [
+            "Terms of use",
+            "Use GGRData lawfully and keep your sign-in details private. You are responsible for entering the correct recipient number and amount. Your wallet is debited when an order is accepted and refunded if delivery fails. Prices and availability depend on the networks and providers and may change. We may suspend accounts that are misused."
+          ],
+          [
+            "Security",
+            "Payments and purchases are processed on secure servers. Wallet changes are made only by the system after verification, not by the app on your device."
+          ]
+        ])
+      ]
+    };
+  },
+
+  address() {
+    return {
+      title: "Our address",
+      nodes: [
+        SITE_CONTACT.address
+          ? infoRows([["Address", SITE_CONTACT.address]])
+          : infoCard("Our address", [
+              "Our office address will be shown here soon."
+            ]),
+        ...contactButtons()
+      ]
+    };
+  }
+};
+
+function openInfoPage(key) {
+  const build = INFO_PAGES[key];
+
+  if (!build) return;
+
+  const page = build();
+  const body = document.getElementById("infoBody");
+
+  if (!body) return;
+
+  body.replaceChildren(...page.nodes);
+  setPageTitle("infoView", page.title);
+
+  showTab("info");
+}
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+
+  if (!(target instanceof Element)) return;
+
+  const item = target.closest('[data-profile="info"]');
+
+  if (item) {
+    openInfoPage(item.dataset.info);
+  }
+});
+
+buildPageBars();
+syncNetworkTicks();
+updateNextButtons();
+
+
+polishInputs();
+
+initialiseApplication();
