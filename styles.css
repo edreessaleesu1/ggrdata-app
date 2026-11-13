@@ -2534,3 +2534,330 @@ html[data-theme="dark"] .notifications-empty {
 .data-purchase-panel .data-purchase-recipient{font-weight:700;color:var(--emerald-dark)}
 .data-purchase-button{width:100%;margin-top:10px}
 .data-purchase-result{font-weight:700}
+/* =========================================================
+   26. UX ENHANCEMENTS: tighter layout, skeletons, motion,
+   refresh, offline, inputs
+   ========================================================= */
+
+/* ---------- Tighter spacing ---------- */
+.page-shell{margin:14px auto 96px}
+.dashboard{gap:12px}
+.welcome-panel{padding:12px 14px;border-radius:18px}
+.welcome-logo{width:44px;height:44px;border-radius:14px}
+.welcome-panel h1{font-size:clamp(17px,4.6vw,21px)}
+.notification-button{width:42px;height:42px;border-radius:13px}
+.package-panel{padding:9px 16px;border-radius:14px}
+.account-balance-card{padding:14px 15px 13px}
+.fund-wallet-button{min-height:42px;margin-top:11px}
+
+/* funding card: compact, not a tall full-width block */
+.funding-account-card{padding:14px 16px;border-radius:18px}
+.funding-card-heading h2{font-size:16px;margin-top:2px}
+.funding-icon{width:38px;height:38px;border-radius:12px;font-size:20px}
+.funding-placeholder{margin:10px 0;padding:10px 12px;font-size:12px;line-height:1.55}
+.funding-security{font-size:10px}
+
+.quickbuy-home{padding:14px 16px;border-radius:18px}
+.quickbuy-home h2{font-size:17px}
+.quickbuy-home-last{margin:6px 0 10px}
+.quickbuy-home-actions .button-primary{min-height:44px}
+
+.services-section{padding:16px 12px 8px;border-radius:20px}
+.services-heading{margin-bottom:10px}
+.services-heading h2{font-size:19px}
+.service-grid{gap:8px 4px}
+.service-item{min-height:0;padding:3px 2px;gap:6px}
+.service-icon{width:46px;height:46px;border-radius:14px}
+
+.referral-banner{min-height:124px;border-radius:18px}
+.referral-copy{padding:14px 0;gap:4px}
+.referral-copy strong{font-size:clamp(17px,5vw,21px)}
+.referral-art .person{max-height:130px}
+
+/* networks: one compact row */
+.network-panel{flex-direction:row!important;align-items:center;padding:12px 14px;gap:10px;border-radius:18px}
+.network-panel h2{font-size:15px;margin:1px 0 0}
+.network-list{width:auto!important;gap:6px;flex-wrap:nowrap}
+.network-chip{flex:none!important;min-height:36px;padding:3px 8px 3px 4px;font-size:0;gap:0;border-radius:999px}
+.network-logo{width:28px!important;height:28px!important}
+
+.dashboard-notice{padding:2px 4px;font-size:10px;line-height:1.5}
+.site-footer{margin-top:10px;padding:10px 0 4px}
+
+.detail-card{padding:16px 14px;border-radius:18px}
+.detail-card h2{margin:3px 0 12px}
+.data-store-heading{margin-bottom:14px}
+.quickbuy-balance{margin-bottom:14px;padding:13px 15px}
+.quickbuy-field{margin-bottom:14px}
+.finder-card{margin:2px 0 14px;padding:13px}
+.data-catalogue-toolbar{margin:16px 0 8px}
+.data-plans{gap:8px}
+.data-plan-card{padding:13px 14px;gap:8px}
+.tx-list{gap:8px}
+.tx-item{padding:11px 12px}
+.settings-item{padding:9px 2px}
+.profile-view{padding:16px 14px 6px}
+.profile-head{margin-bottom:10px}
+.auth-layout{gap:16px;min-height:0;padding:10px 4px}
+.auth-card{padding:24px 18px}
+.auth-heading{margin-bottom:16px}
+.tabs{margin-bottom:16px}
+.field{margin-bottom:13px}
+.empty-activity{padding:24px 16px}
+
+@media (min-width:700px){
+  .page-shell{margin-top:22px}
+  .dashboard{gap:14px}
+  .detail-card{padding:22px}
+}
+
+/* ---------- Skeleton loading ---------- */
+.skeleton{
+  display:block;border-radius:8px;
+  background:linear-gradient(90deg,#efe8d4 25%,#f8f3e3 37%,#efe8d4 63%);
+  background-size:400% 100%;animation:shimmer 1.4s ease infinite;
+}
+@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.skeleton-text{
+  color:transparent!important;border-radius:8px;
+  background:linear-gradient(90deg,rgba(255,255,255,.22) 25%,rgba(255,255,255,.42) 37%,rgba(255,255,255,.22) 63%);
+  background-size:400% 100%;animation:shimmer 1.4s ease infinite;
+  min-width:120px;display:inline-block;
+}
+.skeleton-row{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  border:1px solid var(--gold-light);border-radius:16px;background:#fff;
+}
+.sk-icon{width:40px;height:40px;border-radius:12px;flex:0 0 40px}
+.sk-lines{flex:1;display:grid;gap:7px}
+.sk-line{height:11px;width:80%}
+.sk-line.short{width:45%}
+.sk-amount{width:56px;height:14px}
+.sk-price{width:40%;height:20px}
+.sk-card{pointer-events:none}
+.sk-card::before{display:none}
+html[data-theme="dark"] .skeleton{
+  background:linear-gradient(90deg,#1c2e27 25%,#243a31 37%,#1c2e27 63%);background-size:400% 100%;
+}
+html[data-theme="dark"] .skeleton-row{background:#12231e;border-color:#2a3f35}
+
+/* ---------- Motion ---------- */
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.dashboard-view.active{animation:viewIn .26s ease both}
+.dashboard > section:not(.dashboard-view):not(.hidden),
+.dashboard > .referral-banner{animation:viewIn .3s ease both}
+button,.service-item,.tx-item,.settings-item{-webkit-tap-highlight-color:transparent}
+.button-primary:active,.button-outline:active,.fund-wallet-button:active,
+.referral-banner:active,.tx-item:active,.amount-chip:active,.need-chip:active{transform:scale(.97)}
+.service-item:active .service-icon{transform:scale(.92)}
+h2[tabindex="-1"]:focus{outline:none}
+
+/* ---------- Refresh, offline, retry ---------- */
+.offline-banner{
+  position:sticky;top:0;z-index:1500;padding:8px 14px;text-align:center;
+  background:#7a2a2a;color:#fff;font-size:12px;font-weight:700;line-height:1.4;
+}
+.pull-indicator{
+  position:fixed;left:50%;top:70px;z-index:1400;width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;transform:translate(-50%,-44px);opacity:0;pointer-events:none;
+  background:#fff;color:var(--emerald-dark);border:1.5px solid var(--gold);
+  box-shadow:0 8px 20px rgba(4,38,31,.25);font-weight:800;transition:background .2s;
+}
+.pull-indicator.ready{background:var(--gold-light)}
+body.is-refreshing .pull-indicator{
+  opacity:1;transform:translate(-50%,10px);animation:spin .8s linear infinite;
+}
+@keyframes spin{to{rotate:360deg}}
+.retry-button{
+  margin-top:10px;min-height:40px;padding:8px 18px;border-radius:999px;
+  border:1px solid var(--gold);background:#fff;color:var(--emerald-dark);
+  font:800 12.5px "Manrope",sans-serif;
+}
+
+/* ---------- Inputs ---------- */
+.password-wrap{position:relative}
+.password-wrap input{padding-right:70px}
+.pw-toggle{
+  position:absolute;top:50%;right:6px;transform:translateY(-50%);
+  min-width:56px;min-height:40px;padding:0 10px;border:0;border-radius:10px;
+  background:none;color:var(--gold-dark);font:800 12.5px "Manrope",sans-serif;
+}
+.pw-toggle:active{background:var(--champagne)}
+input,select,button,.service-item,.settings-item{touch-action:manipulation}
+.nav-item,.tab,.amount-chip,.need-chip,.choice-chip,.settings-item{min-height:44px}
+:focus-visible{outline:3px solid rgba(196,154,67,.6);outline-offset:2px}
+input:focus-visible,select:focus-visible{outline:none}
+html[data-theme="dark"] .password-wrap .pw-toggle{color:#e8cf8c}
+html[data-theme="dark"] .retry-button{background:#12231e;color:#f1e6c4}
+.dashboard-notice{align-items:flex-start}
+.dashboard-notice p{margin:0}
+.notice-icon{line-height:1.5}
+
+
+/* =========================================================
+   27. PAGE BAR, NETWORK TICK, NEXT, PURCHASE, INFO PAGES
+   ========================================================= */
+
+/* ---------- Page bar with back arrow ---------- */
+.dashboard-view{overflow:clip}
+@supports not (overflow:clip){.dashboard-view{overflow:visible}.page-bar{position:relative!important;top:0!important}}
+.page-bar{
+  position:sticky;top:70px;z-index:40;
+  display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:6px;
+  margin:-16px -14px 12px;padding:10px 12px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid #f1e9d3;border-radius:18px 18px 0 0;
+}
+.page-back{
+  display:grid;place-items:center;width:40px;height:40px;padding:0;
+  border:1px solid var(--gold-light);border-radius:50%;
+  background:var(--champagne);color:var(--emerald-dark);
+  transition:transform .15s,background .2s;
+}
+.page-back .ico{width:19px;height:19px;stroke-width:2.4}
+.page-back:active{transform:scale(.9);background:var(--gold-light)}
+.page-bar-title{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--emerald-dark);font:800 16px "Manrope",sans-serif;letter-spacing:-.02em;
+}
+.page-bar-action{display:flex;justify-content:flex-end;min-width:44px}
+.page-next{
+  display:inline-flex;align-items:center;gap:2px;min-height:40px;padding:0 10px 0 16px;
+  border:1px solid #e3d9bd;border-radius:999px;background:#f3efe2;color:#9a8f6c;
+  font:800 13px "Manrope",sans-serif;transition:.2s;
+}
+.page-next .ico{width:16px;height:16px;stroke-width:2.6}
+.page-next.is-ready{
+  border-color:rgba(232,207,140,.7);background:linear-gradient(115deg,#04261f,#0d6954);color:#fff;
+  box-shadow:0 6px 14px rgba(4,38,31,.28);
+}
+.page-next.is-ready .ico{color:var(--gold-light)}
+.page-next.pulse-once{animation:nextPulse .7s ease}
+@keyframes nextPulse{0%{transform:scale(1)}35%{transform:scale(1.14)}100%{transform:scale(1)}}
+#notificationsView .notifications-heading h2{display:none}
+.data-store-heading h2,#airtimeView > h2{margin-top:2px}
+
+/* ---------- Network tick ---------- */
+.data-network-button{position:relative}
+.data-network-selector.has-tick .data-network-button.active::after{
+  content:"✓";position:absolute;top:7px;right:7px;
+  display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+  background:var(--emerald-light);color:#fff;font:800 12px "Manrope",sans-serif;
+  box-shadow:0 3px 8px rgba(4,38,31,.3);animation:tickPop .3s cubic-bezier(.3,1.6,.5,1);
+}
+@keyframes tickPop{from{transform:scale(0)}to{transform:scale(1)}}
+.network-detection{transition:.2s}
+
+/* ---------- Bundle cards ---------- */
+.data-plan-card .data-plan-select{
+  min-height:40px;margin-top:2px;width:100%;
+  background:#fff;color:var(--emerald-dark);border:1.5px solid var(--gold);
+  box-shadow:none;font-size:12.5px;
+}
+.data-plan-card .data-plan-select:hover{background:var(--champagne);color:var(--emerald-dark)}
+.data-plan-card.selected{
+  border-color:var(--gold);box-shadow:var(--ring-gold),0 8px 20px rgba(107,78,14,.12);
+  background:linear-gradient(130deg,#fffdf6,var(--champagne));
+}
+.data-plan-card.selected .data-plan-select{
+  background:linear-gradient(115deg,#04261f,#0d6954);color:#fff;border-color:transparent;
+}
+
+/* ---------- Purchase page ---------- */
+.purchase-hero{
+  display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:16px;
+  border-radius:20px;color:#fff;border:1px solid rgba(255,240,200,.45);
+  background:radial-gradient(circle at 92% 0%,rgba(255,244,214,.28),transparent 40%),linear-gradient(125deg,#04261f,#0d6954);
+  box-shadow:0 14px 28px rgba(4,38,31,.22);
+}
+.purchase-logo{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid var(--gold-light);flex:0 0 56px}
+.purchase-hero-text{display:grid;gap:1px;min-width:0}
+.purchase-hero-text small{color:var(--gold-light);font:800 10px "Manrope",sans-serif;letter-spacing:2px}
+.purchase-hero-text strong{font:800 26px "Manrope",sans-serif;letter-spacing:-.04em}
+.purchase-hero-text span{color:rgba(255,255,255,.85);font-size:12.5px;overflow-wrap:anywhere}
+.purchase-card{
+  margin-bottom:12px;padding:4px 14px;border:1px solid var(--gold-light);
+  border-radius:16px;background:var(--champagne);
+}
+.purchase-card .detail-row{padding:11px 0}
+.purchase-card .detail-row:last-child{border-bottom:0}
+.purchase-card .detail-row:last-child b{font-size:14px}
+.purchase-wallet{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:12px;padding:13px 15px;border-radius:16px;
+  background:linear-gradient(125deg,#6b4e0e,#a98230);color:#fff;
+}
+.purchase-wallet small{display:block;color:rgba(255,255,255,.8);font:800 9px "Manrope",sans-serif;letter-spacing:1.4px}
+.purchase-wallet strong{display:block;margin-top:2px;font:800 17px "Manrope",sans-serif}
+.purchase-after{text-align:right}
+.purchase-wallet.low{background:linear-gradient(125deg,#7a2a2a,#b04545)}
+.purchase-safety{margin:10px 2px 14px;color:var(--text-soft);font-size:12px;line-height:1.65}
+.purchase-notice{
+  margin:0 0 12px;padding:11px 14px;border:1px solid #f0cccc;border-radius:12px;
+  background:#fdf0f0;color:#9b2c2c;font-size:13px;line-height:1.55;
+}
+.purchase-confirm{margin-top:4px;min-height:54px;font-size:15px}
+.purchase-result{display:grid;justify-items:center;gap:6px;padding:10px 0 4px;text-align:center}
+.purchase-result h3{margin:4px 0 0;color:var(--emerald-dark);font-size:21px}
+.purchase-result > p{max-width:300px;margin:0 0 10px;color:var(--text-soft);font-size:13px;line-height:1.6}
+.purchase-result .purchase-card{width:100%;text-align:left}
+.purchase-result-icon{
+  display:grid;place-items:center;width:68px;height:68px;border-radius:50%;
+  font:800 30px "Manrope",sans-serif;color:#fff;animation:tickPop .4s cubic-bezier(.3,1.6,.5,1);
+}
+.purchase-result.success .purchase-result-icon{background:linear-gradient(145deg,#0d6954,#04261f);box-shadow:0 0 0 7px rgba(13,105,84,.14)}
+.purchase-result.failed .purchase-result-icon{background:linear-gradient(145deg,#b04545,#7a2a2a);box-shadow:0 0 0 7px rgba(176,69,69,.14)}
+.purchase-result.pending .purchase-result-icon{background:linear-gradient(145deg,#c49a43,#8a6a1f);box-shadow:0 0 0 7px rgba(196,154,67,.18)}
+
+/* ---------- Info pages ---------- */
+.info-card{margin-bottom:12px;padding:16px;border:1px solid var(--gold-light);border-radius:16px;background:var(--champagne)}
+.info-card h3{margin:0 0 6px;color:var(--emerald-dark);font-size:17px}
+.info-card p{margin:0 0 8px;color:var(--text-soft);font-size:13px;line-height:1.7}
+.info-card p:last-child{margin-bottom:0}
+.info-link{text-decoration:none;color:#fff}
+#infoBody .button-primary,#infoBody .button-outline{margin-top:10px}
+#infoBody .profile-head{margin-bottom:14px}
+.faq-list{display:grid;gap:8px;margin-bottom:12px}
+.faq-item{border:1px solid var(--gold-light);border-radius:14px;background:#fff;overflow:hidden}
+.faq-item summary{
+  list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 14px;cursor:pointer;color:var(--emerald-dark);font:700 14px "Manrope",sans-serif;
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:"+";flex:0 0 auto;color:var(--gold-dark);font-size:20px;line-height:1;transition:transform .2s}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-item p{margin:0;padding:0 14px 14px;color:var(--text-soft);font-size:13px;line-height:1.7}
+.code-card{padding:2px 14px}
+.code-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #f1e9d3}
+.code-row:last-child{border-bottom:0}
+.code-row small{display:block;color:var(--text-soft);font-size:12px}
+.code-row strong{color:var(--emerald-dark);font:800 22px "Manrope",sans-serif;letter-spacing:.02em}
+.code-dial{
+  padding:9px 18px;border-radius:999px;text-decoration:none;color:#fff;
+  background:linear-gradient(115deg,#04261f,#0d6954);font:800 13px "Manrope",sans-serif;
+}
+
+/* ---------- Dark mode ---------- */
+html[data-theme="dark"] .page-bar{background:rgba(18,35,30,.94);border-bottom-color:#25382f}
+html[data-theme="dark"] .page-back{background:#1a2d25;border-color:#34503f;color:#e8cf8c}
+html[data-theme="dark"] .page-bar-title{color:#f1e6c4}
+html[data-theme="dark"] .page-next{background:#1a2d25;border-color:#2f453a;color:#6f877b}
+html[data-theme="dark"] .purchase-card,
+html[data-theme="dark"] .info-card{background:#16251f;border-color:#2a3f35}
+html[data-theme="dark"] .faq-item{background:#12231e;border-color:#2a3f35}
+html[data-theme="dark"] .faq-item summary,
+html[data-theme="dark"] .info-card h3,
+html[data-theme="dark"] .purchase-result h3,
+html[data-theme="dark"] .code-row strong{color:#f1e6c4}
+html[data-theme="dark"] .code-row{border-bottom-color:#25382f}
+html[data-theme="dark"] .data-plan-card .data-plan-select{background:#0f1d18;color:#f1e6c4;border-color:#4a3d1a}
+html[data-theme="dark"] .data-plan-card.selected{background:#16251f}
+html[data-theme="dark"] .purchase-notice{background:#2a1515;border-color:#5a2a2a;color:#f0b4b4}
+
+/* result secondary button */
+.purchase-result ~ .button-outline,
+#purchaseBody > .button-outline{
+  margin-top:8px;background:#fff!important;color:var(--emerald-dark)!important;
+  border:1.5px solid var(--gold)!important;box-shadow:none!important;
+}
+html[data-theme="dark"] #purchaseBody > .button-outline{background:#0f1d18!important;color:#f1e6c4!important;border-color:#4a3d1a!important}
