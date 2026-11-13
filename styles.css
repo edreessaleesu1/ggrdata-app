@@ -2861,3 +2861,84 @@ html[data-theme="dark"] .purchase-notice{background:#2a1515;border-color:#5a2a2a
   border:1.5px solid var(--gold)!important;box-shadow:none!important;
 }
 html[data-theme="dark"] #purchaseBody > .button-outline{background:#0f1d18!important;color:#f1e6c4!important;border-color:#4a3d1a!important}
+
+
+/* =========================================================
+   28. FIT SIGN-IN TO ONE SCREEN
+   ========================================================= */
+@media (max-width:600px){
+  .auth-layout{gap:12px}
+  .auth-intro{margin-bottom:0}
+  .auth-intro h1{font-size:26px;line-height:1.1;margin:6px 0 0}
+  .auth-intro p,.auth-networks{display:none}
+  .auth-intro .eyebrow{font-size:9.5px}
+  .auth-card{padding:16px 16px 14px;border-radius:20px}
+  .auth-heading{margin-bottom:10px}
+  .auth-heading h2{font-size:21px;margin:4px 0 2px}
+  .auth-heading p{font-size:12.5px;margin:0}
+  .auth-heading .eyebrow{display:none}
+  #authTabs{margin-bottom:10px}
+  #authTabs .tab{min-height:40px}
+  #authForm .field{margin-bottom:10px}
+  #authForm .field label{font-size:12px;margin-bottom:4px}
+  #authForm input{min-height:46px}
+  #authForm .button-primary{min-height:48px;margin-top:4px}
+  #forgotBtn{margin-top:6px;padding:6px}
+  .page-shell{padding-top:8px}
+}
+@media (max-width:600px) and (max-height:700px){
+  .auth-intro{display:none}
+}
+
+
+/* =========================================================
+   29. HOME FITS ONE SCREEN (phones)
+   ========================================================= */
+@media (max-width:600px){
+  .dashboard{gap:8px}
+  .dashboard > section,.dashboard > button{margin-top:0;margin-bottom:0}
+  .welcome-panel{padding:10px 12px;min-height:0}
+  .welcome-panel h2,.welcome-panel strong{font-size:17px}
+  .package-panel{padding:8px 14px;min-height:0}
+  .account-balance-card{padding:12px 14px}
+  .account-balance-card .balance-value-row strong,
+  .account-balance-card .balance-value{font-size:23px}
+  .account-balance-card .button-primary,
+  .account-balance-card .fund-button,
+  .account-balance-card button.button-light{min-height:42px;margin-top:8px}
+  /* placeholders and secondary panels leave the home screen */
+  .funding-account-card,.dashboard-notice,.network-panel{display:none!important}
+  .quickbuy-home{padding:12px 14px}
+  .quickbuy-home p,.quickbuy-home .quickbuy-last{margin:2px 0 8px;font-size:12.5px}
+  .quickbuy-home h2,.quickbuy-home h3{font-size:16px;margin:2px 0}
+  .quickbuy-home button{min-height:42px}
+  .services-section{padding:12px 12px 10px}
+  .services-heading{margin-bottom:6px}
+  .services-heading h2{font-size:16px;margin:0}
+  .services-caption{display:none}
+  .service-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+  .service-item{padding:8px 2px;min-height:0;gap:4px;font-size:10.5px;line-height:1.15}
+  .service-item .service-icon{width:30px;height:30px;font-size:15px}
+  .referral-banner{padding:10px 14px;min-height:0}
+  .referral-banner .referral-art{display:none}
+  .referral-banner strong{font-size:14px}
+  .referral-banner strong br{display:none}
+}
+
+@media (max-width:600px){
+  .referral-banner{display:none}
+  .welcome-panel{padding:8px 12px}
+  .welcome-panel .welcome-brand,.welcome-brand{transform:none}
+  .package-panel{padding:6px 14px}
+  .account-balance-card{padding:10px 14px}
+  .account-balance-card .button-primary,
+  .account-balance-card .fund-button,
+  .account-balance-card button.button-light{min-height:38px;margin-top:6px}
+  .quickbuy-home .quickbuy-last,.quickbuy-home p{display:none}
+  .quickbuy-home{padding:10px 12px}
+  .services-section{padding:10px 10px 8px}
+  .service-grid{gap:2px 4px}
+  .service-item{padding:5px 0;gap:3px;font-size:10px}
+  .service-item .service-icon{width:28px;height:28px;font-size:14px}
+  .services-heading .card-kicker{display:none}
+}
