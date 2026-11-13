@@ -43,6 +43,8 @@
     <symbol id="i-chev" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
   </defs>
 </svg>
@@ -692,12 +694,6 @@
           fails, the system processes a refund; pending orders can be checked again.
         </p>
 
-        <button id="backToHomeFromData"
-          class="button-outline"
-          type="button">
-          ← Back to dashboard
-        </button>
-
       </section>
 
 
@@ -781,37 +777,37 @@
         <div class="settings-label">General Settings</div>
 
         <div class="settings-list">
-          <button class="settings-item" type="button" data-profile="details">
+          <button class="settings-item" type="button" data-profile="info" data-info="profile">
             <span class="settings-icon"><svg class="ico"><use href="#i-user"/></svg></span>
             <span class="settings-text"><b>Profile</b><small>Your personal information</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Pricing">
+          <button class="settings-item" type="button" data-profile="info" data-info="pricing">
             <span class="settings-icon"><svg class="ico"><use href="#i-dollar"/></svg></span>
             <span class="settings-text"><b>Pricing</b><small>Our pricing</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Balance codes">
+          <button class="settings-item" type="button" data-profile="info" data-info="codes">
             <span class="settings-icon"><svg class="ico"><use href="#i-code"/></svg></span>
             <span class="settings-text"><b>Code To Check Balance</b><small>Codes to check data and airtime balance</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Contact details">
+          <button class="settings-item" type="button" data-profile="info" data-info="contact">
             <span class="settings-icon"><svg class="ico"><use href="#i-phone"/></svg></span>
             <span class="settings-text"><b>Contact Us</b><small>Contact our support</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Complaints">
+          <button class="settings-item" type="button" data-profile="info" data-info="complaint">
             <span class="settings-icon"><svg class="ico"><use href="#i-chat"/></svg></span>
             <span class="settings-text"><b>Log Complaint</b><small>Report a problem with a transaction</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Account limits">
+          <button class="settings-item" type="button" data-profile="info" data-info="limits">
             <span class="settings-icon"><svg class="ico"><use href="#i-badge"/></svg></span>
             <span class="settings-text"><b>Account Limits</b><small>Your account transaction limit</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Account upgrades">
+          <button class="settings-item" type="button" data-profile="info" data-info="upgrade">
             <span class="settings-icon"><svg class="ico"><use href="#i-up"/></svg></span>
             <span class="settings-text"><b>Upgrade Account</b><small>Upgrade your GGRData account</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
@@ -826,12 +822,12 @@
             <span class="settings-text"><b>Dark Mode</b><small>Switch app display mode to your preference</small></span>
             <span class="switch" id="darkSwitch" role="switch" aria-checked="false"><i></i></span>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Help and support">
+          <button class="settings-item" type="button" data-profile="info" data-info="help">
             <span class="settings-icon"><svg class="ico"><use href="#i-headset"/></svg></span>
             <span class="settings-text"><b>Help &amp; Support</b><small>Help or contact our customer service</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Legal pages">
+          <button class="settings-item" type="button" data-profile="info" data-info="legal">
             <span class="settings-icon"><svg class="ico"><use href="#i-shield"/></svg></span>
             <span class="settings-text"><b>Legal</b><small>Privacy, security &amp; terms of use</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
@@ -847,7 +843,7 @@
             <span class="settings-text"><b>Close</b><small>Go back to dashboard</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
           </button>
-          <button class="settings-item" type="button" data-profile="soon" data-label="Our address">
+          <button class="settings-item" type="button" data-profile="info" data-info="address">
             <span class="settings-icon"><svg class="ico"><use href="#i-pin"/></svg></span>
             <span class="settings-text"><b>Address</b><small>Check our address</small></span>
             <svg class="ico chev"><use href="#i-chev"/></svg>
@@ -954,13 +950,23 @@
         <button id="airtimeBuyBtn" class="button-primary" type="button">Continue <span>→</span></button>
         <p class="preview-note">Purchases open after payment safeguards are tested.</p>
 
-        <button class="button-outline" type="button" data-tab="home">← Back to dashboard</button>
+      </section>
+
+
+      <!-- PURCHASE CONFIRMATION (built by app.js) -->
+      <section id="purchaseView" class="dashboard-view detail-card">
+        <div id="purchaseBody"></div>
+      </section>
+
+
+      <!-- INFORMATION PAGES (profile settings, built by app.js) -->
+      <section id="infoView" class="dashboard-view detail-card">
+        <div id="infoBody"></div>
       </section>
 
 
       <!-- SERVICE SCREENS (built by app.js) -->
       <section id="serviceView" class="dashboard-view detail-card">
-        <button class="back-link" type="button" data-tab="home">← Back</button>
         <div id="serviceBody"></div>
       </section>
 
