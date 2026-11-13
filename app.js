@@ -1,3 +1,4 @@
+/* GGRData build 2026-11-13-B — app.js, styles.css, index.html and username-auth.js must all be this build */
 
 /* =========================================================
    GGRData — Main Application
