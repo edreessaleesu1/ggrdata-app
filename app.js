@@ -1,4 +1,3 @@
-/* GGRData build 2026-11-13-B — app.js, styles.css, index.html and username-auth.js must all be this build */
 
 /* =========================================================
    GGRData — Main Application
@@ -163,8 +162,6 @@ let manuallySelectedNetworkForPhone = null;
 let catalogueRequestNumber = 0;
 let currentWalletBalance = null;
 let lastPlans = [];
-let selectedDataPlan = null;
-let dataPurchaseInProgress = false;
 let currentUsername = "";
 let finderBudget = null;
 let finderNeed = null;
@@ -885,7 +882,8 @@ async function loadNotifications(userId, showLoading = false) {
   const requestNumber = ++notificationsRequestNumber;
 
   if (showLoading && elements.notificationsList) {
-    showSkeletonRows(elements.notificationsList, 3);
+    elements.notificationsList.textContent =
+      "Loading notifications...";
   }
 
   const { data, error } = await supabaseClient
@@ -906,11 +904,8 @@ async function loadNotifications(userId, showLoading = false) {
     console.error("Notifications loading error:", error);
 
     if (elements.notificationsList) {
-      showRetryState(
-        elements.notificationsList,
-        "Notifications could not be loaded.",
-        () => loadNotifications(userId, true)
-      );
+      elements.notificationsList.textContent =
+        "Notifications could not be loaded. Please try again.";
     }
 
     return;
@@ -1056,21 +1051,10 @@ const TAB_VIEW_IDS = {
   notifications: "notificationsView",
   "data-store": "dataStoreView",
   airtime: "airtimeView",
-  service: "serviceView",
-  purchase: "purchaseView",
-  info: "infoView"
+  service: "serviceView"
 };
 
-const NAV_PARENT_TAB = {
-  "data-store": "home",
-  airtime: "home",
-  service: "home",
-  notifications: "home",
-  purchase: "home",
-  info: "profile"
-};
-
-function showTab(tabName, options = {}) {
+function showTab(tabName) {
   const isHome = tabName === "home";
 
   if (!elements.dashboardScreen) return;
@@ -1078,25 +1062,6 @@ function showTab(tabName, options = {}) {
   /* Save the page being left before changing the visible dashboard view. */
   if (activeDashboardTab) {
     dashboardScrollPositions[activeDashboardTab] = window.scrollY || 0;
-  }
-
-  /* Remember where the user came from so the back arrow returns there. */
-  if (
-    !options.fromBack &&
-    activeDashboardTab &&
-    activeDashboardTab !== tabName
-  ) {
-    if (isHome) {
-      navHistory = [];
-    } else if (ROOT_TABS.includes(tabName)) {
-      navHistory = ["home"];
-    } else {
-      navHistory.push(activeDashboardTab);
-
-      if (navHistory.length > 20) navHistory.shift();
-    }
-
-    if (!isHome) pushBrowserState(tabName);
   }
 
   Array.from(elements.dashboardScreen.children).forEach((section) => {
@@ -1113,7 +1078,13 @@ function showTab(tabName, options = {}) {
   });
 
   document.querySelectorAll(".bottom-navigation .nav-item").forEach((item) => {
-    const navTab = NAV_PARENT_TAB[tabName] || tabName;
+    const navTab =
+      tabName === "data-store" ||
+      tabName === "airtime" ||
+      tabName === "service" ||
+      tabName === "notifications"
+        ? "home"
+        : tabName;
 
     item.classList.toggle("active", item.dataset.tab === navTab);
   });
@@ -1122,18 +1093,10 @@ function showTab(tabName, options = {}) {
 
   /* Restore the exact scroll position previously reached on this page. */
   activeDashboardTab = tabName;
-  const freshPage =
-    !options.fromBack && ["purchase", "info", "service"].includes(tabName);
-
-  const savedScrollPosition = freshPage
-    ? 0
-    : dashboardScrollPositions[tabName] || 0;
-
+  const savedScrollPosition = dashboardScrollPositions[tabName] || 0;
   window.requestAnimationFrame(() => {
     window.scrollTo(0, savedScrollPosition);
   });
-
-  focusActiveView(tabName);
 
   if (tabName === "data-store") {
     updateQuickBuyBalance();
@@ -1198,7 +1161,7 @@ function updateDetectedNetworkDisplay(network) {
   }
 
   elements.detectedNetwork.textContent =
-    `✓ ${SUPPORTED_DATA_NETWORKS[network]} detected`;
+    `${SUPPORTED_DATA_NETWORKS[network]} detected — you can change this manually.`;
 }
 
 function handleBeneficiaryInput() {
@@ -1381,33 +1344,6 @@ function clearDataPlans() {
   if (elements.dataPlans) {
     elements.dataPlans.replaceChildren();
   }
-  selectedDataPlan = null;
-
-  if (typeof updateNextButtons === "function") updateNextButtons();
-}
-
-async function refreshWalletAfterDataPurchase() {
-  const userResult = await supabaseClient.auth.getUser();
-  const user = userResult?.data?.user;
-  if (!user) return;
-
-  const [walletResult, transactionResult] = await Promise.all([
-    supabaseClient.from("wallets").select("balance, currency").eq("user_id", user.id).maybeSingle(),
-    supabaseClient.from("wallet_transactions")
-      .select("id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at")
-      .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50)
-  ]);
-
-  if (!walletResult.error && walletResult.data && elements.balance) {
-    currentWalletBalance = Number(walletResult.data.balance);
-    elements.balance.textContent = formatNaira(currentWalletBalance);
-    lastBalanceText = elements.balance.textContent;
-    applyBalanceVisibility();
-  }
-
-  if (!transactionResult.error) {
-    renderTransactions(elements.recentTransactions, transactionResult.data || [], 50);
-  }
 }
 
 function renderDataPlans(plans, networkName) {
@@ -1473,28 +1409,7 @@ function renderDataPlans(plans, networkName) {
 
     footer.append(availability);
 
-    const selectButton = document.createElement("button");
-    selectButton.type = "button";
-    selectButton.className = "button-outline data-plan-select";
-    selectButton.textContent = "Select bundle";
-    selectButton.addEventListener("click", () => {
-      selectedDataPlan = plan;
-
-      elements.dataPlans.querySelectorAll(".data-plan-card").forEach((item) => {
-        const isSelected = item === card;
-
-        item.classList.toggle("selected", isSelected);
-
-        const itemButton = item.querySelector(".data-plan-select");
-        if (itemButton) {
-          itemButton.textContent = isSelected ? "✓ Selected" : "Select bundle";
-        }
-      });
-
-      onBundleSelected();
-    });
-
-    card.append(details, price, footer, selectButton);
+    card.append(details, price, footer);
 
     fragment.append(card);
   });
@@ -1510,7 +1425,7 @@ function renderDataPlans(plans, networkName) {
   elements.dataPlans.append(fragment);
 
   setCatalogueStatus(
-    `${elements.dataPlans.children.length} bundles loaded for ${networkName}. Select a bundle to continue to purchase verification.`,
+    `${elements.dataPlans.children.length} plans loaded for ${networkName}. Select a plan for purchase once checkout is enabled.`,
     "success"
   );
 }
@@ -1537,7 +1452,6 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
   const networkName = SUPPORTED_DATA_NETWORKS[network];
 
   clearDataPlans();
-  showSkeletonCards(elements.dataPlans, 4);
 
   setCatalogueStatus(
     `Loading ${networkName} data plans...`,
@@ -1593,7 +1507,6 @@ async function loadDataCatalogue(network = selectedDataNetwork) {
     }
 
     console.error("Data catalogue error:", error);
-    clearDataPlans();
 
     const message = String(error?.message || "");
 
@@ -1711,7 +1624,7 @@ function handleAirtimePhoneInput() {
   }
 
   elements.airtimeDetected.textContent =
-    `✓ ${SUPPORTED_DATA_NETWORKS[detected]} detected`;
+    `${SUPPORTED_DATA_NETWORKS[detected]} detected — you can change this manually.`;
 
   if (!airtimeManualForPhone) {
     setAirtimeNetwork(detected);
@@ -2004,7 +1917,6 @@ function openTransactionSheet(transaction) {
   }
 
   sheet.classList.remove("hidden");
-  sheet.querySelector(".tt-actions .button-outline:last-child")?.focus({ preventScroll: true });
 }
 
 function closeTransactionSheet() {
@@ -2089,8 +2001,12 @@ document.addEventListener("click", (event) => {
   if (profileTarget) {
     const action = profileTarget.dataset.profile;
 
-    if (action === "dark") {
+    if (action === "details") {
+      elements.profileDetails?.classList.toggle("hidden");
+    } else if (action === "dark") {
       toggleTheme();
+    } else if (action === "soon") {
+      showSoon(profileTarget.dataset.label || "This page");
     }
 
     return;
@@ -2153,6 +2069,11 @@ document.addEventListener("click", (event) => {
 
   if (target.closest("#finderRun")) {
     runDataFinder();
+    return;
+  }
+
+  if (target.closest("#airtimeBuyBtn")) {
+    showComingSoon("Airtime purchase");
     return;
   }
 
@@ -2471,8 +2392,6 @@ function renderServiceScreen(key) {
 function openServiceScreen(key) {
   if (!renderServiceScreen(key)) return;
 
-  setPageTitle("serviceView", SERVICE_SCREENS[key].title || "Service");
-
   showTab("service");
 }
 
@@ -2637,15 +2556,8 @@ function renderTransactionError(container) {
   showTransactionMessage(
     container,
     "Transactions could not be loaded",
-    "Check your connection, then try again."
+    "Please refresh the page and try again."
   );
-
-  const retry = document.createElement("button");
-  retry.type = "button";
-  retry.className = "retry-button";
-  retry.textContent = "Try again";
-  retry.addEventListener("click", () => refreshAccountData(true));
-  container.append(retry);
 }
 
 /* ---------------------------------------------------------
@@ -2673,7 +2585,6 @@ async function loadDashboard(user) {
 
   /* A newly signed-in account starts with a clean page-position history. */
   activeDashboardTab = null;
-  navHistory = [];
   Object.keys(dashboardScrollPositions).forEach((key) => {
     delete dashboardScrollPositions[key];
   });
@@ -2686,11 +2597,8 @@ async function loadDashboard(user) {
   }
 
   if (elements.balance) {
-    elements.balance.textContent = "₦00,000.00";
-    elements.balance.classList.add("skeleton-text");
+    elements.balance.textContent = "Loading...";
   }
-
-  showTransactionSkeleton();
 
   if (elements.profileName) {
     elements.profileName.textContent = "Loading...";
@@ -2836,15 +2744,6 @@ async function loadDashboard(user) {
     applyBalanceVisibility();
     updateRecentBeneficiaryDisplay();
 
-    profileInfo = {
-      name,
-      username: currentUsername,
-      email: profile?.email || user.email || "",
-      phone:
-        profile?.phone_e164 || user.user_metadata?.phone_e164 || "",
-      joined: user.created_at || ""
-    };
-
     loadedUserId = user.id;
 
   } catch (error) {
@@ -2868,8 +2767,6 @@ async function loadDashboard(user) {
 
   } finally {
     loadingUserId = null;
-    lastRefreshAt = Date.now();
-    elements.balance?.classList.remove("skeleton-text");
   }
 }
 
@@ -3022,1355 +2919,5 @@ async function initialiseApplication() {
     );
   }
 }
-
-/* ---------------------------------------------------------
-   26. USER EXPERIENCE ENHANCEMENTS
-   Skeletons, refresh, offline banner, input polish
-   --------------------------------------------------------- */
-
-let lastRefreshAt = Date.now();
-let refreshing = false;
-
-function showSkeletonRows(container, count = 3) {
-  if (!container) return;
-
-  container.replaceChildren();
-
-  for (let i = 0; i < count; i += 1) {
-    const row = document.createElement("div");
-    row.className = "skeleton-row";
-    row.setAttribute("aria-hidden", "true");
-    row.innerHTML =
-      '<span class="skeleton sk-icon"></span>' +
-      '<span class="sk-lines"><span class="skeleton sk-line"></span>' +
-      '<span class="skeleton sk-line short"></span></span>' +
-      '<span class="skeleton sk-amount"></span>';
-    container.append(row);
-  }
-}
-
-function showSkeletonCards(container, count = 4) {
-  if (!container) return;
-
-  container.replaceChildren();
-
-  for (let i = 0; i < count; i += 1) {
-    const card = document.createElement("div");
-    card.className = "data-plan-card sk-card";
-    card.setAttribute("aria-hidden", "true");
-    card.innerHTML =
-      '<span class="skeleton sk-line"></span>' +
-      '<span class="skeleton sk-line short"></span>' +
-      '<span class="skeleton sk-price"></span>';
-    container.append(card);
-  }
-}
-
-function showTransactionSkeleton() {
-  const box = elements.recentTransactions;
-  if (!box) return;
-
-  box.className = "tx-list";
-  showSkeletonRows(box, 3);
-}
-
-function showRetryState(container, text, onRetry) {
-  if (!container) return;
-
-  container.replaceChildren();
-
-  const box = document.createElement("div");
-  box.className = "notifications-empty";
-  box.textContent = text + " ";
-
-  const retry = document.createElement("button");
-  retry.type = "button";
-  retry.className = "retry-button";
-  retry.textContent = "Try again";
-  retry.addEventListener("click", onRetry);
-
-  box.append(retry);
-  container.append(box);
-}
-
-function focusActiveView(tabName) {
-  const id = TAB_VIEW_IDS[tabName];
-  const view = id ? document.getElementById(id) : null;
-  const heading = view?.querySelector("h2");
-
-  if (!heading) return;
-
-  heading.setAttribute("tabindex", "-1");
-  heading.focus({ preventScroll: true });
-}
-
-/* ----- Refresh ----- */
-
-async function refreshAccountData(manual = false) {
-  if (refreshing || !loadedUserId) return;
-
-  if (!navigator.onLine) {
-    if (manual) {
-      showDashboardMessage(
-        "You are offline. Reconnect and try again.",
-        "error",
-        true
-      );
-    }
-    return;
-  }
-
-  refreshing = true;
-
-  const userId = loadedUserId;
-  document.body.classList.add("is-refreshing");
-
-  try {
-    const [walletResult, txResult] = await Promise.all([
-      supabaseClient
-        .from("wallets")
-        .select("balance, currency")
-        .eq("user_id", userId)
-        .maybeSingle(),
-
-      supabaseClient
-        .from("wallet_transactions")
-        .select(
-          "id, transaction_type, direction, amount, balance_before, balance_after, description, reference, created_at"
-        )
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(50)
-    ]);
-
-    if (loadedUserId !== userId) return;
-
-    if (
-      !walletResult.error &&
-      walletResult.data &&
-      Number.isFinite(Number(walletResult.data.balance))
-    ) {
-      currentWalletBalance = Number(walletResult.data.balance);
-      lastBalanceText = formatNaira(walletResult.data.balance);
-      elements.balance.textContent = lastBalanceText;
-      applyBalanceVisibility();
-    }
-
-    if (txResult.error) {
-      if (manual) renderTransactionError(elements.recentTransactions);
-    } else {
-      renderTransactions(elements.recentTransactions, txResult.data || [], 50);
-    }
-
-    await loadNotifications(userId, false);
-
-    lastRefreshAt = Date.now();
-
-    if (manual) {
-      showDashboardMessage("You are up to date.", "success", true);
-    }
-
-  } catch (error) {
-    console.error("Refresh error:", error);
-
-    if (manual) {
-      showDashboardMessage(
-        "We could not refresh just now. Please try again.",
-        "error",
-        true
-      );
-    }
-
-  } finally {
-    refreshing = false;
-    document.body.classList.remove("is-refreshing");
-  }
-}
-
-document.addEventListener("visibilitychange", () => {
-  if (
-    document.visibilityState === "visible" &&
-    Date.now() - lastRefreshAt > 60000
-  ) {
-    refreshAccountData(false);
-  }
-});
-
-/* ----- Offline banner ----- */
-
-const offlineBanner = document.createElement("div");
-offlineBanner.id = "offlineBanner";
-offlineBanner.className = "offline-banner hidden";
-offlineBanner.setAttribute("role", "status");
-offlineBanner.textContent =
-  "You are offline. Balances and updates will refresh when you reconnect.";
-document.body.prepend(offlineBanner);
-
-function syncOnlineState() {
-  offlineBanner.classList.toggle("hidden", navigator.onLine);
-}
-
-window.addEventListener("offline", syncOnlineState);
-
-window.addEventListener("online", () => {
-  syncOnlineState();
-  refreshAccountData(false);
-});
-
-syncOnlineState();
-
-/* ----- Pull to refresh ----- */
-
-(function setupPullToRefresh() {
-  const indicator = document.createElement("div");
-  indicator.className = "pull-indicator";
-  indicator.setAttribute("aria-hidden", "true");
-  indicator.textContent = "↓";
-  document.body.append(indicator);
-
-  let startY = null;
-  let pull = 0;
-  const THRESHOLD = 80;
-
-  const active = () =>
-    elements.dashboardScreen &&
-    !elements.dashboardScreen.classList.contains("hidden") &&
-    document.getElementById("txSheet")?.classList.contains("hidden") !== false;
-
-  document.addEventListener("touchstart", (event) => {
-    startY = active() && window.scrollY <= 0
-      ? event.touches[0].clientY
-      : null;
-    pull = 0;
-  }, { passive: true });
-
-  document.addEventListener("touchmove", (event) => {
-    if (startY === null) return;
-
-    pull = Math.max(0, event.touches[0].clientY - startY);
-
-    if (pull > 0 && window.scrollY <= 0) {
-      const shown = Math.min(pull * 0.5, 56);
-      indicator.style.transform = `translate(-50%, ${shown - 44}px)`;
-      indicator.style.opacity = String(Math.min(pull / THRESHOLD, 1));
-      indicator.classList.toggle("ready", pull >= THRESHOLD);
-    }
-  }, { passive: true });
-
-  document.addEventListener("touchend", () => {
-    if (startY === null) return;
-
-    const ready = pull >= THRESHOLD;
-
-    indicator.style.transform = "";
-    indicator.style.opacity = "";
-    indicator.classList.remove("ready");
-
-    startY = null;
-    pull = 0;
-
-    if (ready) refreshAccountData(true);
-  });
-})();
-
-/* ----- Input polish ----- */
-
-function addPasswordToggles() {
-  document.querySelectorAll('input[type="password"]').forEach((input) => {
-    if (input.closest(".password-wrap")) return;
-
-    const wrap = document.createElement("div");
-    wrap.className = "password-wrap";
-
-    input.parentNode.insertBefore(wrap, input);
-    wrap.append(input);
-
-    const toggle = document.createElement("button");
-    toggle.type = "button";
-    toggle.className = "pw-toggle";
-    toggle.textContent = "Show";
-    toggle.setAttribute("aria-label", "Show password");
-    toggle.setAttribute("aria-pressed", "false");
-
-    toggle.addEventListener("click", () => {
-      const show = input.type === "password";
-
-      input.type = show ? "text" : "password";
-      toggle.textContent = show ? "Hide" : "Show";
-      toggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
-      toggle.setAttribute("aria-pressed", String(show));
-    });
-
-    wrap.append(toggle);
-  });
-}
-
-function formatPhoneAsTyped(input) {
-  if (input.selectionStart !== input.value.length) return;
-
-  const raw = input.value;
-
-  if (raw.trim().startsWith("+")) return;
-
-  const digits = raw.replace(/\D/g, "").slice(0, 11);
-
-  if (!digits.startsWith("0")) {
-    input.value = digits;
-    return;
-  }
-
-  input.value = [digits.slice(0, 4), digits.slice(4, 7), digits.slice(7, 11)]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function polishInputs() {
-  addPasswordToggles();
-
-  ["phone", "dataPhone", "airtimePhone"].forEach((id) => {
-    const input = document.getElementById(id);
-    if (!input) return;
-
-    input.setAttribute("inputmode", "tel");
-    input.setAttribute("maxlength", "16");
-    input.addEventListener("input", () => formatPhoneAsTyped(input));
-  });
-
-  const email = document.getElementById("email");
-
-  if (email) {
-    email.setAttribute("autocapitalize", "none");
-    email.setAttribute("autocorrect", "off");
-    email.setAttribute("spellcheck", "false");
-    email.setAttribute("enterkeyhint", "next");
-  }
-
-  document.getElementById("password")?.setAttribute("enterkeyhint", "go");
-
-  document.getElementById("notificationBtn")?.setAttribute("aria-label", "Notifications");
-
-  document.querySelectorAll("button:not([type])").forEach((button) => {
-    button.type = "button";
-  });
-}
-
-/* ---------------------------------------------------------
-   25. PAGE BARS, BACK NAVIGATION, PURCHASE FLOW, INFO PAGES
-   --------------------------------------------------------- */
-
-/* Fill these in with your real details. Empty values are hidden. */
-const SITE_CONTACT = {
-  whatsapp: "",   // e.g. "2348012345678" (digits only, with country code)
-  phone: "",      // e.g. "08012345678"
-  email: "",      // e.g. "support@yourdomain.com"
-  address: "",    // e.g. "12 Example Street, Lagos"
-  hours: ""       // e.g. "Mon–Sat, 8am–8pm"
-};
-
-/* Airtime purchases switch on when the secure airtime function exists. */
-const AIRTIME_PURCHASE_LIVE = false;
-
-const NETWORK_LOGOS = {
-  mtn: "./assets/mtn.png",
-  airtel: "./assets/airtel.png",
-  glo: "./assets/glo.jpg"
-};
-
-const ROOT_TABS = ["transactions", "wallet", "profile"];
-
-let navHistory = [];
-let profileInfo = null;
-let pendingPurchase = null;
-let purchaseInProgress = false;
-
-/* ----- Page bars with a back arrow on every page ----- */
-
-const PAGE_TITLES = {
-  dataStoreView: "Data bundles",
-  airtimeView: "Airtime",
-  notificationsView: "Notifications",
-  profileView: "Profile",
-  transactionsView: "Transactions",
-  walletView: "Wallet",
-  purchaseView: "Confirm purchase",
-  infoView: "",
-  serviceView: ""
-};
-
-function svgIcon(id, className = "ico") {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("class", className);
-  svg.setAttribute("aria-hidden", "true");
-
-  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-  use.setAttribute("href", `#${id}`);
-  svg.append(use);
-
-  return svg;
-}
-
-function buildPageBars() {
-  Object.entries(PAGE_TITLES).forEach(([id, title]) => {
-    const view = document.getElementById(id);
-
-    if (!view || view.querySelector(":scope > .page-bar")) return;
-
-    const bar = el("div", "page-bar");
-
-    const back = el("button", "page-back");
-    back.type = "button";
-    back.dataset.back = "true";
-    back.setAttribute("aria-label", "Go back");
-    back.append(svgIcon("i-back"));
-
-    const heading = el("span", "page-bar-title", title);
-    heading.id = `${id}Title`;
-
-    const action = el("span", "page-bar-action");
-
-    bar.append(back, heading, action);
-    view.prepend(bar);
-
-    if (id === "dataStoreView" || id === "airtimeView") {
-      const next = el("button", "page-next", "Next");
-      next.type = "button";
-      next.id = id === "dataStoreView" ? "dataNextBtn" : "airtimeNextBtn";
-      next.dataset.next = id === "dataStoreView" ? "data" : "airtime";
-      next.append(svgIcon("i-chev"));
-      action.append(next);
-    }
-  });
-}
-
-function setPageTitle(viewId, text) {
-  const node = document.getElementById(`${viewId}Title`);
-  if (node) node.textContent = text;
-}
-
-function pushBrowserState(tabName) {
-  try {
-    history.pushState({ ggrTab: tabName }, "");
-  } catch (error) {
-    /* History is optional. */
-  }
-}
-
-function goBack(fromBrowser = false) {
-  if (fromBrowser && activeDashboardTab === "home") return;
-
-  const previous = navHistory.pop() || "home";
-
-  showTab(previous, { fromBack: true });
-}
-
-window.addEventListener("popstate", () => {
-  if (elements.dashboardScreen?.classList.contains("hidden")) return;
-
-  goBack(true);
-});
-
-document.addEventListener("click", (event) => {
-  const target = event.target;
-
-  if (!(target instanceof Element)) return;
-
-  if (target.closest("[data-back]")) {
-    if (history.state && history.state.ggrTab) {
-      history.back();
-    } else {
-      goBack();
-    }
-  }
-});
-
-/* ----- Network tick ----- */
-
-function syncNetworkTicks() {
-  const pairs = [
-    ["#dataStoreView .data-network-selector", elements.dataPhone],
-    ["#airtimeView .data-network-selector", elements.airtimePhone]
-  ];
-
-  pairs.forEach(([selector, input]) => {
-    const group = document.querySelector(selector);
-    if (!group || !input) return;
-
-    group.classList.toggle(
-      "has-tick",
-      Boolean(normaliseNigerianPhone(input.value))
-    );
-  });
-}
-
-document.addEventListener("input", syncNetworkTicks);
-
-/* ----- Next buttons ----- */
-
-function getAirtimeNetwork() {
-  return (
-    document.querySelector(
-      '.net-picker[data-picker="airtime"] .net-option.active'
-    )?.dataset.net || "mtn"
-  );
-}
-
-function getAirtimeAmount() {
-  const value = Number(document.getElementById("airtimeAmount")?.value);
-
-  return Number.isFinite(value) ? Math.round(value) : 0;
-}
-
-function nextProblem(kind) {
-  if (kind === "data") {
-    if (!normaliseNigerianPhone(elements.dataPhone?.value || "")) {
-      elements.dataPhone?.focus();
-      return "Enter a valid Nigerian phone number to continue.";
-    }
-
-    if (!selectedDataPlan) {
-      return "Select a bundle to continue.";
-    }
-
-    return "";
-  }
-
-  if (!normaliseNigerianPhone(elements.airtimePhone?.value || "")) {
-    elements.airtimePhone?.focus();
-    return "Enter a valid Nigerian phone number to continue.";
-  }
-
-  const amount = getAirtimeAmount();
-
-  if (amount < 50 || amount > 50000) {
-    document.getElementById("airtimeAmount")?.focus();
-    return "Enter an airtime amount between ₦50 and ₦50,000.";
-  }
-
-  return "";
-}
-
-function updateNextButtons() {
-  const data = document.getElementById("dataNextBtn");
-  const airtime = document.getElementById("airtimeNextBtn");
-
-  /* Do not move focus while only checking readiness. */
-  const check = (kind) => {
-    const phoneInput =
-      kind === "data" ? elements.dataPhone : elements.airtimePhone;
-
-    if (!normaliseNigerianPhone(phoneInput?.value || "")) return false;
-
-    if (kind === "data") return Boolean(selectedDataPlan);
-
-    const amount = getAirtimeAmount();
-
-    return amount >= 50 && amount <= 50000;
-  };
-
-  data?.classList.toggle("is-ready", check("data"));
-  airtime?.classList.toggle("is-ready", check("airtime"));
-}
-
-document.addEventListener("input", updateNextButtons);
-
-document.addEventListener("click", () => {
-  setTimeout(updateNextButtons, 0);
-});
-
-function onBundleSelected() {
-  updateNextButtons();
-
-  const next = document.getElementById("dataNextBtn");
-
-  if (next) {
-    next.classList.remove("pulse-once");
-    void next.offsetWidth;
-    next.classList.add("pulse-once");
-  }
-
-  const ready = Boolean(
-    normaliseNigerianPhone(elements.dataPhone?.value || "")
-  );
-
-  setCatalogueStatus(
-    ready
-      ? `${selectedDataPlan.name} selected. Tap Next at the top right to review and buy.`
-      : `${selectedDataPlan.name} selected. Enter the recipient's phone number, then tap Next.`,
-    "success"
-  );
-}
-
-document.addEventListener("click", (event) => {
-  const target = event.target;
-
-  if (!(target instanceof Element)) return;
-
-  const next = target.closest("[data-next]");
-
-  if (next) {
-    goToPurchase(next.dataset.next);
-    return;
-  }
-
-  if (target.closest("#airtimeBuyBtn")) {
-    goToPurchase("airtime");
-  }
-});
-
-/* ----- Purchase page ----- */
-
-function newPurchaseKey() {
-  return `ggrdata_${crypto.randomUUID().replaceAll("-", "")}`;
-}
-
-function goToPurchase(kind) {
-  const problem = nextProblem(kind);
-
-  if (problem) {
-    showDashboardMessage(problem, "error", true);
-    return;
-  }
-
-  if (kind === "data") {
-    pendingPurchase = {
-      kind: "data",
-      network: selectedDataNetwork,
-      phone: getLocalPhoneDigits(elements.dataPhone.value),
-      amount: Number(selectedDataPlan.amount),
-      planName: String(selectedDataPlan.name),
-      planCode: String(selectedDataPlan.code || ""),
-      key: newPurchaseKey(),
-      state: "review"
-    };
-  } else {
-    pendingPurchase = {
-      kind: "airtime",
-      network: getAirtimeNetwork(),
-      phone: getLocalPhoneDigits(elements.airtimePhone.value),
-      amount: getAirtimeAmount(),
-      planName: "",
-      planCode: "",
-      key: newPurchaseKey(),
-      state: "review"
-    };
-  }
-
-  renderPurchaseReview();
-  showTab("purchase");
-}
-
-function purchaseRow(label, value) {
-  const row = el("div", "detail-row");
-
-  row.append(el("span", "", label), el("b", "", value));
-
-  return row;
-}
-
-function renderPurchaseReview(notice = "") {
-  const body = document.getElementById("purchaseBody");
-  const p = pendingPurchase;
-
-  if (!body || !p) return;
-
-  body.replaceChildren();
-
-  const isData = p.kind === "data";
-  const networkName = SUPPORTED_DATA_NETWORKS[p.network] || p.network;
-
-  const hero = el("div", "purchase-hero");
-  const logo = el("img", "purchase-logo");
-  logo.src = NETWORK_LOGOS[p.network] || "";
-  logo.alt = `${networkName} logo`;
-  logo.width = 56;
-  logo.height = 56;
-
-  const heroText = el("div", "purchase-hero-text");
-  heroText.append(
-    el("small", "", isData ? "DATA BUNDLE" : "AIRTIME TOP-UP"),
-    el("strong", "", formatNaira(p.amount)),
-    el("span", "", isData ? p.planName : `${networkName} airtime`)
-  );
-
-  hero.append(logo, heroText);
-
-  const details = el("div", "purchase-card");
-  details.append(
-    purchaseRow("Service", isData ? "Data bundle" : "Airtime"),
-    purchaseRow("Network", networkName),
-    ...(isData ? [purchaseRow("Bundle", p.planName)] : []),
-    purchaseRow("Recipient", p.phone),
-    purchaseRow("Amount", formatNaira(p.amount)),
-    purchaseRow("Total to pay", formatNaira(p.amount))
-  );
-
-  const balance = currentWalletBalance;
-  const enough = balance === null || balance >= p.amount;
-
-  const wallet = el("div", `purchase-wallet${enough ? "" : " low"}`);
-
-  const walletLeft = el("div");
-  walletLeft.append(
-    el("small", "", "WALLET BALANCE"),
-    el("strong", "", balance === null ? "Not available" : formatNaira(balance))
-  );
-
-  const walletRight = el("div", "purchase-after");
-  walletRight.append(
-    el("small", "", "AFTER PURCHASE"),
-    el(
-      "strong",
-      "",
-      balance === null
-        ? "—"
-        : enough
-          ? formatNaira(balance - p.amount)
-          : "Insufficient"
-    )
-  );
-
-  wallet.append(walletLeft, walletRight);
-
-  body.append(hero, details, wallet);
-
-  if (!enough) {
-    const fund = el("button", "button-outline", "Fund wallet to continue");
-    fund.type = "button";
-    fund.addEventListener("click", () => showComingSoon("Wallet funding"));
-    body.append(fund);
-  }
-
-  if (notice) {
-    body.append(el("p", "purchase-notice", notice));
-  }
-
-  body.append(
-    el(
-      "p",
-      "purchase-safety",
-      "Please check the number and amount. Your wallet is debited only after the order is validated, and a failed delivery is refunded to your wallet."
-    )
-  );
-
-  const confirm = el(
-    "button",
-    "button-primary purchase-confirm",
-    `Purchase ${formatNaira(p.amount)}`
-  );
-
-  confirm.type = "button";
-  confirm.id = "purchaseConfirmBtn";
-  confirm.disabled = !enough || purchaseInProgress;
-  confirm.addEventListener("click", confirmPurchase);
-
-  body.append(confirm);
-}
-
-function renderPurchaseResult(kind, title, message, reference = "") {
-  const body = document.getElementById("purchaseBody");
-  const p = pendingPurchase;
-
-  if (!body || !p) return;
-
-  body.replaceChildren();
-
-  const symbol = { success: "✓", failed: "✕", pending: "◷" }[kind] || "•";
-
-  const card = el("div", `purchase-result ${kind}`);
-
-  card.append(
-    el("span", "purchase-result-icon", symbol),
-    el("h3", "", title),
-    el("p", "", message)
-  );
-
-  const rows = el("div", "purchase-card");
-
-  rows.append(
-    purchaseRow("Network", SUPPORTED_DATA_NETWORKS[p.network] || p.network),
-    purchaseRow("Recipient", p.phone),
-    purchaseRow("Amount", formatNaira(p.amount))
-  );
-
-  if (reference) rows.append(purchaseRow("Reference", reference));
-
-  card.append(rows);
-  body.append(card);
-
-  const done = el("button", "button-primary", "Done");
-  done.type = "button";
-  done.addEventListener("click", () => showTab("home"));
-
-  const history = el("button", "button-outline", "View transactions");
-  history.type = "button";
-  history.addEventListener("click", () => showTab("transactions"));
-
-  body.append(done, history);
-}
-
-function clearSelectionsAfterPurchase() {
-  selectedDataPlan = null;
-
-  document
-    .querySelectorAll("#dataPlans .data-plan-card.selected")
-    .forEach((card) => {
-      card.classList.remove("selected");
-      const button = card.querySelector(".data-plan-select");
-      if (button) button.textContent = "Select bundle";
-    });
-
-  const amount = document.getElementById("airtimeAmount");
-  if (amount) amount.value = "";
-
-  document
-    .querySelectorAll("#amountGrid .amount-chip")
-    .forEach((chip) => chip.classList.remove("selected"));
-
-  updateNextButtons();
-}
-
-async function confirmPurchase() {
-  const p = pendingPurchase;
-
-  if (!p || purchaseInProgress) return;
-
-  if (currentWalletBalance !== null && currentWalletBalance < p.amount) {
-    showDashboardMessage(
-      "Your wallet balance is not enough for this purchase.",
-      "error",
-      true
-    );
-    return;
-  }
-
-  if (p.kind === "airtime" && !AIRTIME_PURCHASE_LIVE) {
-    renderPurchaseReview(
-      "Airtime purchases are being connected and are not live yet. Nothing has been charged."
-    );
-    return;
-  }
-
-  if (p.kind === "data" && !p.planCode) {
-    renderPurchaseReview(
-      "This bundle has no verified plan code. Go back, refresh the list and choose another bundle."
-    );
-    return;
-  }
-
-  purchaseInProgress = true;
-
-  const button = document.getElementById("purchaseConfirmBtn");
-
-  if (button) {
-    button.disabled = true;
-    button.textContent = "Processing…";
-  }
-
-  try {
-    const { data: sessionData, error: sessionError } =
-      await supabaseClient.auth.getSession();
-
-    const accessToken = sessionData?.session?.access_token;
-
-    if (sessionError || !accessToken) {
-      throw new Error("Your session has expired. Please sign in again.");
-    }
-
-    const slug =
-      p.kind === "data" ? "vtpass-data-purchase" : "vtpass-airtime-purchase";
-
-    const payload =
-      p.kind === "data"
-        ? {
-            action: "purchase",
-            network: p.network,
-            phone: p.phone,
-            variationCode: p.planCode,
-            idempotencyKey: p.key
-          }
-        : {
-            action: "purchase",
-            network: p.network,
-            phone: p.phone,
-            amount: p.amount,
-            idempotencyKey: p.key
-          };
-
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/${slug}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_PUBLISHABLE_KEY,
-        "Authorization": `Bearer ${accessToken}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json().catch(() => null);
-
-    if (!response.ok || !result) {
-      throw new Error(
-        result?.error || `Purchase request failed (${response.status}).`
-      );
-    }
-
-    const status = String(result.status || "processing").toLowerCase();
-    const reference = result.orderId || result.requestId || "";
-
-    if (["successful", "success", "completed"].includes(status)) {
-      p.state = "done";
-      saveRecentBeneficiary(p.phone);
-      clearSelectionsAfterPurchase();
-
-      renderPurchaseResult(
-        "success",
-        "Purchase successful",
-        result.message || "Your purchase has been delivered.",
-        reference
-      );
-
-    } else if (["failed", "reversed"].includes(status)) {
-      p.state = "done";
-
-      renderPurchaseResult(
-        "failed",
-        "Purchase failed",
-        result.message ||
-          "The purchase could not be completed. Any debit is refunded to your wallet.",
-        reference
-      );
-
-    } else if (result.success && status === "processing") {
-      p.state = "done";
-      clearSelectionsAfterPurchase();
-
-      renderPurchaseResult(
-        "pending",
-        "Purchase processing",
-        result.message ||
-          "We are confirming this purchase with the provider. Check your transactions for updates.",
-        reference
-      );
-
-    } else {
-      throw new Error(
-        result.error || result.message || "The purchase could not be confirmed."
-      );
-    }
-
-    refreshWalletAfterDataPurchase();
-
-  } catch (error) {
-    console.error("Purchase error:", error);
-
-    renderPurchaseReview(
-      error instanceof Error
-        ? error.message
-        : "The purchase could not be completed. Please try again."
-    );
-
-  } finally {
-    purchaseInProgress = false;
-  }
-}
-
-/* ----- Information pages (profile settings) ----- */
-
-function infoCard(title, paragraphs = []) {
-  const card = el("section", "info-card");
-
-  if (title) card.append(el("h3", "", title));
-
-  paragraphs.forEach((text) => card.append(el("p", "", text)));
-
-  return card;
-}
-
-function infoRows(rows) {
-  const card = el("div", "purchase-card");
-
-  rows
-    .filter(([, value]) => value)
-    .forEach(([label, value]) => card.append(purchaseRow(label, value)));
-
-  return card;
-}
-
-function faqList(items) {
-  const wrap = el("div", "faq-list");
-
-  items.forEach(([question, answer]) => {
-    const item = document.createElement("details");
-    item.className = "faq-item";
-
-    item.append(el("summary", "", question), el("p", "", answer));
-    wrap.append(item);
-  });
-
-  return wrap;
-}
-
-function actionButton(label, onClick, outline = false) {
-  const button = el(
-    "button",
-    outline ? "button-outline" : "button-primary",
-    label
-  );
-
-  button.type = "button";
-  button.addEventListener("click", onClick);
-
-  return button;
-}
-
-function linkButton(label, href) {
-  const link = el("a", "button-primary info-link", label);
-
-  link.href = href;
-  link.target = href.startsWith("http") ? "_blank" : "_self";
-  link.rel = "noopener";
-
-  return link;
-}
-
-function formatMemberSince(value) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "";
-
-  return new Intl.DateTimeFormat("en-NG", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(date);
-}
-
-function contactButtons() {
-  const buttons = [];
-
-  if (SITE_CONTACT.whatsapp) {
-    buttons.push(
-      linkButton(
-        "Chat on WhatsApp",
-        `https://wa.me/${SITE_CONTACT.whatsapp.replace(/\D/g, "")}`
-      )
-    );
-  }
-
-  if (SITE_CONTACT.phone) {
-    buttons.push(
-      linkButton(
-        `Call ${SITE_CONTACT.phone}`,
-        `tel:${SITE_CONTACT.phone.replace(/\s/g, "")}`
-      )
-    );
-  }
-
-  if (SITE_CONTACT.email) {
-    buttons.push(
-      linkButton("Send an email", `mailto:${SITE_CONTACT.email}`)
-    );
-  }
-
-  return buttons;
-}
-
-const INFO_PAGES = {
-  profile() {
-    const info = profileInfo || {};
-    const name = info.name || "GGRData Member";
-    const pack =
-      document.getElementById("userPackage")?.textContent.trim() ||
-      "GGR Starter";
-
-    const head = el("div", "profile-head");
-    const avatar = el(
-      "span",
-      "profile-avatar",
-      name.trim().charAt(0).toUpperCase() || "G"
-    );
-
-    head.append(avatar, el("h2", "", name));
-
-    if (info.username) {
-      head.append(el("span", "profile-username", `@${info.username}`));
-    }
-
-    return {
-      title: "My profile",
-      nodes: [
-        head,
-        infoRows([
-          ["Full name", name],
-          ["Username", info.username ? `@${info.username}` : ""],
-          ["Email address", info.email],
-          ["Phone number", info.phone],
-          ["Account package", pack],
-          ["Account status", "Active"],
-          ["Member since", formatMemberSince(info.joined)]
-        ]),
-        el(
-          "p",
-          "purchase-safety",
-          "To change your name, email or phone number, contact support. Your password can be reset from the sign-in screen."
-        )
-      ]
-    };
-  },
-
-  pricing() {
-    return {
-      title: "Pricing",
-      nodes: [
-        infoCard("Clear, live prices", [
-          "Data bundle prices come straight from the live catalogue and are shown before you buy. The price you see on the confirmation page is the amount debited from your wallet.",
-          "Airtime is charged at the amount you enter. Bundle availability and prices can change when the network or provider updates them, so always check the confirmation page."
-        ]),
-        actionButton("View live data prices", () => openDataStore())
-      ]
-    };
-  },
-
-  codes() {
-    const dial = (code) => `tel:${code.replace("#", "%23")}`;
-
-    const codeCard = (label, code) => {
-      const row = el("div", "code-row");
-      const text = el("div");
-
-      text.append(el("small", "", label), el("strong", "", code));
-
-      const call = el("a", "code-dial", "Dial");
-      call.href = dial(code);
-
-      row.append(text, call);
-      return row;
-    };
-
-    const list = el("div", "purchase-card code-card");
-
-    list.append(
-      codeCard("Airtime (account) balance", "*310#"),
-      codeCard("Data balance", "*323#")
-    );
-
-    return {
-      title: "Balance codes",
-      nodes: [
-        infoCard("Check your balance", [
-          "These are the unified codes published by the Nigerian Communications Commission. They work on MTN, Airtel and Glo."
-        ]),
-        list,
-        el(
-          "p",
-          "purchase-safety",
-          "If a code does not respond on your SIM, your network may still use its own older code. Check with your network provider."
-        )
-      ]
-    };
-  },
-
-  contact() {
-    const buttons = contactButtons();
-
-    const nodes = [];
-
-    if (buttons.length) {
-      nodes.push(
-        infoCard("We are here to help", [
-          SITE_CONTACT.hours
-            ? `Support hours: ${SITE_CONTACT.hours}.`
-            : "Reach us on any of the channels below."
-        ]),
-        ...buttons
-      );
-    } else {
-      nodes.push(
-        infoCard("Contact support", [
-          "Our support contact details will appear here soon.",
-          "In the meantime, quote the reference from your Transactions page for any order question."
-        ])
-      );
-    }
-
-    return { title: "Contact us", nodes };
-  },
-
-  complaint() {
-    const steps = faqList([
-      [
-        "1. Find the transaction",
-        "Open Transactions and tap the order you want to report."
-      ],
-      [
-        "2. Copy the reference",
-        "Tap “Copy reference” on the details sheet. The reference helps support find your order quickly."
-      ],
-      [
-        "3. Send it to support",
-        "Send the reference with a short description of what went wrong and the number you used."
-      ]
-    ]);
-
-    steps.querySelectorAll("details").forEach((d) => (d.open = true));
-
-    return {
-      title: "Log a complaint",
-      nodes: [
-        infoCard("Report a problem", [
-          "If a purchase did not arrive or a debit looks wrong, follow these steps. Failed deliveries are refunded to your wallet automatically."
-        ]),
-        steps,
-        actionButton("Open my transactions", () => showTab("transactions")),
-        ...contactButtons()
-      ]
-    };
-  },
-
-  limits() {
-    const pack =
-      document.getElementById("userPackage")?.textContent.trim() ||
-      "GGR Starter";
-
-    return {
-      title: "Account limits",
-      nodes: [
-        infoRows([
-          ["Account package", pack],
-          ["Airtime per purchase", "₦50 – ₦50,000"],
-          ["Data bundles", "Price of the selected bundle"],
-          ["Wallet funding limits", "Shown when funding is live"]
-        ]),
-        el(
-          "p",
-          "purchase-safety",
-          "Limits protect your wallet and may change as account levels are introduced. Any change will be shown here."
-        )
-      ]
-    };
-  },
-
-  upgrade() {
-    const pack =
-      document.getElementById("userPackage")?.textContent.trim() ||
-      "GGR Starter";
-
-    return {
-      title: "Upgrade account",
-      nodes: [
-        infoRows([["Current package", pack]]),
-        infoCard("Account upgrades", [
-          "Account upgrades are not open yet. When they are, you will see the available packages and what each one includes on this page."
-        ])
-      ]
-    };
-  },
-
-  help() {
-    return {
-      title: "Help & support",
-      nodes: [
-        faqList([
-          [
-            "How do I buy data or airtime?",
-            "Choose Data or Airtime, enter the recipient's number (the network is detected automatically), pick a bundle or amount, then tap Next. Review the details and tap Purchase."
-          ],
-          [
-            "How do I fund my wallet?",
-            "Wallet funding is being switched on after payment verification is fully tested. Your funding details will appear on the home screen."
-          ],
-          [
-            "My purchase is still processing",
-            "Some purchases take a little time to be confirmed by the provider. Your wallet debit is held while it is checked. Open Transactions for updates. If it fails, the amount is refunded to your wallet."
-          ],
-          [
-            "I sent airtime or data to a wrong number",
-            "Always check the number on the confirmation page before you buy. Delivered purchases cannot be recalled, but contact support with your reference and we will look into it."
-          ],
-          [
-            "Which networks are supported?",
-            "MTN, Airtel and Glo."
-          ],
-          [
-            "Where do I find my transaction reference?",
-            "Open Transactions, tap an order, and use Copy reference."
-          ]
-        ]),
-        actionButton("Contact support", () => openInfoPage("contact"), true)
-      ]
-    };
-  },
-
-  legal() {
-    return {
-      title: "Legal",
-      nodes: [
-        faqList([
-          [
-            "Privacy",
-            "We collect the details you give us when you register (name, username, email and phone number) and your wallet and order records. We use them to run your account, deliver your purchases and provide support. Your records are stored securely and each account can only access its own information. We share only what is needed with the payment and delivery providers that complete your orders. GGRData will never ask for your password."
-          ],
-          [
-            "Terms of use",
-            "Use GGRData lawfully and keep your sign-in details private. You are responsible for entering the correct recipient number and amount. Your wallet is debited when an order is accepted and refunded if delivery fails. Prices and availability depend on the networks and providers and may change. We may suspend accounts that are misused."
-          ],
-          [
-            "Security",
-            "Payments and purchases are processed on secure servers. Wallet changes are made only by the system after verification, not by the app on your device."
-          ]
-        ])
-      ]
-    };
-  },
-
-  address() {
-    return {
-      title: "Our address",
-      nodes: [
-        SITE_CONTACT.address
-          ? infoRows([["Address", SITE_CONTACT.address]])
-          : infoCard("Our address", [
-              "Our office address will be shown here soon."
-            ]),
-        ...contactButtons()
-      ]
-    };
-  }
-};
-
-function openInfoPage(key) {
-  const build = INFO_PAGES[key];
-
-  if (!build) return;
-
-  const page = build();
-  const body = document.getElementById("infoBody");
-
-  if (!body) return;
-
-  body.replaceChildren(...page.nodes);
-  setPageTitle("infoView", page.title);
-
-  showTab("info");
-}
-
-document.addEventListener("click", (event) => {
-  const target = event.target;
-
-  if (!(target instanceof Element)) return;
-
-  const item = target.closest('[data-profile="info"]');
-
-  if (item) {
-    openInfoPage(item.dataset.info);
-  }
-});
-
-buildPageBars();
-syncNetworkTicks();
-updateNextButtons();
-
-
-polishInputs();
 
 initialiseApplication();
